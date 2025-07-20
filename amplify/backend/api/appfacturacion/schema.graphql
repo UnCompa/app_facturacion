@@ -1,0 +1,33 @@
+type Negocio
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["superadmin"] }
+      { allow: groups, groups: ["admin"], operations: [read, update] }
+      { allow: groups, groups: ["vendedor"], operations: [read] }
+    ]
+  ) {
+  id: ID!
+  nombre: String!
+  ruc: String!
+  telefono: String
+  duration: Int
+  movilAccess: Int
+  pcAccess: Int
+  direccion: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Producto
+  @model
+  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]) {
+  id: ID!
+  nombre: String!
+  descripcion: String
+  precio: Float!
+  stock: Int!
+  negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}

@@ -1,9 +1,14 @@
 import 'dart:convert';
 
+import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:app_facturacion/models/Negocio.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+// Asegúrate de importar tu modelo Negocio
+// import 'package:tu_app/models/ModelProvider.dart';
 
 class UsersSuperadminPage extends StatefulWidget {
   const UsersSuperadminPage({super.key});
@@ -20,10 +25,19 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
   final _phoneController = TextEditingController();
 
   String? _selectedRole;
+  String? _selectedNegocioId;
   bool _isLoading = false;
+  bool _isLoadingNegocios = false;
   bool _obscurePassword = true;
 
   final List<String> _roles = ['superadmin', 'admin', 'vendedor'];
+  List<Negocio> _negociosList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNegocios();
+  }
 
   @override
   void dispose() {
@@ -34,32 +48,84 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
     super.dispose();
   }
 
+  Future<void> _loadNegocios() async {
+    setState(() {
+      _isLoadingNegocios = true;
+    });
+
+    try {
+      final request = ModelQueries.list(Negocio.classType);
+      final response = await Amplify.API.query(request: request).response;
+
+      if (response.hasErrors) {
+        safePrint('Errores en la respuesta: ${response.errors}');
+        throw Exception('Error al obtener los negocios');
+      }
+
+      final negociosItems = response.data?.items;
+
+      final negociosList =
+          negociosItems
+              ?.where((item) => item != null)
+              .map((item) => item!)
+              .toList() ??
+          [];
+
+      setState(() {
+        _negociosList = negociosList;
+      });
+    } catch (e) {
+      safePrint('Error cargando negocios: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar negocios: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isLoadingNegocios = false;
+      });
+    }
+  }
+
   Future<void> signUpUser({
     required String username,
     required String password,
     required String email,
     String? phoneNumber,
     required String role,
+    String? negocioId,
   }) async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final userAttributes = {
+      final userAttributes = <AuthUserAttributeKey, String>{
         if (phoneNumber != null && phoneNumber.isNotEmpty)
           AuthUserAttributeKey.phoneNumber: phoneNumber,
         CognitoUserAttributeKey.custom('role'): role,
+        if (negocioId != null && negocioId.isNotEmpty)
+          CognitoUserAttributeKey.custom('negocioid'): negocioId,
       };
+
       print("REGISTRANDO USUARIO");
       final result = await Amplify.Auth.signUp(
         username: email,
         password: password,
         options: SignUpOptions(userAttributes: userAttributes),
       );
+
       print("ASIGNANDO ROL");
       print(role);
       print(email);
+      if (negocioId != null) {
+        print("NEGOCIO ID: $negocioId");
+      }
+
       await assignUserToGroup(email, role);
       print("MANEJANDO RESULTADO");
       await _handleSignUpResult(result);
@@ -115,7 +181,7 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
       headers: {
         "Content-Type": "application/json",
         'Authorization': idToken.raw,
-      }, // El valor crudo del token},
+      },
       body: jsonEncode({"username": email, "groupName": group}),
     );
 
@@ -160,11 +226,26 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
     _phoneController.clear();
     setState(() {
       _selectedRole = null;
+      _selectedNegocioId = null;
     });
   }
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      // Validación adicional para roles que requieren negocio
+      if ((_selectedRole == 'admin' || _selectedRole == 'vendedor') &&
+          (_selectedNegocioId == null || _selectedNegocioId!.isEmpty)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Los roles admin y vendedor requieren seleccionar un negocio',
+            ),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
       await signUpUser(
         username: _usernameController.text.trim(),
         password: _passwordController.text,
@@ -173,8 +254,13 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
             ? null
             : _phoneController.text.trim(),
         role: _selectedRole!,
+        negocioId: _selectedNegocioId,
       );
     }
+  }
+
+  bool _shouldShowNegocioSelector() {
+    return _selectedRole == 'admin' || _selectedRole == 'vendedor';
   }
 
   @override
@@ -183,6 +269,13 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
       appBar: AppBar(
         title: const Text('Registro de Usuario'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _isLoadingNegocios ? null : _loadNegocios,
+            tooltip: 'Actualizar negocios',
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -196,6 +289,8 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
+
+              // Email
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -216,6 +311,7 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
               ),
               const SizedBox(height: 16),
 
+              // Contraseña
               TextFormField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
@@ -248,6 +344,7 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
               ),
               const SizedBox(height: 16),
 
+              // Teléfono
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
@@ -267,6 +364,7 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
               ),
               const SizedBox(height: 16),
 
+              // Rol
               DropdownButtonFormField<String>(
                 value: _selectedRole,
                 items: _roles
@@ -285,15 +383,226 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
                 onChanged: (value) {
                   setState(() {
                     _selectedRole = value;
+                    // Limpiar selección de negocio si no es necesaria
+                    if (!_shouldShowNegocioSelector()) {
+                      _selectedNegocioId = null;
+                    }
                   });
                 },
                 validator: (value) =>
                     value == null ? 'Debe seleccionar un rol' : null,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
+              // Selector de Negocio (condicional)
+              if (_shouldShowNegocioSelector()) ...[
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  child: Card(
+                    color: Colors.blue.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: Colors.blue.shade700,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Selección de Negocio Requerida',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Los usuarios con rol $_selectedRole deben estar asociados a un negocio específico.',
+                            style: TextStyle(color: Colors.blue.shade600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                if (_isLoadingNegocios)
+                  const Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(width: 16),
+                          Text('Cargando negocios...'),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (_negociosList.isEmpty)
+                  Card(
+                    color: Colors.orange.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.warning_amber,
+                            color: Colors.orange.shade700,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'No hay negocios disponibles',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Debe crear al menos un negocio antes de asignar usuarios con este rol.',
+                                  style: TextStyle(
+                                    color: Colors.orange.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  DropdownButtonFormField<String>(
+                    value: _selectedNegocioId,
+                    items: _negociosList.map((negocio) {
+                      return DropdownMenuItem(
+                        value: negocio.id,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              negocio.nombre,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (negocio.ruc.isNotEmpty)
+                              Text(
+                                'RUC: ${negocio.ruc}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    decoration: const InputDecoration(
+                      labelText: 'Negocio *',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.business),
+                      helperText:
+                          'Selecciona el negocio al que pertenecerá el usuario',
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedNegocioId = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (_shouldShowNegocioSelector() &&
+                          (value == null || value.isEmpty)) {
+                        return 'Debe seleccionar un negocio para este rol';
+                      }
+                      return null;
+                    },
+                    isExpanded: true,
+                    menuMaxHeight: 300,
+                  ),
+                const SizedBox(height: 16),
+              ],
+
+              // Información seleccionada
+              if (_selectedNegocioId != null &&
+                  _shouldShowNegocioSelector()) ...[
+                Card(
+                  color: Colors.green.shade50,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.green.shade700,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Negocio Seleccionado',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (_negociosList.isNotEmpty) ...[
+                          () {
+                            final selectedNegocio = _negociosList.firstWhere(
+                              (n) => n.id == _selectedNegocioId,
+                            );
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Nombre: ${selectedNegocio.nombre}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                if (selectedNegocio.ruc.isNotEmpty)
+                                  Text('RUC: ${selectedNegocio.ruc}'),
+                                if (selectedNegocio.direccion != null &&
+                                    selectedNegocio.direccion!.isNotEmpty)
+                                  Text(
+                                    'Dirección: ${selectedNegocio.direccion}',
+                                  ),
+                              ],
+                            );
+                          }(),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Botones
               ElevatedButton(
-                onPressed: _isLoading ? null : _submitForm,
+                onPressed: _isLoading || _isLoadingNegocios
+                    ? null
+                    : _submitForm,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -320,6 +629,48 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
               OutlinedButton(
                 onPressed: _isLoading ? null : _clearForm,
                 child: const Text('Limpiar Formulario'),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Información adicional
+              Card(
+                color: Colors.grey.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: Colors.grey.shade600,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Información sobre Roles',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '• Superadmin: Acceso completo al sistema\n'
+                        '• Admin: Gestión de un negocio específico\n'
+                        '• Vendedor: Operaciones de venta en un negocio',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

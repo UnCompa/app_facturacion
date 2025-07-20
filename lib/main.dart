@@ -1,5 +1,8 @@
+import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:app_facturacion/page/admin/negocio/create_bussines_superadmin_page.dart';
+import 'package:app_facturacion/page/admin/negocio/negocios_superadmin_page.dart';
 import 'package:app_facturacion/page/admin/user/create_user_superadmin_page.dart';
 import 'package:app_facturacion/page/admin/user/user_superadmin_confirm_page.dart';
 import 'package:app_facturacion/page/admin_page.dart';
@@ -10,6 +13,7 @@ import 'package:flutter/material.dart';
 
 import './routes/routes.dart';
 import 'amplifyconfiguration.dart';
+import 'models/ModelProvider.dart';
 
 void main() => runApp(const MyApp());
 
@@ -28,10 +32,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _configureAmplify() async {
+    final api = AmplifyAPI(
+      options: APIPluginOptions(modelProvider: ModelProvider.instance),
+    );
+    await Amplify.addPlugin(api);
+    final auth = AmplifyAuthCognito();
+    await Amplify.addPlugin(auth);
     try {
-      final auth = AmplifyAuthCognito();
-      await Amplify.addPlugin(auth);
-
       await Amplify.configure(amplifyconfig);
     } on Exception catch (e) {
       safePrint('An error occurred configuring Amplify: $e');
@@ -49,12 +56,15 @@ class _MyAppState extends State<MyApp> {
       home: const LoginScreen(),
       routes: {
         Routes.loginPage: (context) => const LoginScreen(),
-        Routes.loginPageWithNewPassoword: (context) => const NewPasswordScreen(),
+        Routes.loginPageWithNewPassoword: (context) =>
+            const NewPasswordScreen(),
         Routes.superAdminHome: (context) => const SuperAdminPage(),
         Routes.superAdminHomeUsers: (context) => const UsersSuperadminPage(),
         Routes.superAdminHomeUserConfirm: (context) =>
             const UserSuperadminConfirmPage(),
         Routes.adminHome: (context) => const AdminPage(),
+        Routes.superAdminNegocios: (context) => const NegociosSuperadminPage(),
+        Routes.superAdminNegociosCrear: (context) => const CrearNegocioScreen(),
       },
     );
   }

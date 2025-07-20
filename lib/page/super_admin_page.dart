@@ -1,5 +1,6 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/page/login_page.dart';
+import 'package:app_facturacion/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -69,7 +70,9 @@ class SuperAdminPage extends StatelessWidget {
                 _buildOptionCard(
                   icon: Icons.location_city,
                   title: 'Negocios',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pushNamed(context, Routes.superAdminNegocios);
+                  },
                 ),
               ],
             ),

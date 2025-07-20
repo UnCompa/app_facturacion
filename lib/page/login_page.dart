@@ -116,7 +116,7 @@ class LoginScreen extends StatelessWidget {
 
         final decodedToken = JwtDecoder.decode(idToken.raw);
         final List<dynamic> groups = decodedToken['cognito:groups'] ?? [];
-
+        debugPrint(groups.toString());
         if (groups.contains('superadmin')) {
           Navigator.of(context).pushReplacementNamed('/superadmin');
         } else if (groups.contains('admin')) {
@@ -134,7 +134,6 @@ class LoginScreen extends StatelessWidget {
       _showErrorDialog(context, 'Error al obtener el token: ${e.message}');
     }
   }
-
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(

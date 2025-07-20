@@ -10,14 +10,14 @@ import 'package:http/http.dart' as http;
 // Asegúrate de importar tu modelo Negocio
 // import 'package:tu_app/models/ModelProvider.dart';
 
-class UsersSuperadminPage extends StatefulWidget {
-  const UsersSuperadminPage({super.key});
+class CreateUserSuperadminPage extends StatefulWidget {
+  const CreateUserSuperadminPage({super.key});
 
   @override
-  State<UsersSuperadminPage> createState() => _UsersSuperadminPageState();
+  State<CreateUserSuperadminPage> createState() => _CreateUserSuperadminPageState();
 }
 
-class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
+class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();

@@ -6,5 +6,6 @@ class Routes {
   static const superAdminNegociosCrear = "/superadmin/negocios/crear";
   static const superAdminHomeUsers = "/superadmin/users";
   static const superAdminHomeUserConfirm = "/superadmin/users/confirm";
+  static const superAdminHomeUserCrear = "/superadmin/users/crear";
   static const adminHome = "/admin";
 }

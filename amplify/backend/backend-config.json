@@ -9,6 +9,14 @@
           ],
           "category": "function",
           "resourceName": "appfacturacion4a4aefb5"
+        },
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "getuserapp"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -89,6 +97,11 @@
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    },
+    "getuserapp": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
     }
   },
   "parameters": {
@@ -129,6 +142,22 @@
         {
           "category": "function",
           "resourceName": "appfacturacion4a4aefb5"
+        }
+      ]
+    },
+    "AMPLIFY_function_getuserapp_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "getuserapp"
+        }
+      ]
+    },
+    "AMPLIFY_function_getuserapp_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "getuserapp"
         }
       ]
     }

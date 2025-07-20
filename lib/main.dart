@@ -4,6 +4,7 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/page/admin/negocio/create_bussines_superadmin_page.dart';
 import 'package:app_facturacion/page/admin/negocio/negocios_superadmin_page.dart';
 import 'package:app_facturacion/page/admin/user/create_user_superadmin_page.dart';
+import 'package:app_facturacion/page/admin/user/user_list_superadmin_page.dart';
 import 'package:app_facturacion/page/admin/user/user_superadmin_confirm_page.dart';
 import 'package:app_facturacion/page/admin_page.dart';
 import 'package:app_facturacion/page/auth/new_password_page.dart';
@@ -59,7 +60,8 @@ class _MyAppState extends State<MyApp> {
         Routes.loginPageWithNewPassoword: (context) =>
             const NewPasswordScreen(),
         Routes.superAdminHome: (context) => const SuperAdminPage(),
-        Routes.superAdminHomeUsers: (context) => const UsersSuperadminPage(),
+        Routes.superAdminHomeUsers: (context) => const UserListSuperadminPage(),
+        Routes.superAdminHomeUserCrear: (context) => const CreateUserSuperadminPage(),
         Routes.superAdminHomeUserConfirm: (context) =>
             const UserSuperadminConfirmPage(),
         Routes.adminHome: (context) => const AdminPage(),

@@ -1,7 +1,7 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/page/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 class SuperAdminPage extends StatelessWidget {
   const SuperAdminPage({super.key});
 
@@ -36,14 +36,16 @@ class SuperAdminPage extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    await Amplify.Auth.signOut();
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (_) => const LoginScreen()),
                     );
                   },
-                  child: Text("Cerrar sesión", style: GoogleFonts.poppins(
-                    color: Colors.redAccent
-                  ),),
+                  child: Text(
+                    "Cerrar sesión",
+                    style: GoogleFonts.poppins(color: Colors.redAccent),
+                  ),
                 ),
               ],
             ),
@@ -63,11 +65,6 @@ class SuperAdminPage extends StatelessWidget {
               spacing: 12,
               runSpacing: 12,
               children: [
-                _buildOptionCard(
-                  icon: Icons.store,
-                  title: 'Tiendas',
-                  onTap: () {},
-                ),
                 _buildOptionCard(
                   icon: Icons.location_city,
                   title: 'Locales',
@@ -104,7 +101,9 @@ class SuperAdminPage extends StatelessWidget {
                 _buildOptionCard(
                   icon: Icons.people,
                   title: 'Usuarios',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pushNamed(context, "/superadmin/users");
+                  },
                 ),
                 _buildOptionCard(
                   icon: Icons.lock_person,
@@ -162,6 +161,7 @@ class SuperAdminPage extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         width: 160,
+        height: 160,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,

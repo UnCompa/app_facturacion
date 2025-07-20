@@ -1,7 +1,7 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/page/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 class AdminPage extends StatelessWidget {
   const AdminPage({super.key});
 
@@ -25,7 +25,8 @@ class AdminPage extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    await Amplify.Auth.signOut();
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (_) => const LoginScreen()),
                     );
@@ -43,16 +44,19 @@ class AdminPage extends StatelessWidget {
               title: 'Gestionar inventario',
               onTap: () {},
             ),
+            Text("Categoria, productos"),
             _buildOptionTile(
               icon: Icons.group,
               title: 'Gestionar Vendedores',
               onTap: () {},
             ),
+            Text("Usuario: pepe, password, 123456, control de ventas que cada uno haga. subir comprobante Deuna, Transferencia etc."),
             _buildOptionTile(
               icon: Icons.inventory_outlined,
               title: 'Facturacion',
               onTap: () {},
             ),
+            Text("Hola :D"),
             _buildOptionTile(
               icon: Icons.settings,
               title: 'Configuraciones',

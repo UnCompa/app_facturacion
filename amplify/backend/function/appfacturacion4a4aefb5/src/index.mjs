@@ -1,7 +1,7 @@
 import {
-  CognitoIdentityProviderClient,
   AdminAddUserToGroupCommand,
-  AdminConfirmSignUpCommand
+  AdminConfirmSignUpCommand,
+  CognitoIdentityProviderClient
 } from "@aws-sdk/client-cognito-identity-provider";
 
 const client = new CognitoIdentityProviderClient({});

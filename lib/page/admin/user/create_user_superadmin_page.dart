@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class UsersSuperadminPage extends StatefulWidget {
   const UsersSuperadminPage({super.key});
@@ -19,7 +23,7 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
-  final List<String> _roles = ['superadmin', 'admin', 'seller'];
+  final List<String> _roles = ['superadmin', 'admin', 'vendedor'];
 
   @override
   void dispose() {
@@ -47,13 +51,17 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
           AuthUserAttributeKey.phoneNumber: phoneNumber,
         CognitoUserAttributeKey.custom('role'): role,
       };
-
+      print("REGISTRANDO USUARIO");
       final result = await Amplify.Auth.signUp(
         username: email,
         password: password,
         options: SignUpOptions(userAttributes: userAttributes),
       );
-
+      print("ASIGNANDO ROL");
+      print(role);
+      print(email);
+      await assignUserToGroup(email, role);
+      print("MANEJANDO RESULTADO");
       await _handleSignUpResult(result);
     } on AuthException catch (e) {
       safePrint('Error signing up user: ${e.message}');
@@ -71,6 +79,50 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<JsonWebToken?> getIdTokenSimple() async {
+    try {
+      final session = await Amplify.Auth.fetchAuthSession();
+
+      if (session.isSignedIn) {
+        final cognitoSession = session as CognitoAuthSession;
+        final tokens = cognitoSession.userPoolTokensResult.value;
+        return tokens.idToken;
+      }
+      return null;
+    } catch (e) {
+      print('Error al obtener ID token: $e');
+      return null;
+    }
+  }
+
+  Future<void> assignUserToGroup(String email, String group) async {
+    var idToken = await getIdTokenSimple();
+
+    if (idToken == null) {
+      print('No se pudo obtener el token');
+      return;
+    }
+
+    final uri = Uri.parse(
+      "https://hwmfv41ks4.execute-api.us-east-1.amazonaws.com/dev/admin-assign",
+    );
+    print(idToken.raw);
+    final response = await http.post(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': idToken.raw,
+      }, // El valor crudo del token},
+      body: jsonEncode({"username": email, "groupName": group}),
+    );
+
+    if (response.statusCode == 200) {
+      print("Usuario asignado correctamente");
+    } else {
+      print("Error al asignar usuario: ${response.body}");
     }
   }
 
@@ -144,26 +196,6 @@ class _UsersSuperadminPageState extends State<UsersSuperadminPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-
-              TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre de Usuario *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'El nombre de usuario es requerido';
-                  }
-                  if (value.trim().length < 3) {
-                    return 'Mínimo 3 caracteres';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,

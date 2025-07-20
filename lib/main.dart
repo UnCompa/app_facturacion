@@ -2,7 +2,8 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/page/admin/user/create_user_superadmin_page.dart';
 import 'package:app_facturacion/page/admin/user/user_superadmin_confirm_page.dart';
-import 'package:app_facturacion/page/auth_check_screen.dart';
+import 'package:app_facturacion/page/admin_page.dart';
+import 'package:app_facturacion/page/auth/new_password_page.dart';
 import 'package:app_facturacion/page/login_page.dart';
 import 'package:app_facturacion/page/super_admin_page.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +32,6 @@ class _MyAppState extends State<MyApp> {
       final auth = AmplifyAuthCognito();
       await Amplify.addPlugin(auth);
 
-      // call Amplify.configure to use the initialized categories in your app
       await Amplify.configure(amplifyconfig);
     } on Exception catch (e) {
       safePrint('An error occurred configuring Amplify: $e');
@@ -46,12 +46,15 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
       ),
-      home: const AuthCheckScreen(),
+      home: const LoginScreen(),
       routes: {
         Routes.loginPage: (context) => const LoginScreen(),
+        Routes.loginPageWithNewPassoword: (context) => const NewPasswordScreen(),
         Routes.superAdminHome: (context) => const SuperAdminPage(),
         Routes.superAdminHomeUsers: (context) => const UsersSuperadminPage(),
-        Routes.superAdminHomeUserConfirm: (context) => const UserSuperadminConfirmPage(),
+        Routes.superAdminHomeUserConfirm: (context) =>
+            const UserSuperadminConfirmPage(),
+        Routes.adminHome: (context) => const AdminPage(),
       },
     );
   }

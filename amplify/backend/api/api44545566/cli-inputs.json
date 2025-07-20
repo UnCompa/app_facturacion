@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/admin-assign": {
+      "name": "/admin-assign",
+      "lambdaFunction": "appfacturacion4a4aefb5",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

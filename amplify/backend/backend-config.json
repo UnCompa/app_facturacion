@@ -1,5 +1,19 @@
 {
   "api": {
+    "api44545566": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "appfacturacion4a4aefb5"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
     "appfacturacion": {
       "dependsOn": [],
       "output": {
@@ -18,7 +32,7 @@
     }
   },
   "auth": {
-    "appfacturacion9cfba22a": {
+    "appfacturacion92014350": {
       "customAuth": false,
       "dependsOn": [],
       "frontendAuthConfig": {
@@ -43,6 +57,72 @@
       },
       "providerPlugin": "awscloudformation",
       "service": "Cognito"
+    },
+    "userPoolGroups": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId",
+            "AppClientIDWeb",
+            "AppClientID",
+            "IdentityPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "appfacturacion92014350"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito-UserPool-Groups"
+    }
+  },
+  "function": {
+    "appfacturacion4a4aefb5": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_appfacturacion4a4aefb5_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "appfacturacion4a4aefb5"
+        }
+      ]
+    },
+    "AMPLIFY_function_appfacturacion4a4aefb5_env": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "appfacturacion4a4aefb5"
+        }
+      ]
+    },
+    "AMPLIFY_function_appfacturacion4a4aefb5_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "appfacturacion4a4aefb5"
+        }
+      ]
+    },
+    "AMPLIFY_function_appfacturacion4a4aefb5_secretsPathAmplifyAppId": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "appfacturacion4a4aefb5"
+        }
+      ]
+    },
+    "AMPLIFY_function_appfacturacion4a4aefb5_userPoolId": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "appfacturacion4a4aefb5"
+        }
+      ]
     }
   }
 }

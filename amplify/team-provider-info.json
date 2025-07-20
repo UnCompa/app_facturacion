@@ -9,11 +9,25 @@
       "UnauthRoleName": "amplify-appfacturacion-dev-92e69-unauthRole",
       "StackName": "amplify-appfacturacion-dev-92e69",
       "StackId": "arn:aws:cloudformation:us-east-1:029866518064:stack/amplify-appfacturacion-dev-92e69/28be8fa0-657d-11f0-91c6-0e5e78f49c3b",
-      "AmplifyAppId": "d36lnj4nlnwrhp"
+      "AmplifyAppId": "d36lnj4nlnwrhp",
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-appfacturacion-dev-92e69-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
     },
     "categories": {
       "auth": {
-        "appfacturacion9cfba22a": {}
+        "appfacturacion92014350": {},
+        "userPoolGroups": {}
+      },
+      "function": {
+        "appfacturacion4a4aefb5": {
+          "userPoolId": "us-east-1_Ecc3ubodU",
+          "env": "dev",
+          "secretsPathAmplifyAppId": "d36lnj4nlnwrhp",
+          "deploymentBucketName": "amplify-appfacturacion-dev-92e69-deployment",
+          "s3Key": "amplify-builds/appfacturacion4a4aefb5-596d5731416a69785a7a-build.zip"
+        }
+      },
+      "api": {
+        "api44545566": {}
       }
     }
   }

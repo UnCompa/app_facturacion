@@ -53,7 +53,7 @@ class SuperAdminPage extends StatelessWidget {
 
             /// Gestión de Compradores
             Text(
-              'Gestión de Compradores',
+              'Gestión de Negocios',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -67,12 +67,7 @@ class SuperAdminPage extends StatelessWidget {
               children: [
                 _buildOptionCard(
                   icon: Icons.location_city,
-                  title: 'Locales',
-                  onTap: () {},
-                ),
-                _buildOptionCard(
-                  icon: Icons.business,
-                  title: 'Empresas',
+                  title: 'Negocios',
                   onTap: () {},
                 ),
               ],
@@ -94,28 +89,18 @@ class SuperAdminPage extends StatelessWidget {
               runSpacing: 12,
               children: [
                 _buildOptionCard(
-                  icon: Icons.admin_panel_settings,
-                  title: 'Administradores',
-                  onTap: () {},
-                ),
-                _buildOptionCard(
                   icon: Icons.people,
                   title: 'Usuarios',
                   onTap: () {
                     Navigator.pushNamed(context, "/superadmin/users");
                   },
                 ),
-                _buildOptionCard(
-                  icon: Icons.lock_person,
-                  title: 'Control de Accesos',
-                  onTap: () {},
-                ),
               ],
             ),
             const SizedBox(height: 24),
 
             /// Configuración del Sistema
-            Text(
+            /* Text(
               'Configuración del Sistema',
               style: GoogleFonts.poppins(
                 fontSize: 18,
@@ -144,7 +129,7 @@ class SuperAdminPage extends StatelessWidget {
                   onTap: () {},
                 ),
               ],
-            ),
+            ), */
           ],
         ),
       ),
@@ -160,8 +145,9 @@ class SuperAdminPage extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        width: 160,
-        height: 160,
+        width: 120,
+        height: 120,
+        alignment: Alignment.center,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,

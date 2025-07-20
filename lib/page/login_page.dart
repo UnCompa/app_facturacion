@@ -1,10 +1,15 @@
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/page/admin_page.dart';
 import 'package:app_facturacion/views/login_form.dart';
 import 'package:flutter/material.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
+
+  // Variable para guardar el resultado del signIn cuando se requiere cambio de contraseña
+  static SignInResult? _pendingSignInResult;
 
   Future<void> signInUser(
     BuildContext context,
@@ -13,8 +18,6 @@ class LoginScreen extends StatelessWidget {
   ) async {
     try {
       final session = await Amplify.Auth.fetchAuthSession();
-      print(session);
-      // Si ya hay un usuario autenticado, cerramos sesión primero
       if (session.isSignedIn) {
         await Amplify.Auth.signOut();
       }
@@ -25,7 +28,8 @@ class LoginScreen extends StatelessWidget {
       );
 
       if (result.isSignedIn) {
-        await _navigateByUserRole(context);
+        //await _navigateByUserRole(context);
+        await _navigateByUserGroup(context);
       } else {
         await _handleSignInResult(context, result);
       }
@@ -39,8 +43,14 @@ class LoginScreen extends StatelessWidget {
     SignInResult result,
   ) async {
     switch (result.nextStep.signInStep) {
-      case AuthSignInStep.confirmSignInWithSmsMfaCode:
       case AuthSignInStep.confirmSignInWithNewPassword:
+        // Guardamos el resultado para usarlo en la pantalla de cambio de contraseña
+        _pendingSignInResult = result;
+        // Navegamos a la pantalla de cambio de contraseña
+        Navigator.of(context).pushReplacementNamed("/login/newpassword");
+        break;
+
+      case AuthSignInStep.confirmSignInWithSmsMfaCode:
       case AuthSignInStep.confirmSignInWithCustomChallenge:
       case AuthSignInStep.confirmSignUp:
       case AuthSignInStep.resetPassword:
@@ -61,6 +71,8 @@ class LoginScreen extends StatelessWidget {
         );
     }
   }
+
+  static SignInResult? get pendingSignInResult => _pendingSignInResult;
 
   Future<void> _navigateByUserRole(BuildContext context) async {
     try {
@@ -94,6 +106,35 @@ class LoginScreen extends StatelessWidget {
       );
     }
   }
+
+  Future<void> _navigateByUserGroup(BuildContext context) async {
+    try {
+      final authSession = await Amplify.Auth.fetchAuthSession();
+
+      if (authSession is CognitoAuthSession) {
+        final idToken = authSession.userPoolTokensResult.value.idToken;
+
+        final decodedToken = JwtDecoder.decode(idToken.raw);
+        final List<dynamic> groups = decodedToken['cognito:groups'] ?? [];
+
+        if (groups.contains('superadmin')) {
+          Navigator.of(context).pushReplacementNamed('/superadmin');
+        } else if (groups.contains('admin')) {
+          Navigator.of(context).pushReplacementNamed('/admin');
+        } else {
+          _showErrorDialog(
+            context,
+            'Grupo no autorizado: ${groups.join(", ")}',
+          );
+        }
+      } else {
+        _showErrorDialog(context, 'Sesión inválida');
+      }
+    } on AuthException catch (e) {
+      _showErrorDialog(context, 'Error al obtener el token: ${e.message}');
+    }
+  }
+
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(

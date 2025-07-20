@@ -1,10 +1,10 @@
 {
   "version": "1",
   "cognitoConfig": {
-    "identityPoolName": "appfacturacion9cfba22a_identitypool_9cfba22a",
+    "identityPoolName": "appfacturacion92014350_identitypool_92014350",
     "allowUnauthenticatedIdentities": false,
-    "resourceNameTruncated": "appfac9cfba22a",
-    "userPoolName": "appfacturacion9cfba22a_userpool_9cfba22a",
+    "resourceNameTruncated": "appfac92014350",
+    "userPoolName": "appfacturacion92014350_userpool_92014350",
     "autoVerifiedAttributes": [
       "email"
     ],
@@ -31,18 +31,36 @@
     "userpoolClientReadAttributes": [
       "email"
     ],
-    "userpoolClientLambdaRole": "appfac9cfba22a_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "appfac92014350_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "sharedId": "9cfba22a",
-    "resourceName": "appfacturacion9cfba22a",
+    "sharedId": "92014350",
+    "resourceName": "appfacturacion92014350",
     "authSelections": "identityPoolAndUserPool",
     "useDefault": "default",
     "usernameAttributes": [
       "email"
     ],
-    "userPoolGroupList": [],
+    "userPoolGroupList": [
+      "superadmin",
+      "admin",
+      "vendedor"
+    ],
     "serviceName": "Cognito",
     "usernameCaseSensitive": false,
-    "useEnabledMfas": true
+    "useEnabledMfas": true,
+    "authRoleArn": {
+      "Fn::GetAtt": [
+        "AuthRole",
+        "Arn"
+      ]
+    },
+    "unauthRoleArn": {
+      "Fn::GetAtt": [
+        "UnauthRole",
+        "Arn"
+      ]
+    },
+    "breakCircularDependency": true,
+    "dependsOn": []
   }
 }

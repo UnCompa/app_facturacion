@@ -31,7 +31,6 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
     });
 
     try {
-      final user = await Amplify.Auth.getCurrentUser();
       final attributes = await Amplify.Auth.fetchUserAttributes();
 
       for (final attribute in attributes) {

@@ -65,10 +65,10 @@ class _AdminCreateInventoryProductState
       // Cargar categorías principales (sin categoría padre)
       final request = ModelQueries.list(
         Categoria.classType,
-        where: Categoria.PARENTCATEGORIAID.eq(null),
+        //where: Categoria.PARENTCATEGORIAID.ne(null),
       );
       final response = await Amplify.API.query(request: request).response;
-
+      print(response.data?.items);
       if (response.data?.items != null) {
         setState(() {
           _categorias = response.data!.items.whereType<Categoria>().toList();
@@ -153,18 +153,18 @@ class _AdminCreateInventoryProductState
       for (int i = 0; i < _imagenesSeleccionadas.length; i++) {
         final file = _imagenesSeleccionadas[i];
         final extension = file.path.split('.').last.toLowerCase();
-        final key = 'productos/${uuid.v4()}.$extension';
+        final keyPath = 'productos/${uuid.v4()}.$extension';
 
         final uploadResult = await Amplify.Storage.uploadFile(
           localFile: AWSFile.fromPath(file.path),
-          path: key,
+          path: StoragePath.fromString(keyPath),
           options: const StorageUploadFileOptions(
             metadata: {'tipo': 'producto_imagen'},
           ),
         ).result;
 
-        uploadedKeys.add(uploadResult.uploadedItem.key);
-        safePrint('Imagen subida: ${uploadResult.uploadedItem.key}');
+        uploadedKeys.add(uploadResult.uploadedItem.path);
+        safePrint('Imagen subida: ${uploadResult.uploadedItem.path}');
       }
     } catch (e) {
       safePrint('Error subiendo imágenes: $e');

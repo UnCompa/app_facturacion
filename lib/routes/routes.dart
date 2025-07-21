@@ -10,4 +10,9 @@ class Routes {
   static const adminHome = "/admin";
   static const adminViewInventory = "/admin/inventory";
   static const adminViewInventoryCrear = "/admin/inventory/crear";
+  static const adminViewCategorias = "/admin/categories";
+  static const adminViewCategoriasCrear = "/admin/categories/crear";
+  static const adminViewUsers = "/admin/users";
+  static const adminViewUsersCrear = "/admin/users/crear";
+  static const vendedorHome = "/vendedor";
 }

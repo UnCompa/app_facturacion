@@ -5,20 +5,18 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/mixin/session_control_mixin.dart';
 import 'package:app_facturacion/models/ModelProvider.dart';
 import 'package:app_facturacion/page/auth/login_page.dart';
-import 'package:app_facturacion/routes/routes.dart';
 import 'package:app_facturacion/services/device_session_service.dart';
-import 'package:app_facturacion/views/responsive_two_column.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class AdminPage extends StatefulWidget {
-  const AdminPage({super.key});
+class SellerPage extends StatefulWidget {
+  const SellerPage({super.key});
 
   @override
-  State<AdminPage> createState() => _AdminPageState();
+  State<SellerPage> createState() => _SellerPageState();
 }
 
-class _AdminPageState extends State<AdminPage>
+class _SellerPageState extends State<SellerPage>
     with WidgetsBindingObserver, SessionControlMixin {
   String? userName;
   Negocio? negocio;
@@ -196,7 +194,7 @@ class _AdminPageState extends State<AdminPage>
           overflow: TextOverflow.ellipsis,
         ),
         centerTitle: true,
-        backgroundColor: Colors.lightBlue,
+        backgroundColor: Colors.lightGreen,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -217,36 +215,39 @@ class _AdminPageState extends State<AdminPage>
                   children: [
                     // Compact user info
                     _buildUserInfoCard(),
-                    const SizedBox(height: 4),
-                    // Compact validity and device info
-                    ResponsiveTwoColumn(
-                      first: _buildVigenciaCard(),
-                      second: _buildDevicesCard(),
-                    ),
-
                     const SizedBox(height: 6),
                     // Prominent menu options
                     Expanded(
                       child: ListView(
                         children: [
                           _buildOptionTile(
-                            icon: Icons.add_box,
-                            title: 'Gestionar inventario',
-                            subtitle: 'Categorías y productos',
+                            icon: Icons.person,
+                            title: 'Gestionar usuario',
+                            subtitle: 'Datos personales',
                             onTap: () {
-                              Navigator.of(
+                             /*  Navigator.of(
                                 context,
-                              ).pushNamed(Routes.adminViewInventory);
+                              ).pushNamed(Routes.adminViewInventory); */
                             },
                           ),
                           _buildOptionTile(
-                            icon: Icons.group,
-                            title: 'Gestionar Vendedores',
-                            subtitle: 'Control de usuarios y ventas',
+                            icon: Icons.document_scanner,
+                            title: 'Venta por Factura',
+                            subtitle: 'Seguimiento de ventas por factura',
                             onTap: () {
-                              Navigator.of(
+                             /*  Navigator.of(
                                 context,
-                              ).pushNamed(Routes.adminViewUsers);
+                              ).pushNamed(Routes.adminViewUsers); */
+                            },
+                          ),
+                          _buildOptionTile(
+                            icon: Icons.fast_forward,
+                            title: 'Venta Rapida',
+                            subtitle: 'Selecciona los productos, y listo!',
+                            onTap: () {
+                             /*  Navigator.of(
+                                context,
+                              ).pushNamed(Routes.adminViewUsers); */
                             },
                           ),
                           /* _buildOptionTile(

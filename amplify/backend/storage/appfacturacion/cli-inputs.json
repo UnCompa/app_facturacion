@@ -1,0 +1,21 @@
+{
+  "resourceName": "appfacturacion",
+  "policyUUID": "a3f41caa",
+  "bucketName": "appfacturacione396eedbe6784e6184ba1050ec18e315",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "groupAccess": {
+    "admin": [
+      "CREATE_AND_UPDATE",
+      "READ",
+      "DELETE"
+    ]
+  }
+}

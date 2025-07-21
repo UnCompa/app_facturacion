@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:app_facturacion/routes/routes.dart';
+import 'package:app_facturacion/services/negocio_service.dart';
 import 'package:app_facturacion/utils/get_token.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -48,14 +49,14 @@ class UsersResponse {
   }
 }
 
-class UserListSuperadminPage extends StatefulWidget {
-  const UserListSuperadminPage({super.key});
+class UserListAdminPage extends StatefulWidget {
+  const UserListAdminPage({super.key});
 
   @override
-  State<UserListSuperadminPage> createState() => _UserListSuperadminPageState();
+  State<UserListAdminPage> createState() => _UserListAdminPageState();
 }
 
-class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
+class _UserListAdminPageState extends State<UserListAdminPage> {
   List<User> users = [];
   bool isLoading = true;
   String? error;
@@ -68,10 +69,13 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
 
   Future<void> fetchUsers() async {
     try {
+
       setState(() {
         isLoading = true;
         error = null;
       });
+      final info = await NegocioService.getCurrentUserInfo();
+      final negocioId = info.negocioId;
       var token = await GetToken.getIdTokenSimple();
       if (token == null) {
         print('No se pudo obtener el token');
@@ -79,7 +83,7 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
       }
       final response = await http.get(
         Uri.parse(
-          'https://hwmfv41ks4.execute-api.us-east-1.amazonaws.com/dev/users',
+          'https://hwmfv41ks4.execute-api.us-east-1.amazonaws.com/dev/users?negocioId=$negocioId&groupName=vendedor',
         ),
         headers: {
           'Content-Type': 'application/json',
@@ -132,10 +136,10 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text(
-          'Gestión de Usuarios',
+          'Gestión de vendedores',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -146,11 +150,13 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.of(context).pushNamed(Routes.superAdminHomeUserCrear);
+          Navigator.of(context).pushNamed(Routes.adminViewUsersCrear);
         },
-        child: Icon(Icons.add),
+        label: Text("Agregar vendedor"),
+        icon: Icon(Icons.add),
+        
       ),
       body: Column(
         children: [
@@ -159,7 +165,7 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: Colors.indigo,
+              color: Colors.blue,
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),

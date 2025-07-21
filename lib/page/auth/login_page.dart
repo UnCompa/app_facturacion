@@ -1,6 +1,8 @@
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/page/admin/admin_page.dart';
+import 'package:app_facturacion/page/auth/reset_password_page.dart';
+import 'package:app_facturacion/page/vendedor/seller_page.dart';
 import 'package:app_facturacion/views/login_form.dart';
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -31,7 +33,7 @@ class LoginScreen extends StatelessWidget {
         //await _navigateByUserRole(context);
         await _navigateByUserGroup(context);
       } else {
-        await _handleSignInResult(context, result);
+        await _handleSignInResult(context, result, username);
       }
     } on AuthException catch (e) {
       _showErrorDialog(context, 'Error al iniciar sesión: ${e.message}');
@@ -41,6 +43,7 @@ class LoginScreen extends StatelessWidget {
   Future<void> _handleSignInResult(
     BuildContext context,
     SignInResult result,
+    String username,
   ) async {
     switch (result.nextStep.signInStep) {
       case AuthSignInStep.confirmSignInWithNewPassword:
@@ -54,9 +57,10 @@ class LoginScreen extends StatelessWidget {
       case AuthSignInStep.confirmSignInWithCustomChallenge:
       case AuthSignInStep.confirmSignUp:
       case AuthSignInStep.resetPassword:
-        _showErrorDialog(
-          context,
-          'Se requiere acción adicional: ${result.nextStep.signInStep.name}',
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ResetPasswordPage(username: username),
+          ),
         );
         break;
 
@@ -86,7 +90,8 @@ class LoginScreen extends StatelessWidget {
       );
 
       final role = roleAttr.value.toLowerCase();
-
+      print("ROL QUE INGRESA");
+      print(role);
       switch (role) {
         case 'superadmin':
           Navigator.of(context).pushReplacementNamed('/superadmin');
@@ -94,6 +99,11 @@ class LoginScreen extends StatelessWidget {
         case 'admin':
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const AdminPage()),
+          );
+          break;
+        case 'vendedor':
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const SellerPage()),
           );
           break;
         default:
@@ -121,6 +131,8 @@ class LoginScreen extends StatelessWidget {
           Navigator.of(context).pushReplacementNamed('/superadmin');
         } else if (groups.contains('admin')) {
           Navigator.of(context).pushReplacementNamed('/admin');
+        } else if (groups.contains('vendedor')) {
+          Navigator.of(context).pushReplacementNamed('/vendedor');
         } else {
           _showErrorDialog(
             context,

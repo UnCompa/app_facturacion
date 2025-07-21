@@ -1,9 +1,12 @@
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:app_facturacion/page/admin/admin_page.dart';
-import 'package:app_facturacion/page/admin/inventory/admin_create_inventory_product.dart';
+import 'package:app_facturacion/page/admin/categories/admin_categories_list_page.dart';
 import 'package:app_facturacion/page/admin/inventory/admin_view_inventory_screen.dart';
+import 'package:app_facturacion/page/admin/sellers/create_user_admin_page.dart';
+import 'package:app_facturacion/page/admin/sellers/user_list_admin_page.dart';
 import 'package:app_facturacion/page/auth/auth_check_screen.dart';
 import 'package:app_facturacion/page/auth/login_page.dart';
 import 'package:app_facturacion/page/auth/new_password_page.dart';
@@ -13,6 +16,7 @@ import 'package:app_facturacion/page/superadmin/super_admin_page.dart';
 import 'package:app_facturacion/page/superadmin/user/create_user_superadmin_page.dart';
 import 'package:app_facturacion/page/superadmin/user/user_list_superadmin_page.dart';
 import 'package:app_facturacion/page/superadmin/user/user_superadmin_confirm_page.dart';
+import 'package:app_facturacion/page/vendedor/seller_page.dart';
 import 'package:flutter/material.dart';
 
 import './routes/routes.dart';
@@ -42,9 +46,9 @@ class _MyAppState extends State<MyApp> {
       final api = AmplifyAPI(
         options: APIPluginOptions(modelProvider: ModelProvider.instance),
       );
-      await Amplify.addPlugin(api);
       final auth = AmplifyAuthCognito();
-      await Amplify.addPlugin(auth);
+      final storage = AmplifyStorageS3();
+      await Amplify.addPlugins([auth, api, storage]);
       await Amplify.configure(amplifyconfig);
       setState(() {
         _isAmplifyConfigured = true;
@@ -78,7 +82,12 @@ class _MyAppState extends State<MyApp> {
         Routes.superAdminNegocios: (context) => const NegociosSuperadminPage(),
         Routes.superAdminNegociosCrear: (context) => const CrearNegocioScreen(),
         Routes.adminHome: (context) => const AdminPage(),
-        Routes.adminViewInventory: (context) => const AdminViewInventoryScreen(),
+        Routes.adminViewInventory: (context) =>
+            const AdminViewInventoryScreen(),
+        Routes.adminViewCategorias: (context) => const AdminCategoriesListPage(),
+        Routes.adminViewUsers: (context) => const UserListAdminPage(),
+        Routes.adminViewUsersCrear: (context) => const CreateUserAdminPage(),
+        Routes.vendedorHome: (context) => const SellerPage(),
       },
     );
   }

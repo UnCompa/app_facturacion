@@ -1,23 +1,33 @@
-// index.js
 import {
-    CognitoIdentityProviderClient,
-    ListUsersCommand,
-    ListUsersInGroupCommand,
+  CognitoIdentityProviderClient,
+  ListUsersCommand,
+  ListUsersInGroupCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 const cognito = new CognitoIdentityProviderClient({});
-
 const USER_POOL_ID = process.env.USER_POOL_ID;
 
 export const handler = async (event) => {
-  const groupName = event.groupName || null;
+  // Extract query parameters from API Gateway event
+  const { groupName, negocioId } = event.queryStringParameters || {};
 
   try {
+    // Validate input
+    if (!USER_POOL_ID) {
+      throw new Error('USER_POOL_ID environment variable is missing');
+    }
+    if (groupName && typeof groupName !== 'string') {
+      throw new Error('Invalid groupName provided');
+    }
+    if (negocioId && typeof negocioId !== 'string') {
+      throw new Error('Invalid negocioId provided');
+    }
+
     let users = [];
     let nextToken = undefined;
 
     if (groupName) {
-      // Listar usuarios en un grupo
+      // List users in a group
       do {
         const command = new ListUsersInGroupCommand({
           UserPoolId: USER_POOL_ID,
@@ -27,11 +37,20 @@ export const handler = async (event) => {
         });
 
         const response = await cognito.send(command);
-        users.push(...response.Users);
+        let groupUsers = response.Users || [];
+        
+        // Apply negocioId filter if provided
+        if (negocioId) {
+          groupUsers = groupUsers.filter(user =>
+            user.Attributes?.find((a) => a.Name === 'custom:negocioid')?.Value === negocioId
+          );
+        }
+        
+        users.push(...groupUsers);
         nextToken = response.NextToken;
       } while (nextToken);
-    } else {
-      // Listar todos los usuarios
+    } else if (negocioId) {
+      // List users filtered by negocioId
       do {
         const command = new ListUsersCommand({
           UserPoolId: USER_POOL_ID,
@@ -40,29 +59,57 @@ export const handler = async (event) => {
         });
 
         const response = await cognito.send(command);
-        users.push(...response.Users);
+        let fetchedUsers = response.Users || [];
+        
+        // Filter users by negocioId in-memory
+        fetchedUsers = fetchedUsers.filter(user =>
+          user.Attributes?.find((a) => a.Name === 'custom:negocioid')?.Value === negocioId
+        );
+        
+        users.push(...fetchedUsers);
+        nextToken = response.PaginationToken;
+      } while (nextToken);
+    } else {
+      // List all users
+      do {
+        const command = new ListUsersCommand({
+          UserPoolId: USER_POOL_ID,
+          Limit: 60,
+          PaginationToken: nextToken,
+        });
+
+        const response = await cognito.send(command);
+        users.push(...(response.Users || []));
         nextToken = response.PaginationToken;
       } while (nextToken);
     }
 
     const formattedUsers = users.map((user) => ({
-      username: user.Username,
-      enabled: user.Enabled,
-      status: user.UserStatus,
-      createdAt: user.UserCreateDate,
-      email: user.Attributes?.find((a) => a.Name === "email")?.Value,
-      negocioId: user.Attributes?.find((a) => a.Name === "custom:negocio_id")?.Value,
+      username: user.Username || '',
+      enabled: user.Enabled ?? false,
+      status: user.UserStatus || 'UNKNOWN',
+      createdAt: user.UserCreateDate || null,
+      email: user.Attributes?.find((a) => a.Name === 'email')?.Value || '',
+      negocioId: user.Attributes?.find((a) => a.Name === 'custom:negocioid')?.Value || null,
     }));
 
     return {
       statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
       body: JSON.stringify({ users: formattedUsers }),
     };
   } catch (err) {
-    console.error("Error listing users:", err);
+    console.error('Error listing users:', JSON.stringify(err, null, 2));
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: JSON.stringify({ error: err.message, details: err.name }),
     };
   }
 };

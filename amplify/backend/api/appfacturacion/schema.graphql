@@ -31,3 +31,32 @@ type Producto
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
+
+type SesionDispositivo
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["superadmin"] }
+      {
+        allow: groups
+        groups: ["admin"]
+        operations: [read, update, create, delete]
+      }
+      {
+        allow: groups
+        groups: ["vendedor"]
+        operations: [read, create, delete]
+      }
+    ]
+  ) {
+  id: ID!
+  negocioId: ID! @index(name: "byNegocio")
+  userId: String!
+  deviceId: String!
+  deviceType: String! # "PC" o "MOVIL"
+  deviceInfo: String
+  isActive: Boolean!
+  lastActivity: AWSDateTime!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}

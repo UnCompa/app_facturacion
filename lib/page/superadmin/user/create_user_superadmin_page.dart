@@ -14,7 +14,8 @@ class CreateUserSuperadminPage extends StatefulWidget {
   const CreateUserSuperadminPage({super.key});
 
   @override
-  State<CreateUserSuperadminPage> createState() => _CreateUserSuperadminPageState();
+  State<CreateUserSuperadminPage> createState() =>
+      _CreateUserSuperadminPageState();
 }
 
 class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
@@ -110,13 +111,16 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
         CognitoUserAttributeKey.custom('role'): role,
         if (negocioId != null && negocioId.isNotEmpty)
           CognitoUserAttributeKey.custom('negocioid'): negocioId,
+        if (username.isNotEmpty)
+          CognitoUserAttributeKey.name: username,
+          CognitoUserAttributeKey.nickname: username,
       };
 
       print("REGISTRANDO USUARIO");
       final result = await Amplify.Auth.signUp(
         username: email,
         password: password,
-        options: SignUpOptions(userAttributes: userAttributes),
+        options: SignUpOptions(userAttributes: userAttributes,),
       );
 
       print("ASIGNANDO ROL");
@@ -288,9 +292,23 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 24), // Email
+              TextFormField(
+                controller: _usernameController,
+                keyboardType: TextInputType.text,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre *',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'El nombre es requerido';
+                  }
+                  return null;
+                },
+              ),
               const SizedBox(height: 24),
-
-              // Email
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,

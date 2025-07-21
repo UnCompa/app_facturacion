@@ -22,15 +22,17 @@
 import 'package:amplify_core/amplify_core.dart' as amplify_core;
 import 'Negocio.dart';
 import 'Producto.dart';
+import 'SesionDispositivo.dart';
 
 export 'Negocio.dart';
 export 'Producto.dart';
+export 'SesionDispositivo.dart';
 
 class ModelProvider implements amplify_core.ModelProviderInterface {
   @override
-  String version = "7d891b6457d8189b283c51c9d79477b7";
+  String version = "98ca65e237811514b9acbd7c606f60cf";
   @override
-  List<amplify_core.ModelSchema> modelSchemas = [Negocio.schema, Producto.schema];
+  List<amplify_core.ModelSchema> modelSchemas = [Negocio.schema, Producto.schema, SesionDispositivo.schema];
   @override
   List<amplify_core.ModelSchema> customTypeSchemas = [];
   static final ModelProvider _instance = ModelProvider();
@@ -43,6 +45,8 @@ class ModelProvider implements amplify_core.ModelProviderInterface {
         return Negocio.classType;
       case "Producto":
         return Producto.classType;
+      case "SesionDispositivo":
+        return SesionDispositivo.classType;
       default:
         throw Exception("Failed to find model in model provider for model name: " + modelName);
     }

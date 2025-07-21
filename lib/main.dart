@@ -1,11 +1,11 @@
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:app_facturacion/page/admin/negocio/create_bussines_superadmin_page.dart';
-import 'package:app_facturacion/page/admin/negocio/negocios_superadmin_page.dart';
-import 'package:app_facturacion/page/admin/user/create_user_superadmin_page.dart';
-import 'package:app_facturacion/page/admin/user/user_list_superadmin_page.dart';
-import 'package:app_facturacion/page/admin/user/user_superadmin_confirm_page.dart';
+import 'package:app_facturacion/page/superadmin/negocio/create_bussines_superadmin_page.dart';
+import 'package:app_facturacion/page/superadmin/negocio/negocios_superadmin_page.dart';
+import 'package:app_facturacion/page/superadmin/user/create_user_superadmin_page.dart';
+import 'package:app_facturacion/page/superadmin/user/user_list_superadmin_page.dart';
+import 'package:app_facturacion/page/superadmin/user/user_superadmin_confirm_page.dart';
 import 'package:app_facturacion/page/admin_page.dart';
 import 'package:app_facturacion/page/auth/new_password_page.dart';
 import 'package:app_facturacion/page/login_page.dart';

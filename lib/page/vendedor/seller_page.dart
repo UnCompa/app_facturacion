@@ -5,6 +5,7 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/mixin/session_control_mixin.dart';
 import 'package:app_facturacion/models/ModelProvider.dart';
 import 'package:app_facturacion/page/auth/login_page.dart';
+import 'package:app_facturacion/page/vendedor/user/edit_seller_user_page.dart';
 import 'package:app_facturacion/services/device_session_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -180,8 +181,8 @@ class _SellerPageState extends State<SellerPage>
       appBar: AppBar(
         title: Text(
           negocio != null
-              ? 'Panel de Administración\n${negocio!.nombre}'
-              : 'Panel de Administración',
+              ? 'Panel de vendedor\n${negocio!.nombre}'
+              : 'Panel de vendedor',
           style: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 18,
@@ -225,9 +226,11 @@ class _SellerPageState extends State<SellerPage>
                             title: 'Gestionar usuario',
                             subtitle: 'Datos personales',
                             onTap: () {
-                             /*  Navigator.of(
-                                context,
-                              ).pushNamed(Routes.adminViewInventory); */
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => EditSellerUserPage(),
+                                ),
+                              );
                             },
                           ),
                           _buildOptionTile(
@@ -235,7 +238,7 @@ class _SellerPageState extends State<SellerPage>
                             title: 'Venta por Factura',
                             subtitle: 'Seguimiento de ventas por factura',
                             onTap: () {
-                             /*  Navigator.of(
+                              /*  Navigator.of(
                                 context,
                               ).pushNamed(Routes.adminViewUsers); */
                             },
@@ -245,7 +248,7 @@ class _SellerPageState extends State<SellerPage>
                             title: 'Venta Rapida',
                             subtitle: 'Selecciona los productos, y listo!',
                             onTap: () {
-                             /*  Navigator.of(
+                              /*  Navigator.of(
                                 context,
                               ).pushNamed(Routes.adminViewUsers); */
                             },

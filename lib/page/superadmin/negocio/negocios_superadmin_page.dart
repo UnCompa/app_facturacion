@@ -1,6 +1,7 @@
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/models/Negocio.dart';
+import 'package:app_facturacion/page/superadmin/negocio/edit_bussines_superadmin_page.dart';
 import 'package:app_facturacion/routes/routes.dart';
 import 'package:flutter/material.dart';
 
@@ -193,7 +194,11 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
                 onSelected: (value) {
                   switch (value) {
                     case 'editar':
-                      // Navegar a página de edición
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => EditBussinesSuperadminPage(negocio: negocio),
+                        ),
+                      );
                       break;
                     case 'eliminar':
                       _showDeleteDialog(negocio);
@@ -262,16 +267,8 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
 
   Future<void> _deleteNegocio(Negocio negocio) async {
     try {
-      // Implementar lógica de eliminación aquí
-      // const String deleteOperation = '''
-      //   mutation DeleteNegocio(\$input: DeleteNegocioInput!) {
-      //     deleteNegocio(input: \$input) {
-      //       id
-      //     }
-      //   }
-      // ''';
-
-      // Mostrar mensaje de éxito y refrescar lista
+      final request = ModelMutations.delete(negocio);
+      await Amplify.API.mutate(request: request).response;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Negocio eliminado exitosamente'),

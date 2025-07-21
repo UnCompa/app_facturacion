@@ -1,25 +1,49 @@
+import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:app_facturacion/models/Negocio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class CrearNegocioScreen extends StatefulWidget {
-  const CrearNegocioScreen({super.key});
+class EditBussinesSuperadminPage extends StatefulWidget {
+  final Negocio negocio;
+  const EditBussinesSuperadminPage({super.key, required this.negocio});
 
   @override
-  State<CrearNegocioScreen> createState() => _CrearNegocioScreenState();
+  State<EditBussinesSuperadminPage> createState() =>
+      _EditBussinesSuperadminPageState();
 }
 
-class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
+class _EditBussinesSuperadminPageState
+    extends State<EditBussinesSuperadminPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nombreController = TextEditingController();
-  final _rucController = TextEditingController();
-  final _telefonoController = TextEditingController();
-  final _durationController = TextEditingController();
-  final _movilAccessController = TextEditingController();
-  final _pcAccessController = TextEditingController();
-  final _direccionController = TextEditingController();
+  late TextEditingController _nombreController;
+  late TextEditingController _rucController;
+  late TextEditingController _telefonoController;
+  late TextEditingController _durationController;
+  late TextEditingController _movilAccessController;
+  late TextEditingController _pcAccessController;
+  late TextEditingController _direccionController;
 
   bool _isLoading = false;
+  @override
+  void initState() {
+    super.initState();
+    _nombreController = TextEditingController(text: widget.negocio.nombre);
+    _rucController = TextEditingController(text: widget.negocio.ruc);
+    _telefonoController = TextEditingController(text: widget.negocio.telefono);
+    _durationController = TextEditingController(
+      text: widget.negocio.duration.toString(),
+    );
+    _movilAccessController = TextEditingController(
+      text: widget.negocio.movilAccess.toString(),
+    );
+    _pcAccessController = TextEditingController(
+      text: widget.negocio.pcAccess.toString(),
+    );
+    _direccionController = TextEditingController(
+      text: widget.negocio.direccion.toString(),
+    );
+  }
 
   @override
   void dispose() {
@@ -33,7 +57,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
     super.dispose();
   }
 
-  Future<void> _crearNegocio() async {
+  Future<void> _editarNegocio() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -41,45 +65,18 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
     });
 
     try {
-      const graphQLDocument = '''
-        mutation CreateNegocio(\$input: CreateNegocioInput!) {
-          createNegocio(input: \$input) {
-            id
-            nombre
-            ruc
-            telefono
-            duration
-            movilAccess
-            pcAccess
-            direccion
-            createdAt
-            updatedAt
-          }
-        }
-      ''';
-
-      final variables = <String, dynamic>{
-        'input': {
-          'nombre': _nombreController.text.trim(),
-          'ruc': _rucController.text.trim(),
-          if (_telefonoController.text.isNotEmpty)
-            'telefono': _telefonoController.text.trim(),
-          if (_durationController.text.isNotEmpty)
-            'duration': int.tryParse(_durationController.text),
-          if (_movilAccessController.text.isNotEmpty)
-            'movilAccess': int.tryParse(_movilAccessController.text),
-          if (_pcAccessController.text.isNotEmpty)
-            'pcAccess': int.tryParse(_pcAccessController.text),
-          if (_direccionController.text.isNotEmpty)
-            'direccion': _direccionController.text.trim(),
-        },
-      };
-
-      final request = GraphQLRequest<String>(
-        document: graphQLDocument,
-        variables: variables,
+      final request = ModelMutations.update(
+        Negocio(
+          nombre: _nombreController.text,
+          ruc: _rucController.text,
+          direccion: _direccionController.text,
+          duration: int.parse(_durationController.text),
+          movilAccess: int.parse(_movilAccessController.text),
+          pcAccess: int.parse(_pcAccessController.text),
+          telefono: _telefonoController.text,
+          id: widget.negocio.id
+        ),
       );
-
       final response = await Amplify.API.mutate(request: request).response;
 
       if (response.hasErrors) {
@@ -175,7 +172,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Crear Negocio'),
+        title: const Text('Editar Negocio'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 2,
@@ -218,7 +215,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
                         ),
                         const SizedBox(height: 12),
                         const Text(
-                          'Nuevo Negocio',
+                          'Editar Negocio',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -345,23 +342,9 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: _isLoading ? null : _limpiarFormulario,
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(color: Colors.grey.shade400),
-                        ),
-                        child: const Text(
-                          'Limpiar',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
                       flex: 2,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : _crearNegocio,
+                        onPressed: _isLoading ? null : _editarNegocio,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Theme.of(context).primaryColor,
                           foregroundColor: Colors.white,
@@ -384,13 +367,13 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
                                   ),
                                   SizedBox(width: 12),
                                   Text(
-                                    'Creando...',
+                                    'Guardando...',
                                     style: TextStyle(fontSize: 16),
                                   ),
                                 ],
                               )
                             : const Text(
-                                'Crear Negocio',
+                                'Editar Negocio',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,

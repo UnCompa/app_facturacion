@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:amplify_storage_s3/amplify_storage_s3.dart';
+import 'package:app_facturacion/models/ModelProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
@@ -15,10 +15,12 @@ class AdminCreateInventoryProduct extends StatefulWidget {
   const AdminCreateInventoryProduct({super.key, required this.negocioID});
 
   @override
-  State<AdminCreateInventoryProduct> createState() => _AdminCreateInventoryProductState();
+  State<AdminCreateInventoryProduct> createState() =>
+      _AdminCreateInventoryProductState();
 }
 
-class _AdminCreateInventoryProductState extends State<AdminCreateInventoryProduct> {
+class _AdminCreateInventoryProductState
+    extends State<AdminCreateInventoryProduct> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _descripcionController = TextEditingController();
@@ -155,7 +157,7 @@ class _AdminCreateInventoryProductState extends State<AdminCreateInventoryProduc
 
         final uploadResult = await Amplify.Storage.uploadFile(
           localFile: AWSFile.fromPath(file.path),
-          key: key,
+          path: key,
           options: const StorageUploadFileOptions(
             metadata: {'tipo': 'producto_imagen'},
           ),
@@ -203,6 +205,10 @@ class _AdminCreateInventoryProductState extends State<AdminCreateInventoryProduc
       }
 
       // Crear instancia del producto
+      final categoria = Categoria(
+        id: _categoriaSeleccionada!.id,
+        nombre: _categoriaSeleccionada!.nombre,
+      );
       final producto = Producto(
         nombre: _nombreController.text.trim(),
         descripcion: _descripcionController.text.trim().isEmpty
@@ -211,7 +217,7 @@ class _AdminCreateInventoryProductState extends State<AdminCreateInventoryProduc
         precio: double.parse(_precioController.text),
         stock: int.parse(_stockController.text),
         negocioID: widget.negocioID,
-        categoriaID: _categoriaSeleccionada!.id,
+        categoria: categoria,
         estado: _estadoSeleccionado,
         productoImages: imageKeys.isEmpty ? null : imageKeys,
       );

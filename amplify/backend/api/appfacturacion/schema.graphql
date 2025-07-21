@@ -21,14 +21,7 @@ type Negocio
 
 type Producto
   @model
-  @auth(
-    rules: [
-      {
-        allow: groups
-        groups: ["admin", "vendedor"]
-      }
-    ]
-  ) {
+  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]) {
   id: ID!
   nombre: String!
   descripcion: String
@@ -45,14 +38,7 @@ type Producto
 
 type Categoria
   @model
-  @auth(
-    rules: [
-      {
-        allow: groups
-        groups: ["admin", "vendedor"]
-      }
-    ]
-  ) {
+  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]) {
   id: ID!
   nombre: String!
   parentCategoriaID: ID @index(name: "byParentCategoria") # Para navegar hacia la categoría padre

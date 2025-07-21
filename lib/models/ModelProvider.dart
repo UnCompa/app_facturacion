@@ -20,19 +20,21 @@
 // ignore_for_file: public_member_api_docs, annotate_overrides, dead_code, dead_codepublic_member_api_docs, depend_on_referenced_packages, file_names, library_private_types_in_public_api, no_leading_underscores_for_library_prefixes, no_leading_underscores_for_local_identifiers, non_constant_identifier_names, null_check_on_nullable_type_parameter, override_on_non_overriding_member, prefer_adjacent_string_concatenation, prefer_const_constructors, prefer_if_null_operators, prefer_interpolation_to_compose_strings, slash_for_doc_comments, sort_child_properties_last, unnecessary_const, unnecessary_constructor_name, unnecessary_late, unnecessary_new, unnecessary_null_aware_assignments, unnecessary_nullable_for_final_variable_declarations, unnecessary_string_interpolations, use_build_context_synchronously
 
 import 'package:amplify_core/amplify_core.dart' as amplify_core;
+import 'Categoria.dart';
 import 'Negocio.dart';
 import 'Producto.dart';
 import 'SesionDispositivo.dart';
 
+export 'Categoria.dart';
 export 'Negocio.dart';
 export 'Producto.dart';
 export 'SesionDispositivo.dart';
 
 class ModelProvider implements amplify_core.ModelProviderInterface {
   @override
-  String version = "98ca65e237811514b9acbd7c606f60cf";
+  String version = "fd7bf6aca370c26ecab28655e809cdec";
   @override
-  List<amplify_core.ModelSchema> modelSchemas = [Negocio.schema, Producto.schema, SesionDispositivo.schema];
+  List<amplify_core.ModelSchema> modelSchemas = [Categoria.schema, Negocio.schema, Producto.schema, SesionDispositivo.schema];
   @override
   List<amplify_core.ModelSchema> customTypeSchemas = [];
   static final ModelProvider _instance = ModelProvider();
@@ -41,6 +43,8 @@ class ModelProvider implements amplify_core.ModelProviderInterface {
   
   amplify_core.ModelType getModelTypeByModelName(String modelName) {
     switch(modelName) {
+      case "Categoria":
+        return Categoria.classType;
       case "Negocio":
         return Negocio.classType;
       case "Producto":

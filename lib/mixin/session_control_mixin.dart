@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:app_facturacion/page/login_page.dart';
+import 'package:app_facturacion/page/auth/login_page.dart';
 import 'package:app_facturacion/services/device_session_service.dart';
 import 'package:app_facturacion/services/negocio_service.dart';
 import 'package:flutter/material.dart';

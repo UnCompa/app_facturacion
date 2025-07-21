@@ -4,8 +4,10 @@ import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/mixin/session_control_mixin.dart';
 import 'package:app_facturacion/models/ModelProvider.dart';
-import 'package:app_facturacion/page/login_page.dart';
+import 'package:app_facturacion/page/auth/login_page.dart';
+import 'package:app_facturacion/routes/routes.dart';
 import 'package:app_facturacion/services/device_session_service.dart';
+import 'package:app_facturacion/views/responsive_two_column.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -128,21 +130,27 @@ class _AdminPageState extends State<AdminPage>
 
     try {
       // Calcular vigencia
-      final now = DateTime.now();
+      final now = DateTime.now().toUtc(); // Comparación justa en UTC
+      print("NOW TIME");
+      print(now.toString());
       if (negocio!.createdAt != null && negocio!.duration != null) {
         final fechaCreacion = negocio!.createdAt!.getDateTimeInUtc();
+        print("CREATION TIME");
+        print(fechaCreacion.toString());
         fechaVencimiento = fechaCreacion.add(
           Duration(days: negocio!.duration!),
         );
-        diasRestantes = fechaVencimiento!.difference(now).inDays;
-        vigenciaValida = diasRestantes > 0;
+        print("CREATION TIME DIFERENCE");
+        print(fechaVencimiento.toString());
+        diasRestantes = (fechaVencimiento!.difference(now).inSeconds / 86400)
+            .ceil();
+        // También puedes asegurarte de que el vencimiento sea a futuro, incluyendo el día actual si quieres
+        vigenciaValida = fechaVencimiento!.isAfter(now);
       }
-
       // Obtener información de dispositivos conectados
       final deviceInfo = await DeviceSessionService.getConnectedDevicesInfo(
         negocio!.id,
       );
-
       setState(() {
         maxDispositivosMovil = negocio!.movilAccess ?? 0;
         maxDispositivosPC = negocio!.pcAccess ?? 0;
@@ -180,7 +188,21 @@ class _AdminPageState extends State<AdminPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Panel de Admin'),
+        title: Text(
+          negocio != null
+              ? 'Panel de Administración\n${negocio!.nombre}'
+              : 'Panel de Administración',
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            color: Colors.white,
+            height: 1.2,
+          ),
+          textAlign: TextAlign.center,
+          softWrap: true,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
@@ -197,22 +219,20 @@ class _AdminPageState extends State<AdminPage>
           : RefreshIndicator(
               onRefresh: _loadUserAndBusiness,
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Compact user info
                     _buildUserInfoCard(),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     // Compact validity and device info
-                    Row(
-                      children: [
-                        Expanded(child: _buildVigenciaCard()),
-                        const SizedBox(width: 8),
-                        Expanded(child: _buildDevicesCard()),
-                      ],
+                    ResponsiveTwoColumn(
+                      first: _buildVigenciaCard(),
+                      second: _buildDevicesCard(),
                     ),
-                    const SizedBox(height: 12),
+
+                    const SizedBox(height: 6),
                     // Prominent menu options
                     Expanded(
                       child: ListView(
@@ -222,7 +242,9 @@ class _AdminPageState extends State<AdminPage>
                             title: 'Gestionar inventario',
                             subtitle: 'Categorías y productos',
                             onTap: () {
-                              // Navegar a gestión de inventario
+                              Navigator.of(
+                                context,
+                              ).pushNamed(Routes.adminViewInventory);
                             },
                           ),
                           _buildOptionTile(
@@ -296,15 +318,6 @@ class _AdminPageState extends State<AdminPage>
                     ),
                   ),
                   if (negocio != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      negocio!.nombre,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.blue[700],
-                      ),
-                    ),
                     Text(
                       'RUC: ${negocio!.ruc}',
                       style: GoogleFonts.poppins(
@@ -368,84 +381,57 @@ class _AdminPageState extends State<AdminPage>
     if (negocio == null) return const SizedBox.shrink();
 
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(_getVigenciaIcon(), color: _getVigenciaColor(), size: 20),
-                const SizedBox(width: 6),
+                Icon(_getVigenciaIcon(), color: _getVigenciaColor(), size: 16),
+                const SizedBox(width: 4),
                 Text(
                   'Vigencia',
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
             if (fechaVencimiento != null) ...[
+              const SizedBox(height: 4),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Días restantes',
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      Text(
-                        '$diasRestantes',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: _getVigenciaColor(),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    '$diasRestantes días',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: _getVigenciaColor(),
+                    ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Vence el',
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      Text(
-                        '${fechaVencimiento!.day}/${fechaVencimiento!.month}/${fechaVencimiento!.year}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    '${fechaVencimiento!.day}/${fechaVencimiento!.month}/${fechaVencimiento!.year}',
+                    style: GoogleFonts.poppins(fontSize: 12),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 2),
               LinearProgressIndicator(
                 value: vigenciaValida
                     ? diasRestantes / (negocio!.duration ?? 365)
                     : 0,
-                backgroundColor: Colors.grey[300],
+                backgroundColor: Colors.grey[200],
                 valueColor: AlwaysStoppedAnimation<Color>(_getVigenciaColor()),
-                minHeight: 4,
+                minHeight: 3,
               ),
             ] else ...[
               Text(
-                'Sin información de vigencia',
+                'Sin info',
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   color: Colors.orange[700],
@@ -462,70 +448,60 @@ class _AdminPageState extends State<AdminPage>
     if (negocio == null) return const SizedBox.shrink();
 
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.devices, color: Colors.blue, size: 20),
-                const SizedBox(width: 6),
+                const Icon(Icons.devices, color: Colors.blue, size: 14),
+                const SizedBox(width: 4),
                 Text(
                   'Dispositivos',
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Row(
               children: [
-                Expanded(
-                  child: _buildDeviceInfo(
-                    'Móvil',
-                    Icons.smartphone,
-                    maxDispositivosMovil,
-                    Colors.green,
-                  ),
+                _buildDeviceInfo(
+                  'Móvil',
+                  Icons.smartphone,
+                  maxDispositivosMovil,
+                  Colors.green,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildDeviceInfo(
-                    'PC',
-                    Icons.computer,
-                    maxDispositivosPC,
-                    Colors.blue,
-                  ),
+                const SizedBox(width: 4),
+                _buildDeviceInfo(
+                  'PC',
+                  Icons.computer,
+                  maxDispositivosPC,
+                  Colors.blue,
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 2),
             Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(6),
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+              color: Colors.grey[100],
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(
                     Icons.connected_tv,
                     color: Colors.purple,
-                    size: 18,
+                    size: 12,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 2),
                   Text(
                     'Conectados: $dispositivosConectados',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: GoogleFonts.poppins(fontSize: 10),
                   ),
                 ],
               ),
@@ -573,51 +549,104 @@ class _AdminPageState extends State<AdminPage>
   }) {
     final bool isEnabled = negocio != null && vigenciaValida;
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      child: ListTile(
-        enabled: isEnabled,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 12,
-        ),
-        leading: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
+    return GestureDetector(
+      onTap: isEnabled ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          gradient: isEnabled
+              ? LinearGradient(
+                  colors: [
+                    Theme.of(context).primaryColor.withOpacity(0.1),
+                    Theme.of(context).primaryColor.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : LinearGradient(
+                  colors: [Colors.grey[200]!, Colors.grey[300]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: isEnabled
+                  ? Colors.black12
+                  : Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
             color: isEnabled
-                ? Theme.of(context).primaryColor.withOpacity(0.2)
+                ? Theme.of(context).primaryColor.withOpacity(0.3)
                 : Colors.grey.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            icon,
-            size: 28,
-            color: isEnabled ? Theme.of(context).primaryColor : Colors.grey,
+            width: 1,
           ),
         ),
-        title: Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: isEnabled ? Colors.black87 : Colors.grey,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
           ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: isEnabled ? Colors.grey[600] : Colors.grey[400],
+          leading: AnimatedScale(
+            scale: isEnabled ? 1.0 : 0.9,
+            duration: const Duration(milliseconds: 200),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isEnabled
+                    ? Theme.of(context).primaryColor.withOpacity(0.15)
+                    : Colors.grey.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 30,
+                color: isEnabled
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey[400],
+              ),
+            ),
           ),
+          title: Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: isEnabled ? Colors.black87 : Colors.grey[500],
+            ),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: isEnabled ? Colors.grey[600] : Colors.grey[400],
+            ),
+          ),
+          trailing: AnimatedOpacity(
+            opacity: isEnabled ? 1.0 : 0.5,
+            duration: const Duration(milliseconds: 200),
+            child: Icon(
+              Icons.arrow_forward_ios,
+              size: 18,
+              color: isEnabled
+                  ? Theme.of(context).primaryColor
+                  : Colors.grey[400],
+            ),
+          ),
+          onTap: isEnabled
+              ? () {
+                  // Agregar feedback háptico (si está soportado)
+                  // HapticFeedback.lightImpact();
+                  onTap();
+                }
+              : null,
         ),
-        trailing: Icon(
-          Icons.arrow_forward_ios,
-          size: 20,
-          color: isEnabled ? Colors.grey[600] : Colors.grey[400],
-        ),
-        onTap: isEnabled ? onTap : null,
       ),
     );
   }

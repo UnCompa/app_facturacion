@@ -8,4 +8,6 @@ class Routes {
   static const superAdminHomeUserConfirm = "/superadmin/users/confirm";
   static const superAdminHomeUserCrear = "/superadmin/users/crear";
   static const adminHome = "/admin";
+  static const adminViewInventory = "/admin/inventory";
+  static const adminViewInventoryCrear = "/admin/inventory/crear";
 }

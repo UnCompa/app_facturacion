@@ -1,5 +1,5 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:app_facturacion/page/admin_page.dart';
+import 'package:app_facturacion/page/admin/admin_page.dart';
 import 'package:flutter/material.dart';
 
 class AuthCheckScreen extends StatefulWidget {

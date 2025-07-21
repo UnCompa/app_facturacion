@@ -21,15 +21,44 @@ type Negocio
 
 type Producto
   @model
-  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]) {
+  @auth(
+    rules: [
+      {
+        allow: groups
+        groups: ["admin", "vendedor"]
+      }
+    ]
+  ) {
   id: ID!
   nombre: String!
   descripcion: String
   precio: Float!
   stock: Int!
+  productoImages: [String] # Lista de claves de S3 para múltiples imágenes
   negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
+  categoria: Categoria @belongsTo(fields: ["categoriaID"]) # Relación inversa (N:1)
+  categoriaID: ID! @index(name: "byCategoria")
+  estado: String # Ejemplo: "activo", "inactivo"
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+}
+
+type Categoria
+  @model
+  @auth(
+    rules: [
+      {
+        allow: groups
+        groups: ["admin", "vendedor"]
+      }
+    ]
+  ) {
+  id: ID!
+  nombre: String!
+  parentCategoriaID: ID @index(name: "byParentCategoria") # Para navegar hacia la categoría padre
+  productos: [Producto] @hasMany(indexName: "byCategoria", fields: ["id"]) # Relación 1:N
+  subCategorias: [Categoria]
+    @hasMany(indexName: "byParentCategoria", fields: ["id"]) # Relación recursiva 1:N
 }
 
 type SesionDispositivo

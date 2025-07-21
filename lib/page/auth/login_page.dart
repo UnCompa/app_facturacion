@@ -1,6 +1,6 @@
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:app_facturacion/page/admin_page.dart';
+import 'package:app_facturacion/page/admin/admin_page.dart';
 import 'package:app_facturacion/views/login_form.dart';
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';

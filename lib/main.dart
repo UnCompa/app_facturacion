@@ -1,15 +1,18 @@
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:app_facturacion/page/admin/admin_page.dart';
+import 'package:app_facturacion/page/admin/inventory/admin_create_inventory_product.dart';
+import 'package:app_facturacion/page/admin/inventory/admin_view_inventory_screen.dart';
+import 'package:app_facturacion/page/auth/auth_check_screen.dart';
+import 'package:app_facturacion/page/auth/login_page.dart';
+import 'package:app_facturacion/page/auth/new_password_page.dart';
 import 'package:app_facturacion/page/superadmin/negocio/create_bussines_superadmin_page.dart';
 import 'package:app_facturacion/page/superadmin/negocio/negocios_superadmin_page.dart';
+import 'package:app_facturacion/page/superadmin/super_admin_page.dart';
 import 'package:app_facturacion/page/superadmin/user/create_user_superadmin_page.dart';
 import 'package:app_facturacion/page/superadmin/user/user_list_superadmin_page.dart';
 import 'package:app_facturacion/page/superadmin/user/user_superadmin_confirm_page.dart';
-import 'package:app_facturacion/page/admin_page.dart';
-import 'package:app_facturacion/page/auth/new_password_page.dart';
-import 'package:app_facturacion/page/login_page.dart';
-import 'package:app_facturacion/page/super_admin_page.dart';
 import 'package:flutter/material.dart';
 
 import './routes/routes.dart';
@@ -26,6 +29,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  bool _isAmplifyConfigured = false;
+
   @override
   void initState() {
     super.initState();
@@ -33,14 +38,17 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _configureAmplify() async {
-    final api = AmplifyAPI(
-      options: APIPluginOptions(modelProvider: ModelProvider.instance),
-    );
-    await Amplify.addPlugin(api);
-    final auth = AmplifyAuthCognito();
-    await Amplify.addPlugin(auth);
     try {
+      final api = AmplifyAPI(
+        options: APIPluginOptions(modelProvider: ModelProvider.instance),
+      );
+      await Amplify.addPlugin(api);
+      final auth = AmplifyAuthCognito();
+      await Amplify.addPlugin(auth);
       await Amplify.configure(amplifyconfig);
+      setState(() {
+        _isAmplifyConfigured = true;
+      });
     } on Exception catch (e) {
       safePrint('An error occurred configuring Amplify: $e');
     }
@@ -52,21 +60,25 @@ class _MyAppState extends State<MyApp> {
       title: 'Login Demo',
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      home: const LoginScreen(),
+      home: _isAmplifyConfigured
+          ? const AuthCheckScreen()
+          : const Scaffold(body: Center(child: CircularProgressIndicator())),
       routes: {
         Routes.loginPage: (context) => const LoginScreen(),
         Routes.loginPageWithNewPassoword: (context) =>
             const NewPasswordScreen(),
         Routes.superAdminHome: (context) => const SuperAdminPage(),
         Routes.superAdminHomeUsers: (context) => const UserListSuperadminPage(),
-        Routes.superAdminHomeUserCrear: (context) => const CreateUserSuperadminPage(),
+        Routes.superAdminHomeUserCrear: (context) =>
+            const CreateUserSuperadminPage(),
         Routes.superAdminHomeUserConfirm: (context) =>
             const UserSuperadminConfirmPage(),
-        Routes.adminHome: (context) => const AdminPage(),
         Routes.superAdminNegocios: (context) => const NegociosSuperadminPage(),
         Routes.superAdminNegociosCrear: (context) => const CrearNegocioScreen(),
+        Routes.adminHome: (context) => const AdminPage(),
+        Routes.adminViewInventory: (context) => const AdminViewInventoryScreen(),
       },
     );
   }

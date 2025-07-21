@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:app_facturacion/models/ModelProvider.dart';
+import 'package:app_facturacion/models/Categoria.dart';
+import 'package:app_facturacion/models/Producto.dart';
+import 'package:app_facturacion/services/negocio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
-// Importa tus modelos generados de Amplify
-// import 'models/ModelProvider.dart';
 
 class AdminCreateInventoryProduct extends StatefulWidget {
   final String negocioID; // ID del negocio al que pertenece el producto
@@ -63,9 +63,10 @@ class _AdminCreateInventoryProductState
   Future<void> _cargarCategorias() async {
     try {
       // Cargar categorías principales (sin categoría padre)
+      final negocioInfo = await NegocioService.getCurrentUserInfo();
       final request = ModelQueries.list(
         Categoria.classType,
-        //where: Categoria.PARENTCATEGORIAID.ne(null),
+        where: Categoria.NEGOCIOID.eq(negocioInfo.negocioId),
       );
       final response = await Amplify.API.query(request: request).response;
       print(response.data?.items);
@@ -204,11 +205,6 @@ class _AdminCreateInventoryProductState
         }
       }
 
-      // Crear instancia del producto
-      final categoria = Categoria(
-        id: _categoriaSeleccionada!.id,
-        nombre: _categoriaSeleccionada!.nombre,
-      );
       final producto = Producto(
         nombre: _nombreController.text.trim(),
         descripcion: _descripcionController.text.trim().isEmpty
@@ -217,11 +213,11 @@ class _AdminCreateInventoryProductState
         precio: double.parse(_precioController.text),
         stock: int.parse(_stockController.text),
         negocioID: widget.negocioID,
-        categoria: categoria,
+        categoriaID: _categoriaSeleccionada!.id,
         estado: _estadoSeleccionado,
         productoImages: imageKeys.isEmpty ? null : imageKeys,
       );
-
+      print(producto.toString());
       // Crear la mutación
       final request = ModelMutations.create(producto);
       final response = await Amplify.API.mutate(request: request).response;

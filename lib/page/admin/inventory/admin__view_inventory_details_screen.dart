@@ -96,7 +96,7 @@ class _AdminViewInventoryDetailsScreenState
 
     final category = _categories.firstWhere(
       (cat) => cat.id == categoryId,
-      orElse: () => Categoria(nombre: 'Sin categoría', id: ''),
+      orElse: () => Categoria(nombre: 'Sin categoría', id: '', negocioID: ''),
     );
 
     return category.nombre;

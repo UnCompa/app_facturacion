@@ -78,7 +78,11 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
 
   Future<void> _getCategorias() async {
     try {
-      final request = ModelQueries.list(Categoria.classType);
+      final negocioInfo = await NegocioService.getCurrentUserInfo();
+      final request = ModelQueries.list(
+        Categoria.classType,
+        where: Categoria.NEGOCIOID.eq(negocioInfo.negocioId),
+      );
       final response = await Amplify.API.query(request: request).response;
 
       if (response.data != null) {
@@ -127,7 +131,7 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
 
     final category = _categories.firstWhere(
       (cat) => cat.id == categoryId,
-      orElse: () => Categoria(nombre: 'Sin categoría', id: ''),
+      orElse: () => Categoria(nombre: 'Sin categoría', id: '', negocioID: ''),
     );
 
     return category.nombre;
@@ -359,8 +363,10 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
         onTap: () async {
           final result = await Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) =>
-                  AdminViewInventoryDetailsScreen(product: product, negocioID: _negocioID),
+              builder: (_) => AdminViewInventoryDetailsScreen(
+                product: product,
+                negocioID: _negocioID,
+              ),
             ),
           );
 
@@ -438,7 +444,7 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        _getCategoryName(product.categoria!.id),
+                        _getCategoryName(product.categoriaID),
                         style: TextStyle(color: Colors.blue[700], fontSize: 12),
                         overflow: TextOverflow.ellipsis,
                       ),

@@ -1,6 +1,8 @@
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:app_facturacion/services/negocio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../models/Categoria.dart'; // Importa tu modelo real
 
@@ -15,7 +17,8 @@ class AdminCategoriesFormPage extends StatefulWidget {
   });
 
   @override
-  State<AdminCategoriesFormPage> createState() => _AdminCategoriesFormPageState();
+  State<AdminCategoriesFormPage> createState() =>
+      _AdminCategoriesFormPageState();
 }
 
 class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
@@ -54,8 +57,15 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Editar Categoría' : 'Nueva Categoría'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(
+          isEditing ? 'Editar Categoría' : 'Nueva Categoría',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
         actions: [
           if (_isLoading)
             const Center(
@@ -298,19 +308,28 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
     });
 
     try {
+      final negocio = await NegocioService.getCurrentUserInfo();
       final nombre = _nombreController.text.trim();
 
       // Aquí harías la llamada a GraphQL para crear/actualizar
       if (isEditing) {
         final request = ModelMutations.update(
-          widget.categoria!.copyWith(nombre: nombre, parentCategoriaID: _selectedParentId)
+          widget.categoria!.copyWith(
+            nombre: nombre,
+            parentCategoriaID: _selectedParentId,
+            negocioID: negocio.negocioId,
+          ),
         );
         await Amplify.API.mutate(request: request).response;
 
         await Future.delayed(const Duration(seconds: 1));
         print('Actualizando categoría: $nombre, padre: $_selectedParentId');
       } else {
-        final newCategoria = Categoria(nombre: nombre, parentCategoriaID: _selectedParentId);
+        final newCategoria = Categoria(
+          nombre: nombre,
+          parentCategoriaID: _selectedParentId,
+          negocioID: negocio.negocioId,
+        );
         final request = ModelMutations.create(newCategoria);
         await Amplify.API.mutate(request: request).response;
 

@@ -29,6 +29,7 @@ class Categoria extends amplify_core.Model {
   static const classType = const _CategoriaModelType();
   final String id;
   final String? _nombre;
+  final String? _negocioID;
   final String? _parentCategoriaID;
   final List<Producto>? _productos;
   final List<Categoria>? _subCategorias;
@@ -61,6 +62,19 @@ class Categoria extends amplify_core.Model {
     }
   }
   
+  String get negocioID {
+    try {
+      return _negocioID!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
+  }
+  
   String? get parentCategoriaID {
     return _parentCategoriaID;
   }
@@ -81,15 +95,18 @@ class Categoria extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const Categoria._internal({required this.id, required nombre, parentCategoriaID, productos, subCategorias, createdAt, updatedAt}): _nombre = nombre, _parentCategoriaID = parentCategoriaID, _productos = productos, _subCategorias = subCategorias, _createdAt = createdAt, _updatedAt = updatedAt;
+  const Categoria._internal({required this.id, required nombre, required negocioID, parentCategoriaID, productos, subCategorias, createdAt, updatedAt}): _nombre = nombre, _negocioID = negocioID, _parentCategoriaID = parentCategoriaID, _productos = productos, _subCategorias = subCategorias, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory Categoria({String? id, required String nombre, String? parentCategoriaID, List<Producto>? productos, List<Categoria>? subCategorias}) {
+  factory Categoria({String? id, required String nombre, required String negocioID, String? parentCategoriaID, List<Producto>? productos, List<Categoria>? subCategorias, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return Categoria._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       nombre: nombre,
+      negocioID: negocioID,
       parentCategoriaID: parentCategoriaID,
       productos: productos != null ? List<Producto>.unmodifiable(productos) : productos,
-      subCategorias: subCategorias != null ? List<Categoria>.unmodifiable(subCategorias) : subCategorias);
+      subCategorias: subCategorias != null ? List<Categoria>.unmodifiable(subCategorias) : subCategorias,
+      createdAt: createdAt,
+      updatedAt: updatedAt);
   }
   
   bool equals(Object other) {
@@ -102,9 +119,12 @@ class Categoria extends amplify_core.Model {
     return other is Categoria &&
       id == other.id &&
       _nombre == other._nombre &&
+      _negocioID == other._negocioID &&
       _parentCategoriaID == other._parentCategoriaID &&
       DeepCollectionEquality().equals(_productos, other._productos) &&
-      DeepCollectionEquality().equals(_subCategorias, other._subCategorias);
+      DeepCollectionEquality().equals(_subCategorias, other._subCategorias) &&
+      _createdAt == other._createdAt &&
+      _updatedAt == other._updatedAt;
   }
   
   @override
@@ -117,6 +137,7 @@ class Categoria extends amplify_core.Model {
     buffer.write("Categoria {");
     buffer.write("id=" + "$id" + ", ");
     buffer.write("nombre=" + "$_nombre" + ", ");
+    buffer.write("negocioID=" + "$_negocioID" + ", ");
     buffer.write("parentCategoriaID=" + "$_parentCategoriaID" + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
@@ -125,33 +146,43 @@ class Categoria extends amplify_core.Model {
     return buffer.toString();
   }
   
-  Categoria copyWith({String? nombre, String? parentCategoriaID, List<Producto>? productos, List<Categoria>? subCategorias}) {
+  Categoria copyWith({String? nombre, String? negocioID, String? parentCategoriaID, List<Producto>? productos, List<Categoria>? subCategorias, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return Categoria._internal(
       id: id,
       nombre: nombre ?? this.nombre,
+      negocioID: negocioID ?? this.negocioID,
       parentCategoriaID: parentCategoriaID ?? this.parentCategoriaID,
       productos: productos ?? this.productos,
-      subCategorias: subCategorias ?? this.subCategorias);
+      subCategorias: subCategorias ?? this.subCategorias,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt);
   }
   
   Categoria copyWithModelFieldValues({
     ModelFieldValue<String>? nombre,
+    ModelFieldValue<String>? negocioID,
     ModelFieldValue<String?>? parentCategoriaID,
     ModelFieldValue<List<Producto>?>? productos,
-    ModelFieldValue<List<Categoria>?>? subCategorias
+    ModelFieldValue<List<Categoria>?>? subCategorias,
+    ModelFieldValue<amplify_core.TemporalDateTime?>? createdAt,
+    ModelFieldValue<amplify_core.TemporalDateTime?>? updatedAt
   }) {
     return Categoria._internal(
       id: id,
       nombre: nombre == null ? this.nombre : nombre.value,
+      negocioID: negocioID == null ? this.negocioID : negocioID.value,
       parentCategoriaID: parentCategoriaID == null ? this.parentCategoriaID : parentCategoriaID.value,
       productos: productos == null ? this.productos : productos.value,
-      subCategorias: subCategorias == null ? this.subCategorias : subCategorias.value
+      subCategorias: subCategorias == null ? this.subCategorias : subCategorias.value,
+      createdAt: createdAt == null ? this.createdAt : createdAt.value,
+      updatedAt: updatedAt == null ? this.updatedAt : updatedAt.value
     );
   }
   
   Categoria.fromJson(Map<String, dynamic> json)  
     : id = json['id'],
       _nombre = json['nombre'],
+      _negocioID = json['negocioID'],
       _parentCategoriaID = json['parentCategoriaID'],
       _productos = json['productos']  is Map
         ? (json['productos']['items'] is List
@@ -183,12 +214,13 @@ class Categoria extends amplify_core.Model {
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'nombre': _nombre, 'parentCategoriaID': _parentCategoriaID, 'productos': _productos?.map((Producto? e) => e?.toJson()).toList(), 'subCategorias': _subCategorias?.map((Categoria? e) => e?.toJson()).toList(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'nombre': _nombre, 'negocioID': _negocioID, 'parentCategoriaID': _parentCategoriaID, 'productos': _productos?.map((Producto? e) => e?.toJson()).toList(), 'subCategorias': _subCategorias?.map((Categoria? e) => e?.toJson()).toList(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
   
   Map<String, Object?> toMap() => {
     'id': id,
     'nombre': _nombre,
+    'negocioID': _negocioID,
     'parentCategoriaID': _parentCategoriaID,
     'productos': _productos,
     'subCategorias': _subCategorias,
@@ -199,6 +231,7 @@ class Categoria extends amplify_core.Model {
   static final amplify_core.QueryModelIdentifier<CategoriaModelIdentifier> MODEL_IDENTIFIER = amplify_core.QueryModelIdentifier<CategoriaModelIdentifier>();
   static final ID = amplify_core.QueryField(fieldName: "id");
   static final NOMBRE = amplify_core.QueryField(fieldName: "nombre");
+  static final NEGOCIOID = amplify_core.QueryField(fieldName: "negocioID");
   static final PARENTCATEGORIAID = amplify_core.QueryField(fieldName: "parentCategoriaID");
   static final PRODUCTOS = amplify_core.QueryField(
     fieldName: "productos",
@@ -206,6 +239,8 @@ class Categoria extends amplify_core.Model {
   static final SUBCATEGORIAS = amplify_core.QueryField(
     fieldName: "subCategorias",
     fieldType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.model, ofModelName: 'Categoria'));
+  static final CREATEDAT = amplify_core.QueryField(fieldName: "createdAt");
+  static final UPDATEDAT = amplify_core.QueryField(fieldName: "updatedAt");
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "Categoria";
     modelSchemaDefinition.pluralName = "Categorias";
@@ -225,6 +260,7 @@ class Categoria extends amplify_core.Model {
     ];
     
     modelSchemaDefinition.indexes = [
+      amplify_core.ModelIndex(fields: const ["negocioID", "nombre"], name: "byNegocio"),
       amplify_core.ModelIndex(fields: const ["parentCategoriaID"], name: "byParentCategoria")
     ];
     
@@ -232,6 +268,12 @@ class Categoria extends amplify_core.Model {
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
       key: Categoria.NOMBRE,
+      isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: Categoria.NEGOCIOID,
       isRequired: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));
@@ -246,7 +288,7 @@ class Categoria extends amplify_core.Model {
       key: Categoria.PRODUCTOS,
       isRequired: false,
       ofModelName: 'Producto',
-      associatedKey: Producto.CATEGORIA
+      associatedKey: Producto.CATEGORIAID
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.hasMany(
@@ -256,17 +298,15 @@ class Categoria extends amplify_core.Model {
       associatedKey: Categoria.PARENTCATEGORIAID
     ));
     
-    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.nonQueryField(
-      fieldName: 'createdAt',
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: Categoria.CREATEDAT,
       isRequired: false,
-      isReadOnly: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.dateTime)
     ));
     
-    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.nonQueryField(
-      fieldName: 'updatedAt',
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: Categoria.UPDATEDAT,
       isRequired: false,
-      isReadOnly: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.dateTime)
     ));
   });

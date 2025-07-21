@@ -21,20 +21,28 @@
 
 import 'package:amplify_core/amplify_core.dart' as amplify_core;
 import 'Categoria.dart';
+import 'Invoice.dart';
+import 'InvoiceItem.dart';
 import 'Negocio.dart';
+import 'Order.dart';
+import 'OrderItem.dart';
 import 'Producto.dart';
 import 'SesionDispositivo.dart';
 
 export 'Categoria.dart';
+export 'Invoice.dart';
+export 'InvoiceItem.dart';
 export 'Negocio.dart';
+export 'Order.dart';
+export 'OrderItem.dart';
 export 'Producto.dart';
 export 'SesionDispositivo.dart';
 
 class ModelProvider implements amplify_core.ModelProviderInterface {
   @override
-  String version = "fd7bf6aca370c26ecab28655e809cdec";
+  String version = "560767ff7142ae780cd9803e50ca003b";
   @override
-  List<amplify_core.ModelSchema> modelSchemas = [Categoria.schema, Negocio.schema, Producto.schema, SesionDispositivo.schema];
+  List<amplify_core.ModelSchema> modelSchemas = [Categoria.schema, Invoice.schema, InvoiceItem.schema, Negocio.schema, Order.schema, OrderItem.schema, Producto.schema, SesionDispositivo.schema];
   @override
   List<amplify_core.ModelSchema> customTypeSchemas = [];
   static final ModelProvider _instance = ModelProvider();
@@ -45,8 +53,16 @@ class ModelProvider implements amplify_core.ModelProviderInterface {
     switch(modelName) {
       case "Categoria":
         return Categoria.classType;
+      case "Invoice":
+        return Invoice.classType;
+      case "InvoiceItem":
+        return InvoiceItem.classType;
       case "Negocio":
         return Negocio.classType;
+      case "Order":
+        return Order.classType;
+      case "OrderItem":
+        return OrderItem.classType;
       case "Producto":
         return Producto.classType;
       case "SesionDispositivo":

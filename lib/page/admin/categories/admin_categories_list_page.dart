@@ -1,7 +1,9 @@
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/page/admin/categories/admin_categories_form_page.dart';
+import 'package:app_facturacion/services/negocio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../models/Categoria.dart'; // Importa tu modelo real
 
@@ -30,7 +32,11 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
     });
 
     try {
-      final request = ModelQueries.list(Categoria.classType);
+      final negocio = await NegocioService.getCurrentUserInfo();
+      final request = ModelQueries.list(
+        Categoria.classType,
+        where: Categoria.NEGOCIOID.eq(negocio.negocioId),
+      );
       final response = await Amplify.API.query(request: request).response;
       final categories = response.data?.items;
       if (categories == null) {
@@ -68,8 +74,15 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Categorías'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(
+          'Categorías',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -121,6 +134,8 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToForm(),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
     );

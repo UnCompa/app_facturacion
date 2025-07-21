@@ -27,7 +27,7 @@ class SuperAdminPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            Row(
+            Wrap(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(

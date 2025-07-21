@@ -20,11 +20,29 @@ dependencies:
   device_info_plus: ^11.5.0
   image_picker: ^1.0.0
   amplify_storage_s3: ^2.0.0
+  flutter_native_splash: ^2.4.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon.png"
+flutter_native_splash:
+  # Ruta de la imagen para el splash screen
+  image: assets/splash.png
+  # Color de fondo del splash screen (hexadecimal)
+  color: "#51ABD2"
+  # Habilitar para Android
+  android: true
+  # Habilitar para iOS
+  ios: true
+  # Opcional: Color de fondo para modo oscuro
+  color_dark: "#009DFF"

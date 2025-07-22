@@ -4,10 +4,10 @@ import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/mixin/session_control_mixin.dart';
 import 'package:app_facturacion/models/ModelProvider.dart';
-import 'package:app_facturacion/page/auth/login_page.dart';
 import 'package:app_facturacion/page/vendedor/user/edit_seller_user_page.dart';
 import 'package:app_facturacion/routes/routes.dart';
 import 'package:app_facturacion/services/device_session_service.dart';
+import 'package:app_facturacion/views/logout_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -331,32 +331,7 @@ class _SellerPageState extends State<SellerPage>
                 ],
               ),
             ),
-            TextButton(
-              onPressed: () async {
-                try {
-                  await Amplify.Auth.signOut();
-                  if (mounted) {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    );
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error al cerrar sesión: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-              child: Text(
-                "Cerrar sesión",
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.redAccent,
-                ),
-              ),
-            ),
+            LogoutButton(),
           ],
         ),
       ),

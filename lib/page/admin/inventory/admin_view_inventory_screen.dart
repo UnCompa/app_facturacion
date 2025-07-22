@@ -168,8 +168,9 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Gestionar Inventario'),
-        backgroundColor: Colors.white,
-        elevation: 1,
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.white,
+        elevation: 2,
         actions: [
           PopupMenuButton<String>(
             icon: Icon(Icons.sort),
@@ -335,6 +336,8 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
               ],
             ),
       floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.white,
         onPressed: ()async {
           final result = await Navigator.of(context).push(
             MaterialPageRoute(

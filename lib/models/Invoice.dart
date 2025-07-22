@@ -153,12 +153,12 @@ class Invoice extends amplify_core.Model {
     buffer.write("Invoice {");
     buffer.write("id=" + "$id" + ", ");
     buffer.write("invoiceNumber=" + "$_invoiceNumber" + ", ");
-    buffer.write("invoiceDate=" + (_invoiceDate != null ? _invoiceDate!.format() : "null") + ", ");
-    buffer.write("invoiceTotal=" + (_invoiceTotal != null ? _invoiceTotal!.toString() : "null") + ", ");
+    buffer.write("invoiceDate=" + (_invoiceDate != null ? _invoiceDate.format() : "null") + ", ");
+    buffer.write("invoiceTotal=" + (_invoiceTotal != null ? _invoiceTotal.toString() : "null") + ", ");
     buffer.write("invoiceStatus=" + "$_invoiceStatus" + ", ");
-    buffer.write("invoiceImages=" + (_invoiceImages != null ? _invoiceImages!.toString() : "null") + ", ");
-    buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
-    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
+    buffer.write("invoiceImages=" + (_invoiceImages != null ? _invoiceImages.toString() : "null") + ", ");
+    buffer.write("createdAt=" + (_createdAt != null ? _createdAt.format() : "null") + ", ");
+    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt.format() : "null"));
     buffer.write("}");
     
     return buffer.toString();

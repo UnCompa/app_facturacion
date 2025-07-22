@@ -152,12 +152,12 @@ class Negocio extends amplify_core.Model {
     buffer.write("nombre=" + "$_nombre" + ", ");
     buffer.write("ruc=" + "$_ruc" + ", ");
     buffer.write("telefono=" + "$_telefono" + ", ");
-    buffer.write("duration=" + (_duration != null ? _duration!.toString() : "null") + ", ");
-    buffer.write("movilAccess=" + (_movilAccess != null ? _movilAccess!.toString() : "null") + ", ");
-    buffer.write("pcAccess=" + (_pcAccess != null ? _pcAccess!.toString() : "null") + ", ");
+    buffer.write("duration=" + (_duration != null ? _duration.toString() : "null") + ", ");
+    buffer.write("movilAccess=" + (_movilAccess != null ? _movilAccess.toString() : "null") + ", ");
+    buffer.write("pcAccess=" + (_pcAccess != null ? _pcAccess.toString() : "null") + ", ");
     buffer.write("direccion=" + "$_direccion" + ", ");
-    buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
-    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
+    buffer.write("createdAt=" + (_createdAt != null ? _createdAt.format() : "null") + ", ");
+    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt.format() : "null"));
     buffer.write("}");
     
     return buffer.toString();

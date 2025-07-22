@@ -139,8 +139,8 @@ class Categoria extends amplify_core.Model {
     buffer.write("nombre=" + "$_nombre" + ", ");
     buffer.write("negocioID=" + "$_negocioID" + ", ");
     buffer.write("parentCategoriaID=" + "$_parentCategoriaID" + ", ");
-    buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
-    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
+    buffer.write("createdAt=" + (_createdAt != null ? _createdAt.format() : "null") + ", ");
+    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt.format() : "null"));
     buffer.write("}");
     
     return buffer.toString();

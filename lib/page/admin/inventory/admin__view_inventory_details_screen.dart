@@ -16,7 +16,7 @@ class AdminViewInventoryDetailsScreen extends StatefulWidget {
   });
 
   @override
-  _AdminViewInventoryDetailsScreenState createState()=>
+  _AdminViewInventoryDetailsScreenState createState() =>
       _AdminViewInventoryDetailsScreenState();
 }
 
@@ -24,6 +24,7 @@ class _AdminViewInventoryDetailsScreenState
     extends State<AdminViewInventoryDetailsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
+  final _barCodeController = TextEditingController();
   final _descripcionController = TextEditingController();
   final _precioController = TextEditingController();
   final _stockController = TextEditingController();
@@ -35,31 +36,33 @@ class _AdminViewInventoryDetailsScreenState
   bool _isLoading = false;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _initializeData();
     _loadProductData();
   }
 
-  void _loadProductData(){
+  void _loadProductData() {
     _nombreController.text = widget.product.nombre;
     _descripcionController.text = widget.product.descripcion ?? '';
     _precioController.text = widget.product.precio.toString();
     _stockController.text = widget.product.stock.toString();
     _selectedEstado = widget.product.estado ?? 'activo';
+    _barCodeController.text = widget.product.barCode ?? '';
+    _selectedCategoryId = widget.product.categoriaID;
   }
 
-  Future<void> _initializeData()async {
+  Future<void> _initializeData() async {
     await _getCategorias();
     if (widget.product.productoImages != null &&
-        widget.product.productoImages!.isNotEmpty){
+        widget.product.productoImages!.isNotEmpty) {
       final urls = await GetImageFromBucket.getSignedImageUrls(
         s3Keys: widget.product.productoImages!,
         expiresIn: Duration(
           minutes: 30,
         ), // Opcional: ajusta el tiempo de expiración
       );
-      if (urls.isEmpty){
+      if (urls.isEmpty) {
         // Manejar el error en el contexto de la UI
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -68,50 +71,50 @@ class _AdminViewInventoryDetailsScreenState
           ),
         );
       }
-      setState((){
+      setState(() {
         _signedImageUrls = urls;
       });
     }
   }
 
-  Future<void> _getCategorias()async {
+  Future<void> _getCategorias() async {
     try {
       final request = ModelQueries.list(Categoria.classType);
       final response = await Amplify.API.query(request: request).response;
 
-      if (response.data != null){
+      if (response.data != null) {
         final categories = response.data!.items.whereType<Categoria>().toList();
 
-        setState((){
+        setState(() {
           _categories = categories;
         });
       }
-    } catch (e){
+    } catch (e) {
       print('Error fetching categories: $e');
     }
   }
 
-  String _getCategoryName(String? categoryId){
-    if (categoryId == null)return 'Sin categoría';
+  String _getCategoryName(String? categoryId) {
+    if (categoryId == null) return 'Sin categoría';
 
     final category = _categories.firstWhere(
-      (cat)=> cat.id == categoryId,
-      orElse: ()=> Categoria(nombre: 'Sin categoría', id: '', negocioID: ''),
+      (cat) => cat.id == categoryId,
+      orElse: () => Categoria(nombre: 'Sin categoría', id: '', negocioID: ''),
     );
 
     return category.nombre;
   }
 
-  Color _getStockColor(int stock){
-    if (stock == 0)return Colors.red;
-    if (stock <= 10)return Colors.orange;
+  Color _getStockColor(int stock) {
+    if (stock == 0) return Colors.red;
+    if (stock <= 10) return Colors.orange;
     return Colors.green;
   }
 
-  Future<void> _updateProduct()async {
-    if (!_formKey.currentState!.validate())return;
+  Future<void> _updateProduct() async {
+    if (!_formKey.currentState!.validate()) return;
 
-    setState((){
+    setState(() {
       _isLoading = true;
     });
 
@@ -122,12 +125,14 @@ class _AdminViewInventoryDetailsScreenState
         precio: double.parse(_precioController.text),
         stock: int.parse(_stockController.text),
         estado: _selectedEstado,
+        createdAt: widget.product.createdAt,
+        updatedAt: TemporalDateTime(DateTime.now()),
       );
 
       final request = ModelMutations.update(updatedProduct);
       final response = await Amplify.API.mutate(request: request).response;
 
-      if (response.data != null){
+      if (response.data != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Producto actualizado exitosamente'),
@@ -135,7 +140,7 @@ class _AdminViewInventoryDetailsScreenState
           ),
         );
 
-        setState((){
+        setState(() {
           _isEditing = false;
         });
 
@@ -143,7 +148,7 @@ class _AdminViewInventoryDetailsScreenState
       } else {
         throw Exception('Error al actualizar el producto');
       }
-    } catch (e){
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al actualizar el producto: $e'),
@@ -151,27 +156,27 @@ class _AdminViewInventoryDetailsScreenState
         ),
       );
     } finally {
-      setState((){
+      setState(() {
         _isLoading = false;
       });
     }
   }
 
-  Future<void> _deleteProduct()async {
+  Future<void> _deleteProduct() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context)=> AlertDialog(
+      builder: (context) => AlertDialog(
         title: Text('Confirmar eliminación'),
         content: Text(
           '¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.',
         ),
         actions: [
           TextButton(
-            onPressed: ()=> Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(context).pop(false),
             child: Text('Cancelar'),
           ),
           TextButton(
-            onPressed: ()=> Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text('Eliminar'),
           ),
@@ -179,9 +184,9 @@ class _AdminViewInventoryDetailsScreenState
       ),
     );
 
-    if (confirmed != true)return;
+    if (confirmed != true) return;
 
-    setState((){
+    setState(() {
       _isLoading = true;
     });
 
@@ -189,7 +194,7 @@ class _AdminViewInventoryDetailsScreenState
       final request = ModelMutations.delete(widget.product);
       final response = await Amplify.API.mutate(request: request).response;
 
-      if (response.data != null){
+      if (response.data != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Producto eliminado exitosamente'),
@@ -201,7 +206,7 @@ class _AdminViewInventoryDetailsScreenState
       } else {
         throw Exception('Error al eliminar el producto');
       }
-    } catch (e){
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al eliminar el producto: $e'),
@@ -209,25 +214,25 @@ class _AdminViewInventoryDetailsScreenState
         ),
       );
     } finally {
-      setState((){
+      setState(() {
         _isLoading = false;
       });
     }
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text(_isEditing ? 'Editar Producto' : 'Detalles del Producto'),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.lightBlue,
+        foregroundColor: Colors.white,
         elevation: 1,
         actions: [
-          if (!_isEditing)...[
+          if (!_isEditing) ...[
             IconButton(
-              onPressed: (){
-                setState((){
+              onPressed: () {
+                setState(() {
                   _isEditing = true;
                 });
               },
@@ -241,8 +246,8 @@ class _AdminViewInventoryDetailsScreenState
             ),
           ] else ...[
             IconButton(
-              onPressed: (){
-                setState((){
+              onPressed: () {
+                setState(() {
                   _isEditing = false;
                   _loadProductData();
                 });
@@ -289,13 +294,13 @@ class _AdminViewInventoryDetailsScreenState
                             ),
                             SizedBox(height: 16),
                             // Carrusel de imágenes
-                            if (_signedImageUrls.isNotEmpty)...[
+                            if (_signedImageUrls.isNotEmpty) ...[
                               SizedBox(
                                 height: 200,
                                 child: ListView.builder(
                                   scrollDirection: Axis.horizontal,
                                   itemCount: _signedImageUrls.length,
-                                  itemBuilder: (context, index){
+                                  itemBuilder: (context, index) {
                                     return Padding(
                                       padding: EdgeInsets.only(right: 8),
                                       child: ClipRRect(
@@ -306,7 +311,7 @@ class _AdminViewInventoryDetailsScreenState
                                           height: 180,
                                           fit: BoxFit.cover,
                                           errorBuilder:
-                                              (context, error, stackTrace){
+                                              (context, error, stackTrace) {
                                                 return Container(
                                                   width: 180,
                                                   height: 180,
@@ -329,9 +334,10 @@ class _AdminViewInventoryDetailsScreenState
                                                 context,
                                                 child,
                                                 loadingProgress,
-                                              ){
-                                                if (loadingProgress == null)
+                                              ) {
+                                                if (loadingProgress == null) {
                                                   return child;
+                                                }
                                                 return Container(
                                                   width: 180,
                                                   height: 180,
@@ -434,8 +440,8 @@ class _AdminViewInventoryDetailsScreenState
                                 enabled: _isEditing,
                                 prefixIcon: Icon(Icons.label),
                               ),
-                              validator: (value){
-                                if (value == null || value.trim().isEmpty){
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
                                   return 'El nombre es requerido';
                                 }
                                 return null;
@@ -467,6 +473,38 @@ class _AdminViewInventoryDetailsScreenState
                                 prefixIcon: Icon(Icons.description),
                               ),
                               maxLines: 3,
+                            ),
+                            SizedBox(height: 16),
+                            // Campo nombre
+                            TextFormField(
+                              controller: _barCodeController,
+                              decoration: InputDecoration(
+                                labelText: 'Código de barras',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.blue,
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                enabled: _isEditing,
+                                prefixIcon: Icon(Icons.barcode_reader),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'El nombre es requerido';
+                                }
+                                return null;
+                              },
                             ),
                           ],
                         ),
@@ -523,15 +561,15 @@ class _AdminViewInventoryDetailsScreenState
                                         TextInputType.numberWithOptions(
                                           decimal: true,
                                         ),
-                                    validator: (value){
+                                    validator: (value) {
                                       if (value == null ||
-                                          value.trim().isEmpty){
+                                          value.trim().isEmpty) {
                                         return 'El precio es requerido';
                                       }
-                                      if (double.tryParse(value)== null){
+                                      if (double.tryParse(value) == null) {
                                         return 'Ingrese un precio válido';
                                       }
-                                      if (double.parse(value)< 0){
+                                      if (double.parse(value) < 0) {
                                         return 'El precio no puede ser negativo';
                                       }
                                       return null;
@@ -564,15 +602,15 @@ class _AdminViewInventoryDetailsScreenState
                                       enabled: _isEditing,
                                     ),
                                     keyboardType: TextInputType.number,
-                                    validator: (value){
+                                    validator: (value) {
                                       if (value == null ||
-                                          value.trim().isEmpty){
+                                          value.trim().isEmpty) {
                                         return 'El stock es requerido';
                                       }
-                                      if (int.tryParse(value)== null){
+                                      if (int.tryParse(value) == null) {
                                         return 'Ingrese un stock válido';
                                       }
-                                      if (int.parse(value)< 0){
+                                      if (int.parse(value) < 0) {
                                         return 'El stock no puede ser negativo';
                                       }
                                       return null;
@@ -629,21 +667,21 @@ class _AdminViewInventoryDetailsScreenState
                                 prefixIcon: Icon(Icons.category),
                                 enabled: _isEditing,
                               ),
-                              items: _categories.map((categoria){
+                              items: _categories.map((categoria) {
                                 return DropdownMenuItem<String>(
                                   value: categoria.id,
                                   child: Text(categoria.nombre),
                                 );
                               }).toList(),
                               onChanged: _isEditing
-                                  ? (value){
-                                      setState((){
+                                  ? (value) {
+                                      setState(() {
                                         _selectedCategoryId = value;
                                       });
                                     }
                                   : null,
-                              validator: (value){
-                                if (value == null || value.isEmpty){
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
                                   return 'Por favor selecciona una categoría';
                                 }
                                 return null;
@@ -684,14 +722,14 @@ class _AdminViewInventoryDetailsScreenState
                                 ),
                               ],
                               onChanged: _isEditing
-                                  ? (value){
-                                      setState((){
+                                  ? (value) {
+                                      setState(() {
                                         _selectedEstado = value;
                                       });
                                     }
                                   : null,
-                              validator: (value){
-                                if (value == null || value.isEmpty){
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
                                   return 'Por favor selecciona un estado';
                                 }
                                 return null;
@@ -702,7 +740,7 @@ class _AdminViewInventoryDetailsScreenState
                       ),
                     ),
                     // Botón de guardar cambios (visible en modo edición)
-                    if (_isEditing)...[
+                    if (_isEditing) ...[
                       SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
@@ -736,7 +774,7 @@ class _AdminViewInventoryDetailsScreenState
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _nombreController.dispose();
     _descripcionController.dispose();
     _precioController.dispose();

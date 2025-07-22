@@ -23,6 +23,7 @@ class _EditBussinesSuperadminPageState
   late TextEditingController _movilAccessController;
   late TextEditingController _pcAccessController;
   late TextEditingController _direccionController;
+  late TextEditingController _createdAtController;
 
   bool _isLoading = false;
   @override
@@ -42,6 +43,9 @@ class _EditBussinesSuperadminPageState
     );
     _direccionController = TextEditingController(
       text: widget.negocio.direccion.toString(),
+    );
+    _createdAtController = TextEditingController(
+      text: widget.negocio.createdAt.toString(),
     );
   }
 
@@ -74,7 +78,11 @@ class _EditBussinesSuperadminPageState
           movilAccess: int.parse(_movilAccessController.text),
           pcAccess: int.parse(_pcAccessController.text),
           telefono: _telefonoController.text,
-          id: widget.negocio.id
+          id: widget.negocio.id,
+          createdAt: TemporalDateTime(
+            DateTime.parse(_createdAtController.text),
+          ),
+          updatedAt: TemporalDateTime(DateTime.now())
         ),
       );
       final response = await Amplify.API.mutate(request: request).response;

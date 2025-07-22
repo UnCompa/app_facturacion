@@ -153,12 +153,12 @@ class Order extends amplify_core.Model {
     buffer.write("Order {");
     buffer.write("id=" + "$id" + ", ");
     buffer.write("orderNumber=" + "$_orderNumber" + ", ");
-    buffer.write("orderDate=" + (_orderDate != null ? _orderDate!.format() : "null") + ", ");
-    buffer.write("orderTotal=" + (_orderTotal != null ? _orderTotal!.toString() : "null") + ", ");
+    buffer.write("orderDate=" + (_orderDate != null ? _orderDate.format() : "null") + ", ");
+    buffer.write("orderTotal=" + (_orderTotal != null ? _orderTotal.toString() : "null") + ", ");
     buffer.write("orderStatus=" + "$_orderStatus" + ", ");
-    buffer.write("orderImages=" + (_orderImages != null ? _orderImages!.toString() : "null") + ", ");
-    buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
-    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
+    buffer.write("orderImages=" + (_orderImages != null ? _orderImages.toString() : "null") + ", ");
+    buffer.write("createdAt=" + (_createdAt != null ? _createdAt.format() : "null") + ", ");
+    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt.format() : "null"));
     buffer.write("}");
     
     return buffer.toString();

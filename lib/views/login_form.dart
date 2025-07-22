@@ -296,7 +296,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                           child: Text(
                                             "CompaExpress",
                                             style: GoogleFonts.poppins(
-                                              fontSize: 36,
+                                              fontSize: 30,
                                               fontWeight: FontWeight.w800,
                                               color: Colors.white,
                                               letterSpacing: -1.0,
@@ -337,7 +337,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                         Text(
                                           "Bienvenido de nuevo",
                                           style: GoogleFonts.poppins(
-                                            fontSize: 26,
+                                            fontSize: 20,
                                             fontWeight: FontWeight.w600,
                                             color: darkBlue,
                                           ),
@@ -432,10 +432,12 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                             ),
                                             validator: (value){
                                               if (value == null ||
-                                                  value.isEmpty)
+                                                  value.isEmpty) {
                                                 return 'Campo obligatorio';
-                                              if (!value.contains('@'))
+                                              }
+                                              if (!value.contains('@')) {
                                                 return 'Correo no válido';
+                                              }
                                               return null;
                                             },
                                           ),
@@ -534,10 +536,12 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                             ),
                                             validator: (value){
                                               if (value == null ||
-                                                  value.isEmpty)
+                                                  value.isEmpty) {
                                                 return 'Campo obligatorio';
-                                              if (value.length < 6)
+                                              }
+                                              if (value.length < 6) {
                                                 return 'Mínimo 6 caracteres';
+                                              }
                                               return null;
                                             },
                                           ),

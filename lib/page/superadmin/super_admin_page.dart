@@ -1,6 +1,5 @@
-import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:app_facturacion/page/auth/login_page.dart';
 import 'package:app_facturacion/routes/routes.dart';
+import 'package:app_facturacion/views/logout_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -39,18 +38,7 @@ class SuperAdminPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                TextButton(
-                  onPressed: ()async {
-                    await Amplify.Auth.signOut();
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_)=> const LoginScreen()),
-                    );
-                  },
-                  child: Text(
-                    "Cerrar sesión",
-                    style: GoogleFonts.poppins(color: Colors.redAccent),
-                  ),
-                ),
+                LogoutButton()
               ],
             ),
             const SizedBox(height: 16),

@@ -9,7 +9,7 @@ class NegociosSuperadminPage extends StatefulWidget {
   const NegociosSuperadminPage({super.key});
 
   @override
-  State<StatefulWidget> createState(){
+  State<StatefulWidget> createState() {
     return NegociosSuperadminPageState();
   }
 }
@@ -20,14 +20,14 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
   String? errorMessage;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     getAllBussines();
   }
 
-  Future<List<Negocio>> getAllBussines()async {
+  Future<List<Negocio>> getAllBussines() async {
     try {
-      setState((){
+      setState(() {
         isLoading = true;
         errorMessage = null;
       });
@@ -35,7 +35,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
       final request = ModelQueries.list(Negocio.classType);
       final response = await Amplify.API.query(request: request).response;
 
-      if (response.hasErrors){
+      if (response.hasErrors) {
         safePrint('Errores en la respuesta: ${response.errors}');
         throw Exception('Error al obtener los negocios');
       }
@@ -44,19 +44,19 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
 
       final negociosList =
           negociosItems
-              ?.where((item)=> item != null)
-              .map((item)=> item!)
-              .toList()??
+              ?.where((item) => item != null)
+              .map((item) => item!)
+              .toList() ??
           [];
 
-      setState((){
+      setState(() {
         negocios = negociosList;
         isLoading = false;
       });
 
       return negociosList;
-    } catch (e){
-      setState((){
+    } catch (e) {
+      setState(() {
         isLoading = false;
         errorMessage = 'Error al cargar los negocios: ${e.toString()}';
       });
@@ -66,12 +66,12 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
     }
   }
 
-  Future<void> refreshNegocios()async {
+  Future<void> refreshNegocios() async {
     await getAllBussines();
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gestión de Negocios'),
@@ -86,7 +86,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
       ),
       body: _buildBody(),
       floatingActionButton: FloatingActionButton(
-        onPressed: (){
+        onPressed: () {
           // Aquí puedes navegar a una página para crear un nuevo negocio
           Navigator.of(context).pushNamed(Routes.superAdminNegociosCrear);
         },
@@ -96,12 +96,12 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
     );
   }
 
-  Widget _buildBody(){
-    if (isLoading){
+  Widget _buildBody() {
+    if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (errorMessage != null){
+    if (errorMessage != null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -123,7 +123,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
       );
     }
 
-    if (negocios.isEmpty){
+    if (negocios.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -142,89 +142,245 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
     return RefreshIndicator(
       onRefresh: refreshNegocios,
       child: ListView.builder(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         itemCount: negocios.length,
-        itemBuilder: (context, index){
+        itemBuilder: (context, index) {
           final negocio = negocios[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 4.0),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.blue,
-                child: Text(
-                  negocio.nombre.substring(0, 1).toUpperCase()?? 'N',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 2,
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-              title: Text(
-                negocio.nombre ?? 'Sin nombre',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Column(
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (negocio.direccion != null)Text(negocio.direccion!),
-                  const SizedBox(height: 4),
+                  // Header con nombre y menú
                   Row(
                     children: [
-                      Icon(Icons.phone, size: 16, color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        negocio.telefono ?? 'Sin teléfono',
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.email, size: 16, color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        negocio.ruc ?? 'Sin email',
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              trailing: PopupMenuButton<String>(
-                onSelected: (value){
-                  switch (value){
-                    case 'editar':
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_)=> EditBussinesSuperadminPage(negocio: negocio),
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16.0),
                         ),
-                      );
-                      break;
-                    case 'eliminar':
-                      _showDeleteDialog(negocio);
-                      break;
-                  }
-                },
-                itemBuilder: (BuildContext context)=> [
-                  const PopupMenuItem<String>(
-                    value: 'editar',
-                    child: Row(
+                        child: Center(
+                          child: Text(
+                            (negocio.nombre.isNotEmpty == true
+                                ? negocio.nombre.substring(0, 1).toUpperCase()
+                                : 'N'),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              negocio.nombre ?? 'Sin nombre',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            if (negocio.direccion != null)
+                              Text(
+                                negocio.direccion!,
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        onSelected: (value) {
+                          switch (value) {
+                            case 'editar':
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => EditBussinesSuperadminPage(
+                                    negocio: negocio,
+                                  ),
+                                ),
+                              );
+                              break;
+                            case 'eliminar':
+                              _showDeleteDialog(negocio);
+                              break;
+                          }
+                        },
+                        icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        itemBuilder: (BuildContext context) => [
+                          const PopupMenuItem<String>(
+                            value: 'editar',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.edit_outlined,
+                                  color: Color(0xFF2196F3),
+                                ),
+                                SizedBox(width: 12),
+                                Text('Editar'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'eliminar',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline, color: Colors.red),
+                                SizedBox(width: 12),
+                                Text(
+                                  'Eliminar',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Información de contacto
+                  Container(
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Column(
                       children: [
-                        Icon(Icons.edit),
-                        SizedBox(width: 8),
-                        Text('Editar'),
+                        _buildInfoRow(
+                          Icons.phone_outlined,
+                          'Teléfono',
+                          negocio.telefono ?? 'Sin teléfono',
+                        ),
+                        const SizedBox(height: 4),
+                        _buildInfoRow(
+                          Icons.email_outlined,
+                          'RUC/Email',
+                          negocio.ruc ?? 'Sin información',
+                        ),
+                        const SizedBox(height: 4),
+                        _buildInfoRow(
+                          Icons.timer,
+                          'Duracion de acceso',
+                          '${negocio.duration} Días' ?? 'Sin información',
+                        ),
                       ],
                     ),
                   ),
-                  const PopupMenuItem<String>(
-                    value: 'eliminar',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Eliminar', style: TextStyle(color: Colors.red)),
-                      ],
-                    ),
+
+                  const SizedBox(height: 12),
+
+                  // Información de acceso
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3E5F5),
+                            borderRadius: BorderRadius.circular(12.0),
+                            border: Border.all(color: const Color(0xFFE1BEE7)),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.computer_outlined,
+                                color: const Color(0xFF7B1FA2),
+                                size: 24,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'PC Access',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                              Text(
+                                "${negocio.pcAccess ?? 'N/A'}",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF7B1FA2),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F5E8),
+                            borderRadius: BorderRadius.circular(12.0),
+                            border: Border.all(color: const Color(0xFFC8E6C9)),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.phone_android_outlined,
+                                color: const Color(0xFF388E3C),
+                                size: 24,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Móvil Access',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                              Text(
+                                "${negocio.movilAccess ?? 'N/A'}",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF388E3C),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -235,10 +391,51 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
     );
   }
 
-  void _showDeleteDialog(Negocio negocio){
+  // Método auxiliar para crear las filas de información
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: Icon(icon, size: 16, color: const Color(0xFF2196F3)),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showDeleteDialog(Negocio negocio) {
     showDialog(
       context: context,
-      builder: (BuildContext context){
+      builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirmar eliminación'),
           content: Text(
@@ -246,13 +443,13 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
           ),
           actions: [
             TextButton(
-              onPressed: (){
+              onPressed: () {
                 Navigator.of(context).pop();
               },
               child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: (){
+              onPressed: () {
                 Navigator.of(context).pop();
                 _deleteNegocio(negocio);
               },
@@ -265,7 +462,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
     );
   }
 
-  Future<void> _deleteNegocio(Negocio negocio)async {
+  Future<void> _deleteNegocio(Negocio negocio) async {
     try {
       final request = ModelMutations.delete(negocio);
       await Amplify.API.mutate(request: request).response;
@@ -277,7 +474,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
       );
 
       refreshNegocios();
-    } catch (e){
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al eliminar negocio: ${e.toString()}'),

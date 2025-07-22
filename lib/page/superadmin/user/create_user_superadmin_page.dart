@@ -14,7 +14,7 @@ class CreateUserSuperadminPage extends StatefulWidget {
   const CreateUserSuperadminPage({super.key});
 
   @override
-  State<CreateUserSuperadminPage> createState()=>
+  State<CreateUserSuperadminPage> createState() =>
       _CreateUserSuperadminPageState();
 }
 
@@ -35,13 +35,13 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
   List<Negocio> _negociosList = [];
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _loadNegocios();
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -49,8 +49,8 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
     super.dispose();
   }
 
-  Future<void> _loadNegocios()async {
-    setState((){
+  Future<void> _loadNegocios() async {
+    setState(() {
       _isLoadingNegocios = true;
     });
 
@@ -58,7 +58,7 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
       final request = ModelQueries.list(Negocio.classType);
       final response = await Amplify.API.query(request: request).response;
 
-      if (response.hasErrors){
+      if (response.hasErrors) {
         safePrint('Errores en la respuesta: ${response.errors}');
         throw Exception('Error al obtener los negocios');
       }
@@ -67,17 +67,17 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
 
       final negociosList =
           negociosItems
-              ?.where((item)=> item != null)
-              .map((item)=> item!)
-              .toList()??
+              ?.where((item) => item != null)
+              .map((item) => item!)
+              .toList() ??
           [];
 
-      setState((){
+      setState(() {
         _negociosList = negociosList;
       });
-    } catch (e){
+    } catch (e) {
       safePrint('Error cargando negocios: $e');
-      if (mounted){
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al cargar negocios: $e'),
@@ -86,7 +86,7 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
         );
       }
     } finally {
-      setState((){
+      setState(() {
         _isLoadingNegocios = false;
       });
     }
@@ -99,8 +99,8 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
     String? phoneNumber,
     required String role,
     String? negocioId,
-  })async {
-    setState((){
+  }) async {
+    setState(() {
       _isLoading = true;
     });
 
@@ -111,31 +111,21 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
         CognitoUserAttributeKey.custom('role'): role,
         if (negocioId != null && negocioId.isNotEmpty)
           CognitoUserAttributeKey.custom('negocioid'): negocioId,
-        if (username.isNotEmpty)
-          CognitoUserAttributeKey.name: username,
-          CognitoUserAttributeKey.nickname: username,
+        if (username.isNotEmpty) CognitoUserAttributeKey.name: username,
+        CognitoUserAttributeKey.nickname: username,
       };
 
-      print("REGISTRANDO USUARIO");
       final result = await Amplify.Auth.signUp(
         username: email,
         password: password,
-        options: SignUpOptions(userAttributes: userAttributes,),
+        options: SignUpOptions(userAttributes: userAttributes),
       );
 
-      print("ASIGNANDO ROL");
-      print(role);
-      print(email);
-      if (negocioId != null){
-        print("NEGOCIO ID: $negocioId");
-      }
-
       await assignUserToGroup(email, role);
-      print("MANEJANDO RESULTADO");
       await _handleSignUpResult(result);
-    } on AuthException catch (e){
+    } on AuthException catch (e) {
       safePrint('Error signing up user: ${e.message}');
-      if (mounted){
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al registrar usuario: ${e.message}'),
@@ -144,34 +134,34 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
         );
       }
     } finally {
-      if (mounted){
-        setState((){
+      if (mounted) {
+        setState(() {
           _isLoading = false;
         });
       }
     }
   }
 
-  Future<JsonWebToken?> getIdTokenSimple()async {
+  Future<JsonWebToken?> getIdTokenSimple() async {
     try {
       final session = await Amplify.Auth.fetchAuthSession();
 
-      if (session.isSignedIn){
+      if (session.isSignedIn) {
         final cognitoSession = session as CognitoAuthSession;
         final tokens = cognitoSession.userPoolTokensResult.value;
         return tokens.idToken;
       }
       return null;
-    } catch (e){
+    } catch (e) {
       print('Error al obtener ID token: $e');
       return null;
     }
   }
 
-  Future<void> assignUserToGroup(String email, String group)async {
+  Future<void> assignUserToGroup(String email, String group) async {
     var idToken = await getIdTokenSimple();
 
-    if (idToken == null){
+    if (idToken == null) {
       print('No se pudo obtener el token');
       return;
     }
@@ -189,17 +179,17 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
       body: jsonEncode({"username": email, "groupName": group}),
     );
 
-    if (response.statusCode == 200){
+    if (response.statusCode == 200) {
       print("Usuario asignado correctamente");
     } else {
       print("Error al asignar usuario: ${response.body}");
     }
   }
 
-  Future<void> _handleSignUpResult(SignUpResult result)async {
-    switch (result.nextStep.signUpStep){
+  Future<void> _handleSignUpResult(SignUpResult result) async {
+    switch (result.nextStep.signUpStep) {
       case AuthSignUpStep.confirmSignUp:
-        if (mounted){
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Se requiere confirmación. Revisa tu email.'),
@@ -210,7 +200,7 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
         }
         break;
       case AuthSignUpStep.done:
-        if (mounted){
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Usuario registrado exitosamente'),
@@ -223,22 +213,22 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
     }
   }
 
-  void _clearForm(){
+  void _clearForm() {
     _usernameController.clear();
     _emailController.clear();
     _passwordController.clear();
     _phoneController.clear();
-    setState((){
+    setState(() {
       _selectedRole = null;
       _selectedNegocioId = null;
     });
   }
 
-  void _submitForm()async {
-    if (_formKey.currentState!.validate()){
+  void _submitForm() async {
+    if (_formKey.currentState!.validate()) {
       // Validación adicional para roles que requieren negocio
-      if ((_selectedRole == 'admin' || _selectedRole == 'vendedor')&&
-          (_selectedNegocioId == null || _selectedNegocioId!.isEmpty)){
+      if ((_selectedRole == 'admin' || _selectedRole == 'vendedor') &&
+          (_selectedNegocioId == null || _selectedNegocioId!.isEmpty)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -263,12 +253,12 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
     }
   }
 
-  bool _shouldShowNegocioSelector(){
+  bool _shouldShowNegocioSelector() {
     return _selectedRole == 'admin' || _selectedRole == 'vendedor';
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Registro de Usuario'),
@@ -301,8 +291,8 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person),
                 ),
-                validator: (value){
-                  if (value == null || value.trim().isEmpty){
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
                     return 'El nombre es requerido';
                   }
                   return null;
@@ -317,11 +307,11 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email),
                 ),
-                validator: (value){
-                  if (value == null || value.trim().isEmpty){
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
                     return 'El email es requerido';
                   }
-                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)){
+                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
                     return 'Ingresa un email válido';
                   }
                   return null;
@@ -343,18 +333,18 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                           ? Icons.visibility
                           : Icons.visibility_off,
                     ),
-                    onPressed: (){
-                      setState((){
+                    onPressed: () {
+                      setState(() {
                         _obscurePassword = !_obscurePassword;
                       });
                     },
                   ),
                 ),
-                validator: (value){
-                  if (value == null || value.isEmpty){
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
                     return 'La contraseña es requerida';
                   }
-                  if (value.length < 8){
+                  if (value.length < 8) {
                     return 'Mínimo 8 caracteres';
                   }
                   return null;
@@ -371,9 +361,9 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.phone),
                 ),
-                validator: (value){
-                  if (value != null && value.trim().isNotEmpty){
-                    if (!RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(value.trim())){
+                validator: (value) {
+                  if (value != null && value.trim().isNotEmpty) {
+                    if (!RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(value.trim())) {
                       return 'Formato de teléfono inválido';
                     }
                   }
@@ -387,33 +377,33 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                 value: _selectedRole,
                 items: _roles
                     .map(
-                      (role)=> DropdownMenuItem(
+                      (role) => DropdownMenuItem(
                         value: role,
-                        child: Text(role[0].toUpperCase()+ role.substring(1)),
+                        child: Text(role[0].toUpperCase() + role.substring(1)),
                       ),
-)
+                    )
                     .toList(),
                 decoration: const InputDecoration(
                   labelText: 'Rol del usuario *',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.supervised_user_circle),
                 ),
-                onChanged: (value){
-                  setState((){
+                onChanged: (value) {
+                  setState(() {
                     _selectedRole = value;
                     // Limpiar selección de negocio si no es necesaria
-                    if (!_shouldShowNegocioSelector()){
+                    if (!_shouldShowNegocioSelector()) {
                       _selectedNegocioId = null;
                     }
                   });
                 },
-                validator: (value)=>
+                validator: (value) =>
                     value == null ? 'Debe seleccionar un rol' : null,
               ),
               const SizedBox(height: 16),
 
               // Selector de Negocio (condicional)
-              if (_shouldShowNegocioSelector())...[
+              if (_shouldShowNegocioSelector()) ...[
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   child: Card(
@@ -465,7 +455,7 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                         ],
                       ),
                     ),
-)
+                  )
                 else if (_negociosList.isEmpty)
                   Card(
                     color: Colors.orange.shade50,
@@ -502,11 +492,11 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                         ],
                       ),
                     ),
-)
+                  )
                 else
                   DropdownButtonFormField<String>(
                     value: _selectedNegocioId,
-                    items: _negociosList.map((negocio){
+                    items: _negociosList.map((negocio) {
                       return DropdownMenuItem(
                         value: negocio.id,
                         child: Column(
@@ -538,14 +528,14 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                       helperText:
                           'Selecciona el negocio al que pertenecerá el usuario',
                     ),
-                    onChanged: (value){
-                      setState((){
+                    onChanged: (value) {
+                      setState(() {
                         _selectedNegocioId = value;
                       });
                     },
-                    validator: (value){
-                      if (_shouldShowNegocioSelector()&&
-                          (value == null || value.isEmpty)){
+                    validator: (value) {
+                      if (_shouldShowNegocioSelector() &&
+                          (value == null || value.isEmpty)) {
                         return 'Debe seleccionar un negocio para este rol';
                       }
                       return null;
@@ -558,7 +548,7 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
 
               // Información seleccionada
               if (_selectedNegocioId != null &&
-                  _shouldShowNegocioSelector())...[
+                  _shouldShowNegocioSelector()) ...[
                 Card(
                   color: Colors.green.shade50,
                   child: Padding(
@@ -584,10 +574,10 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        if (_negociosList.isNotEmpty)...[
-                          (){
+                        if (_negociosList.isNotEmpty) ...[
+                          () {
                             final selectedNegocio = _negociosList.firstWhere(
-                              (n)=> n.id == _selectedNegocioId,
+                              (n) => n.id == _selectedNegocioId,
                             );
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -636,7 +626,7 @@ class _CreateUserSuperadminPageState extends State<CreateUserSuperadminPage> {
                           SizedBox(width: 8),
                           Text('Registrando...'),
                         ],
-)
+                      )
                     : const Text(
                         'Registrar Usuario',
                         style: TextStyle(fontSize: 16),

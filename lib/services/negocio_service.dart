@@ -40,15 +40,11 @@ class NegocioService {
   static Future<UserInfo> getCurrentUserInfo()async {
     try {
       final authUser = await Amplify.Auth.getCurrentUser();
-      print("USUARIO ACTUAL");
-      print(authUser);
       final authSession =
           await Amplify.Auth.fetchAuthSession()as CognitoAuthSession;
 
       // Extraer grupos del token de acceso
       final groups = _extractUserGroups(authSession);
-      print("GRUPOS");
-      print(groups);
       // Obtener email si está disponible
       String? email;
       String? negocioId;

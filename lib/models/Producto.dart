@@ -32,6 +32,7 @@ class Producto extends amplify_core.Model {
   final String? _descripcion;
   final double? _precio;
   final int? _stock;
+  final String? _barCode;
   final List<String>? _productoImages;
   final String? _negocioID;
   final String? _categoriaID;
@@ -97,6 +98,10 @@ class Producto extends amplify_core.Model {
     }
   }
   
+  String? get barCode {
+    return _barCode;
+  }
+  
   List<String>? get productoImages {
     return _productoImages;
   }
@@ -147,15 +152,16 @@ class Producto extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const Producto._internal({required this.id, required nombre, descripcion, required precio, required stock, productoImages, required negocioID, required categoriaID, estado, invoiceItems, orderItems, createdAt, updatedAt}): _nombre = nombre, _descripcion = descripcion, _precio = precio, _stock = stock, _productoImages = productoImages, _negocioID = negocioID, _categoriaID = categoriaID, _estado = estado, _invoiceItems = invoiceItems, _orderItems = orderItems, _createdAt = createdAt, _updatedAt = updatedAt;
+  const Producto._internal({required this.id, required nombre, descripcion, required precio, required stock, barCode, productoImages, required negocioID, required categoriaID, estado, invoiceItems, orderItems, createdAt, updatedAt}): _nombre = nombre, _descripcion = descripcion, _precio = precio, _stock = stock, _barCode = barCode, _productoImages = productoImages, _negocioID = negocioID, _categoriaID = categoriaID, _estado = estado, _invoiceItems = invoiceItems, _orderItems = orderItems, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory Producto({String? id, required String nombre, String? descripcion, required double precio, required int stock, List<String>? productoImages, required String negocioID, required String categoriaID, String? estado, List<InvoiceItem>? invoiceItems, List<OrderItem>? orderItems, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+  factory Producto({String? id, required String nombre, String? descripcion, required double precio, required int stock, String? barCode, List<String>? productoImages, required String negocioID, required String categoriaID, String? estado, List<InvoiceItem>? invoiceItems, List<OrderItem>? orderItems, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return Producto._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       nombre: nombre,
       descripcion: descripcion,
       precio: precio,
       stock: stock,
+      barCode: barCode,
       productoImages: productoImages != null ? List<String>.unmodifiable(productoImages) : productoImages,
       negocioID: negocioID,
       categoriaID: categoriaID,
@@ -179,6 +185,7 @@ class Producto extends amplify_core.Model {
       _descripcion == other._descripcion &&
       _precio == other._precio &&
       _stock == other._stock &&
+      _barCode == other._barCode &&
       DeepCollectionEquality().equals(_productoImages, other._productoImages) &&
       _negocioID == other._negocioID &&
       _categoriaID == other._categoriaID &&
@@ -202,6 +209,7 @@ class Producto extends amplify_core.Model {
     buffer.write("descripcion=" + "$_descripcion" + ", ");
     buffer.write("precio=" + (_precio != null ? _precio!.toString() : "null") + ", ");
     buffer.write("stock=" + (_stock != null ? _stock!.toString() : "null") + ", ");
+    buffer.write("barCode=" + "$_barCode" + ", ");
     buffer.write("productoImages=" + (_productoImages != null ? _productoImages!.toString() : "null") + ", ");
     buffer.write("negocioID=" + "$_negocioID" + ", ");
     buffer.write("categoriaID=" + "$_categoriaID" + ", ");
@@ -213,13 +221,14 @@ class Producto extends amplify_core.Model {
     return buffer.toString();
   }
   
-  Producto copyWith({String? nombre, String? descripcion, double? precio, int? stock, List<String>? productoImages, String? negocioID, String? categoriaID, String? estado, List<InvoiceItem>? invoiceItems, List<OrderItem>? orderItems, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+  Producto copyWith({String? nombre, String? descripcion, double? precio, int? stock, String? barCode, List<String>? productoImages, String? negocioID, String? categoriaID, String? estado, List<InvoiceItem>? invoiceItems, List<OrderItem>? orderItems, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return Producto._internal(
       id: id,
       nombre: nombre ?? this.nombre,
       descripcion: descripcion ?? this.descripcion,
       precio: precio ?? this.precio,
       stock: stock ?? this.stock,
+      barCode: barCode ?? this.barCode,
       productoImages: productoImages ?? this.productoImages,
       negocioID: negocioID ?? this.negocioID,
       categoriaID: categoriaID ?? this.categoriaID,
@@ -235,6 +244,7 @@ class Producto extends amplify_core.Model {
     ModelFieldValue<String?>? descripcion,
     ModelFieldValue<double>? precio,
     ModelFieldValue<int>? stock,
+    ModelFieldValue<String?>? barCode,
     ModelFieldValue<List<String>?>? productoImages,
     ModelFieldValue<String>? negocioID,
     ModelFieldValue<String>? categoriaID,
@@ -250,6 +260,7 @@ class Producto extends amplify_core.Model {
       descripcion: descripcion == null ? this.descripcion : descripcion.value,
       precio: precio == null ? this.precio : precio.value,
       stock: stock == null ? this.stock : stock.value,
+      barCode: barCode == null ? this.barCode : barCode.value,
       productoImages: productoImages == null ? this.productoImages : productoImages.value,
       negocioID: negocioID == null ? this.negocioID : negocioID.value,
       categoriaID: categoriaID == null ? this.categoriaID : categoriaID.value,
@@ -267,6 +278,7 @@ class Producto extends amplify_core.Model {
       _descripcion = json['descripcion'],
       _precio = (json['precio'] as num?)?.toDouble(),
       _stock = (json['stock'] as num?)?.toInt(),
+      _barCode = json['barCode'],
       _productoImages = json['productoImages']?.cast<String>(),
       _negocioID = json['negocioID'],
       _categoriaID = json['categoriaID'],
@@ -301,7 +313,7 @@ class Producto extends amplify_core.Model {
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'nombre': _nombre, 'descripcion': _descripcion, 'precio': _precio, 'stock': _stock, 'productoImages': _productoImages, 'negocioID': _negocioID, 'categoriaID': _categoriaID, 'estado': _estado, 'invoiceItems': _invoiceItems?.map((InvoiceItem? e) => e?.toJson()).toList(), 'orderItems': _orderItems?.map((OrderItem? e) => e?.toJson()).toList(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'nombre': _nombre, 'descripcion': _descripcion, 'precio': _precio, 'stock': _stock, 'barCode': _barCode, 'productoImages': _productoImages, 'negocioID': _negocioID, 'categoriaID': _categoriaID, 'estado': _estado, 'invoiceItems': _invoiceItems?.map((InvoiceItem? e) => e?.toJson()).toList(), 'orderItems': _orderItems?.map((OrderItem? e) => e?.toJson()).toList(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
   
   Map<String, Object?> toMap() => {
@@ -310,6 +322,7 @@ class Producto extends amplify_core.Model {
     'descripcion': _descripcion,
     'precio': _precio,
     'stock': _stock,
+    'barCode': _barCode,
     'productoImages': _productoImages,
     'negocioID': _negocioID,
     'categoriaID': _categoriaID,
@@ -326,6 +339,7 @@ class Producto extends amplify_core.Model {
   static final DESCRIPCION = amplify_core.QueryField(fieldName: "descripcion");
   static final PRECIO = amplify_core.QueryField(fieldName: "precio");
   static final STOCK = amplify_core.QueryField(fieldName: "stock");
+  static final BARCODE = amplify_core.QueryField(fieldName: "barCode");
   static final PRODUCTOIMAGES = amplify_core.QueryField(fieldName: "productoImages");
   static final NEGOCIOID = amplify_core.QueryField(fieldName: "negocioID");
   static final CATEGORIAID = amplify_core.QueryField(fieldName: "categoriaID");
@@ -388,6 +402,12 @@ class Producto extends amplify_core.Model {
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: Producto.BARCODE,
+      isRequired: false,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
       key: Producto.PRODUCTOIMAGES,
       isRequired: false,
       isArray: true,
@@ -416,14 +436,14 @@ class Producto extends amplify_core.Model {
       key: Producto.INVOICEITEMS,
       isRequired: false,
       ofModelName: 'InvoiceItem',
-      associatedKey: InvoiceItem.PRODUCTO
+      associatedKey: InvoiceItem.PRODUCTOID
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.hasMany(
       key: Producto.ORDERITEMS,
       isRequired: false,
       ofModelName: 'OrderItem',
-      associatedKey: OrderItem.PRODUCTO
+      associatedKey: OrderItem.PRODUCTOID
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(

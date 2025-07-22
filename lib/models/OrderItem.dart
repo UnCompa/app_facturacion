@@ -28,7 +28,7 @@ class OrderItem extends amplify_core.Model {
   static const classType = const _OrderItemModelType();
   final String id;
   final String? _orderID;
-  final Producto? _producto;
+  final String? _productoID;
   final int? _quantity;
   final int? _tax;
   final double? _subtotal;
@@ -62,8 +62,17 @@ class OrderItem extends amplify_core.Model {
     }
   }
   
-  Producto? get producto {
-    return _producto;
+  String get productoID {
+    try {
+      return _productoID!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
   }
   
   int get quantity {
@@ -117,13 +126,13 @@ class OrderItem extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const OrderItem._internal({required this.id, required orderID, producto, required quantity, tax, required subtotal, required total, createdAt, updatedAt}): _orderID = orderID, _producto = producto, _quantity = quantity, _tax = tax, _subtotal = subtotal, _total = total, _createdAt = createdAt, _updatedAt = updatedAt;
+  const OrderItem._internal({required this.id, required orderID, required productoID, required quantity, tax, required subtotal, required total, createdAt, updatedAt}): _orderID = orderID, _productoID = productoID, _quantity = quantity, _tax = tax, _subtotal = subtotal, _total = total, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory OrderItem({String? id, required String orderID, Producto? producto, required int quantity, int? tax, required double subtotal, required double total, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+  factory OrderItem({String? id, required String orderID, required String productoID, required int quantity, int? tax, required double subtotal, required double total, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return OrderItem._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       orderID: orderID,
-      producto: producto,
+      productoID: productoID,
       quantity: quantity,
       tax: tax,
       subtotal: subtotal,
@@ -142,7 +151,7 @@ class OrderItem extends amplify_core.Model {
     return other is OrderItem &&
       id == other.id &&
       _orderID == other._orderID &&
-      _producto == other._producto &&
+      _productoID == other._productoID &&
       _quantity == other._quantity &&
       _tax == other._tax &&
       _subtotal == other._subtotal &&
@@ -161,7 +170,7 @@ class OrderItem extends amplify_core.Model {
     buffer.write("OrderItem {");
     buffer.write("id=" + "$id" + ", ");
     buffer.write("orderID=" + "$_orderID" + ", ");
-    buffer.write("producto=" + (_producto != null ? _producto!.toString() : "null") + ", ");
+    buffer.write("productoID=" + "$_productoID" + ", ");
     buffer.write("quantity=" + (_quantity != null ? _quantity!.toString() : "null") + ", ");
     buffer.write("tax=" + (_tax != null ? _tax!.toString() : "null") + ", ");
     buffer.write("subtotal=" + (_subtotal != null ? _subtotal!.toString() : "null") + ", ");
@@ -173,11 +182,11 @@ class OrderItem extends amplify_core.Model {
     return buffer.toString();
   }
   
-  OrderItem copyWith({String? orderID, Producto? producto, int? quantity, int? tax, double? subtotal, double? total, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+  OrderItem copyWith({String? orderID, String? productoID, int? quantity, int? tax, double? subtotal, double? total, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return OrderItem._internal(
       id: id,
       orderID: orderID ?? this.orderID,
-      producto: producto ?? this.producto,
+      productoID: productoID ?? this.productoID,
       quantity: quantity ?? this.quantity,
       tax: tax ?? this.tax,
       subtotal: subtotal ?? this.subtotal,
@@ -188,7 +197,7 @@ class OrderItem extends amplify_core.Model {
   
   OrderItem copyWithModelFieldValues({
     ModelFieldValue<String>? orderID,
-    ModelFieldValue<Producto?>? producto,
+    ModelFieldValue<String>? productoID,
     ModelFieldValue<int>? quantity,
     ModelFieldValue<int?>? tax,
     ModelFieldValue<double>? subtotal,
@@ -199,7 +208,7 @@ class OrderItem extends amplify_core.Model {
     return OrderItem._internal(
       id: id,
       orderID: orderID == null ? this.orderID : orderID.value,
-      producto: producto == null ? this.producto : producto.value,
+      productoID: productoID == null ? this.productoID : productoID.value,
       quantity: quantity == null ? this.quantity : quantity.value,
       tax: tax == null ? this.tax : tax.value,
       subtotal: subtotal == null ? this.subtotal : subtotal.value,
@@ -212,11 +221,7 @@ class OrderItem extends amplify_core.Model {
   OrderItem.fromJson(Map<String, dynamic> json)  
     : id = json['id'],
       _orderID = json['orderID'],
-      _producto = json['producto'] != null
-        ? json['producto']['serializedData'] != null
-          ? Producto.fromJson(new Map<String, dynamic>.from(json['producto']['serializedData']))
-          : Producto.fromJson(new Map<String, dynamic>.from(json['producto']))
-        : null,
+      _productoID = json['productoID'],
       _quantity = (json['quantity'] as num?)?.toInt(),
       _tax = (json['tax'] as num?)?.toInt(),
       _subtotal = (json['subtotal'] as num?)?.toDouble(),
@@ -225,13 +230,13 @@ class OrderItem extends amplify_core.Model {
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'orderID': _orderID, 'producto': _producto?.toJson(), 'quantity': _quantity, 'tax': _tax, 'subtotal': _subtotal, 'total': _total, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'orderID': _orderID, 'productoID': _productoID, 'quantity': _quantity, 'tax': _tax, 'subtotal': _subtotal, 'total': _total, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
   
   Map<String, Object?> toMap() => {
     'id': id,
     'orderID': _orderID,
-    'producto': _producto,
+    'productoID': _productoID,
     'quantity': _quantity,
     'tax': _tax,
     'subtotal': _subtotal,
@@ -243,9 +248,7 @@ class OrderItem extends amplify_core.Model {
   static final amplify_core.QueryModelIdentifier<OrderItemModelIdentifier> MODEL_IDENTIFIER = amplify_core.QueryModelIdentifier<OrderItemModelIdentifier>();
   static final ID = amplify_core.QueryField(fieldName: "id");
   static final ORDERID = amplify_core.QueryField(fieldName: "orderID");
-  static final PRODUCTO = amplify_core.QueryField(
-    fieldName: "producto",
-    fieldType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.model, ofModelName: 'Producto'));
+  static final PRODUCTOID = amplify_core.QueryField(fieldName: "productoID");
   static final QUANTITY = amplify_core.QueryField(fieldName: "quantity");
   static final TAX = amplify_core.QueryField(fieldName: "tax");
   static final SUBTOTAL = amplify_core.QueryField(fieldName: "subtotal");
@@ -283,11 +286,10 @@ class OrderItem extends amplify_core.Model {
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));
     
-    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.belongsTo(
-      key: OrderItem.PRODUCTO,
-      isRequired: false,
-      targetNames: ['productoID'],
-      ofModelName: 'Producto'
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: OrderItem.PRODUCTOID,
+      isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(

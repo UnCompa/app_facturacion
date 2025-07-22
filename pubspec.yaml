@@ -21,6 +21,7 @@ dependencies:
   image_picker: ^1.0.0
   amplify_storage_s3: ^2.0.0
   flutter_native_splash: ^2.4.6
+  simple_barcode_scanner: ^0.3.0
 
 dev_dependencies:
   flutter_test:

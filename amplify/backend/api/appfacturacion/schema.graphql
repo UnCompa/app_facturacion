@@ -19,23 +19,6 @@ type Negocio
   updatedAt: AWSDateTime
 }
 
-type Producto
-  @model
-  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]){
-  id: ID!
-  nombre: String!
-  descripcion: String
-  precio: Float!
-  stock: Int!
-  productoImages: [String]
-  negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
-  categoriaID: ID! @index(name: "byCategoria")
-  estado: String
-  invoiceItems: [InvoiceItem] @hasMany(indexName: "byProducto", fields: ["id"])
-  orderItems: [OrderItem] @hasMany(indexName: "byProducto", fields: ["id"])
-  createdAt: AWSDateTime
-  updatedAt: AWSDateTime
-}
 
 type Categoria
   @model
@@ -47,6 +30,24 @@ type Categoria
   productos: [Producto] @hasMany(indexName: "byCategoria", fields: ["id"])
   subCategorias: [Categoria]
     @hasMany(indexName: "byParentCategoria", fields: ["id"])
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+type Producto
+  @model
+  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]){
+  id: ID!
+  nombre: String!
+  descripcion: String
+  precio: Float!
+  stock: Int!
+  barCode: String,
+  productoImages: [String]
+  negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
+  categoriaID: ID! @index(name: "byCategoria")
+  estado: String
+  invoiceItems: [InvoiceItem] @hasMany(indexName: "byProducto", fields: ["id"])
+  orderItems: [OrderItem] @hasMany(indexName: "byProducto", fields: ["id"])
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -70,7 +71,6 @@ type InvoiceItem
   @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]){
   id: ID!
   invoiceID: ID! @index(name: "byInvoice")
-  producto: Producto @belongsTo(fields: ["productoID"])
   productoID: ID! @index(name: "byProducto")
   quantity: Int!
   tax: Int
@@ -99,7 +99,6 @@ type OrderItem
   @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]){
   id: ID!
   orderID: ID! @index(name: "byOrder")
-  producto: Producto @belongsTo(fields: ["productoID"])
   productoID: ID! @index(name: "byProducto")
   quantity: Int!
   tax: Int

@@ -1,7 +1,6 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 
 class VerifyAttributePage extends StatefulWidget {
   final AuthUserAttributeKey attributeKey;
@@ -16,7 +15,7 @@ class VerifyAttributePage extends StatefulWidget {
   });
 
   @override
-  State<VerifyAttributePage> createState() => _VerifyAttributePageState();
+  State<VerifyAttributePage> createState()=> _VerifyAttributePageState();
 }
 
 class _VerifyAttributePageState extends State<VerifyAttributePage> {
@@ -27,17 +26,17 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
   int _countdown = 0;
 
   @override
-  void dispose() {
+  void dispose(){
     _codeController.dispose();
     super.dispose();
   }
 
-  Future<void> _verifyAttribute() async {
-    if (!_formKey.currentState!.validate()) {
+  Future<void> _verifyAttribute()async {
+    if (!_formKey.currentState!.validate()){
       return;
     }
 
-    setState(() {
+    setState((){
       _isLoading = true;
     });
 
@@ -47,26 +46,26 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
         confirmationCode: _codeController.text.trim(),
       );
 
-      if (mounted) {
+      if (mounted){
         _showSuccessDialog();
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (e){
       _showErrorSnackBar('Error al verificar: ${e.message}');
-    } catch (e) {
+    } catch (e){
       _showErrorSnackBar('Error inesperado: $e');
     } finally {
-      if (mounted) {
-        setState(() {
+      if (mounted){
+        setState((){
           _isLoading = false;
         });
       }
     }
   }
 
-  Future<void> _resendCode() async {
-    if (_countdown > 0) return;
+  Future<void> _resendCode()async {
+    if (_countdown > 0)return;
 
-    setState(() {
+    setState((){
       _isResending = true;
     });
 
@@ -77,27 +76,27 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
 
       _showSuccessSnackBar('Código reenviado exitosamente');
       _startCountdown();
-    } on AuthException catch (e) {
+    } on AuthException catch (e){
       _showErrorSnackBar('Error al reenviar código: ${e.message}');
-    } catch (e) {
+    } catch (e){
       _showErrorSnackBar('Error inesperado: $e');
     } finally {
-      if (mounted) {
-        setState(() {
+      if (mounted){
+        setState((){
           _isResending = false;
         });
       }
     }
   }
 
-  void _startCountdown() {
-    setState(() {
+  void _startCountdown(){
+    setState((){
       _countdown = 60;
     });
 
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted && _countdown > 0) {
-        setState(() {
+    Future.delayed(const Duration(seconds: 1), (){
+      if (mounted && _countdown > 0){
+        setState((){
           _countdown--;
         });
         _startCountdown();
@@ -105,11 +104,11 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
     });
   }
 
-  void _showSuccessDialog() {
+  void _showSuccessDialog(){
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (context)=> AlertDialog(
         icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
         title: const Text('¡Verificación exitosa!'),
         content: Text(
@@ -117,7 +116,7 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
         ),
         actions: [
           ElevatedButton(
-            onPressed: () {
+            onPressed: (){
               Navigator.of(context).pop(); // Cerrar dialog
               Navigator.of(
                 context,
@@ -134,8 +133,8 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
     );
   }
 
-  void _showErrorSnackBar(String message) {
-    if (mounted) {
+  void _showErrorSnackBar(String message){
+    if (mounted){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
@@ -144,7 +143,7 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
           action: SnackBarAction(
             label: 'OK',
             textColor: Colors.white,
-            onPressed: () {
+            onPressed: (){
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
             },
           ),
@@ -153,8 +152,8 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
     }
   }
 
-  void _showSuccessSnackBar(String message) {
-    if (mounted) {
+  void _showSuccessSnackBar(String message){
+    if (mounted){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
@@ -166,10 +165,10 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
   }
 
   String get _maskedValue {
-    if (widget.attributeKey.key == 'email') {
+    if (widget.attributeKey.key == 'email'){
       final email = widget.attributeValue;
       final parts = email.split('@');
-      if (parts.length == 2) {
+      if (parts.length == 2){
         final username = parts[0];
         final domain = parts[1];
         final maskedUsername = username.length > 2
@@ -177,9 +176,9 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
             : username;
         return '$maskedUsername@$domain';
       }
-    } else if (widget.attributeKey.key == 'phone_number') {
+    } else if (widget.attributeKey.key == 'phone_number'){
       final phone = widget.attributeValue;
-      if (phone.length > 6) {
+      if (phone.length > 6){
         return '${phone.substring(0, 4)}${'*' * (phone.length - 6)}${phone.substring(phone.length - 2)}';
       }
     }
@@ -187,7 +186,7 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         title: Text('Verificar ${widget.attributeName}'),
@@ -269,11 +268,11 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
                         border: OutlineInputBorder(),
                         counterText: '',
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
+                      validator: (value){
+                        if (value == null || value.isEmpty){
                           return 'Ingresa el código de verificación';
                         }
-                        if (value.length < 4) {
+                        if (value.length < 4){
                           return 'El código debe tener al menos 4 dígitos';
                         }
                         return null;
@@ -306,7 +305,7 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
                             Colors.white,
                           ),
                         ),
-                      )
+)
                     : const Text(
                         'Verificar Código',
                         style: TextStyle(fontSize: 16),
@@ -332,12 +331,12 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
                           SizedBox(width: 8),
                           Text('Reenviando...'),
                         ],
-                      )
+)
                     : _countdown > 0
                     ? Text(
                         'Reenviar código en ${_countdown}s',
                         style: TextStyle(color: Colors.grey[600]),
-                      )
+)
                     : const Text(
                         'Reenviar código',
                         style: TextStyle(

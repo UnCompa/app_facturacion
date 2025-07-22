@@ -6,7 +6,7 @@ class NewPasswordScreen extends StatefulWidget {
   const NewPasswordScreen({super.key});
 
   @override
-  State<NewPasswordScreen> createState() => _NewPasswordScreenState();
+  State<NewPasswordScreen> createState()=> _NewPasswordScreenState();
 }
 
 class _NewPasswordScreenState extends State<NewPasswordScreen> {
@@ -14,10 +14,10 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  Future<void> _submitNewPassword() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _submitNewPassword()async {
+    if (!_formKey.currentState!.validate())return;
 
-    setState(() {
+    setState((){
       _isLoading = true;
     });
 
@@ -25,7 +25,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
 
     try {
       final signInResult = LoginScreen.pendingSignInResult;
-      if (signInResult == null) {
+      if (signInResult == null){
         throw Exception("No hay sesión pendiente para cambio de contraseña.");
       }
 
@@ -33,7 +33,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
         confirmationValue: newPassword,
       );
 
-      if (result.isSignedIn) {
+      if (result.isSignedIn){
         // Navegar a la pantalla principal, o según el rol
         Navigator.of(
           context,
@@ -41,26 +41,26 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
       } else {
         _showError("No se pudo completar el cambio de contraseña.");
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (e){
       _showError(e.message);
-    } catch (e) {
+    } catch (e){
       _showError(e.toString());
     } finally {
-      setState(() {
+      setState((){
         _isLoading = false;
       });
     }
   }
 
-  void _showError(String? message) {
+  void _showError(String? message){
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (_)=> AlertDialog(
         title: const Text('Error'),
         content: Text(message ?? 'Error desconocido'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: ()=> Navigator.of(context).pop(),
             child: const Text('OK'),
           ),
         ],
@@ -69,7 +69,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(title: const Text('Cambiar Contraseña')),
       body: Padding(
@@ -85,11 +85,11 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                   labelText: 'Nueva contraseña',
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
+                validator: (value){
+                  if (value == null || value.isEmpty){
                     return 'La contraseña no puede estar vacía';
                   }
-                  if (value.length < 8) {
+                  if (value.length < 8){
                     return 'La contraseña debe tener al menos 8 caracteres';
                   }
                   return null;

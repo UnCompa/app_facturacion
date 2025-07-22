@@ -8,7 +8,7 @@ class UserSuperadminConfirmPage extends StatefulWidget {
   const UserSuperadminConfirmPage({super.key, this.username});
 
   @override
-  State<UserSuperadminConfirmPage> createState() => _UserConfirmationPageState();
+  State<UserSuperadminConfirmPage> createState()=> _UserConfirmationPageState();
 }
 
 class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
@@ -20,16 +20,16 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
   bool _isResendingCode = false;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     // Si se proporciona un username, lo prellenamos
-    if (widget.username != null) {
+    if (widget.username != null){
       _usernameController.text = widget.username!;
     }
   }
 
   @override
-  void dispose() {
+  void dispose(){
     _usernameController.dispose();
     _confirmationCodeController.dispose();
     super.dispose();
@@ -39,8 +39,8 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
   Future<void> confirmUser({
     required String username,
     required String confirmationCode,
-  }) async {
-    setState(() {
+  })async {
+    setState((){
       _isLoading = true;
     });
 
@@ -53,9 +53,9 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
       // Check if further confirmations are needed or if
       // the sign up is complete.
       await _handleSignUpResult(result);
-    } on AuthException catch (e) {
+    } on AuthException catch (e){
       safePrint('Error confirming user: ${e.message}');
-      if (mounted) {
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_getErrorMessage(e.message)),
@@ -64,8 +64,8 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
+      if (mounted){
+        setState((){
           _isLoading = false;
         });
       }
@@ -73,14 +73,14 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
   }
 
   /// Reenvía el código de confirmación
-  Future<void> resendConfirmationCode({required String username}) async {
-    setState(() {
+  Future<void> resendConfirmationCode({required String username})async {
+    setState((){
       _isResendingCode = true;
     });
 
     try {
       await Amplify.Auth.resendSignUpCode(username: username);
-      if (mounted) {
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Código de confirmación reenviado. Revisa tu email.'),
@@ -88,9 +88,9 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
           ),
         );
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (e){
       safePrint('Error resending confirmation code: ${e.message}');
-      if (mounted) {
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al reenviar código: ${e.message}'),
@@ -99,19 +99,19 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
+      if (mounted){
+        setState((){
           _isResendingCode = false;
         });
       }
     }
   }
 
-  Future<void> _handleSignUpResult(SignUpResult result) async {
-    switch (result.nextStep.signUpStep) {
+  Future<void> _handleSignUpResult(SignUpResult result)async {
+    switch (result.nextStep.signUpStep){
       case AuthSignUpStep.confirmSignUp:
         safePrint('Additional confirmation required');
-        if (mounted) {
+        if (mounted){
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Se requiere confirmación adicional'),
@@ -122,7 +122,7 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
         break;
       case AuthSignUpStep.done:
         safePrint('Sign up confirmation is complete');
-        if (mounted) {
+        if (mounted){
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('¡Usuario confirmado exitosamente!'),
@@ -137,19 +137,19 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
     }
   }
 
-  String _getErrorMessage(String error) {
-    if (error.toLowerCase().contains('invalid verification code')) {
+  String _getErrorMessage(String error){
+    if (error.toLowerCase().contains('invalid verification code')){
       return 'Código de verificación inválido';
-    } else if (error.toLowerCase().contains('user not found')) {
+    } else if (error.toLowerCase().contains('user not found')){
       return 'Usuario no encontrado';
-    } else if (error.toLowerCase().contains('expired')) {
+    } else if (error.toLowerCase().contains('expired')){
       return 'El código de verificación ha expirado';
     }
     return 'Error de confirmación: $error';
   }
 
-  void _submitForm() async {
-    if (_formKey.currentState!.validate()) {
+  void _submitForm()async {
+    if (_formKey.currentState!.validate()){
       await confirmUser(
         username: _usernameController.text.trim(),
         confirmationCode: _confirmationCodeController.text.trim(),
@@ -157,8 +157,8 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
     }
   }
 
-  void _resendCode() async {
-    if (_usernameController.text.trim().isEmpty) {
+  void _resendCode()async {
+    if (_usernameController.text.trim().isEmpty){
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Ingresa el nombre de usuario para reenviar el código'),
@@ -172,7 +172,7 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         title: const Text('Confirmar Usuario'),
@@ -213,8 +213,8 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
                 enabled:
                     widget.username ==
                     null, // Solo editable si no se pasó como parámetro
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
+                validator: (value){
+                  if (value == null || value.trim().isEmpty){
                     return 'El nombre de usuario es requerido';
                   }
                   return null;
@@ -238,11 +238,11 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
                   prefixIcon: Icon(Icons.security),
                   hintText: '123456',
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
+                validator: (value){
+                  if (value == null || value.trim().isEmpty){
                     return 'El código de verificación es requerido';
                   }
-                  if (value.length < 4) {
+                  if (value.length < 4){
                     return 'Ingresa un código válido';
                   }
                   return null;
@@ -268,7 +268,7 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
                           SizedBox(width: 8),
                           Text('Confirmando...'),
                         ],
-                      )
+)
                     : const Text(
                         'Confirmar Usuario',
                         style: TextStyle(fontSize: 16),
@@ -294,7 +294,7 @@ class _UserConfirmationPageState extends State<UserSuperadminConfirmPage> {
                           SizedBox(width: 8),
                           Text('Reenviando...'),
                         ],
-                      )
+)
                     : const Text('¿No recibiste el código? Reenviar'),
               ),
 

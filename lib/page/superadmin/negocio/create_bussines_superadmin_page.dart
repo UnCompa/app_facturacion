@@ -6,7 +6,7 @@ class CrearNegocioScreen extends StatefulWidget {
   const CrearNegocioScreen({super.key});
 
   @override
-  State<CrearNegocioScreen> createState() => _CrearNegocioScreenState();
+  State<CrearNegocioScreen> createState()=> _CrearNegocioScreenState();
 }
 
 class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
@@ -22,7 +22,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
   bool _isLoading = false;
 
   @override
-  void dispose() {
+  void dispose(){
     _nombreController.dispose();
     _rucController.dispose();
     _telefonoController.dispose();
@@ -33,17 +33,17 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
     super.dispose();
   }
 
-  Future<void> _crearNegocio() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _crearNegocio()async {
+    if (!_formKey.currentState!.validate())return;
 
-    setState(() {
+    setState((){
       _isLoading = true;
     });
 
     try {
       const graphQLDocument = '''
-        mutation CreateNegocio(\$input: CreateNegocioInput!) {
-          createNegocio(input: \$input) {
+        mutation CreateNegocio(\$input: CreateNegocioInput!){
+          createNegocio(input: \$input){
             id
             nombre
             ruc
@@ -82,11 +82,11 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
 
       final response = await Amplify.API.mutate(request: request).response;
 
-      if (response.hasErrors) {
+      if (response.hasErrors){
         throw Exception('Error al crear negocio: ${response.errors}');
       }
 
-      if (mounted) {
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Negocio creado exitosamente'),
@@ -99,9 +99,9 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
         _limpiarFormulario();
         Navigator.of(context).pop(true); // Indica que se creó exitosamente
       }
-    } catch (e) {
+    } catch (e){
       safePrint('Error creating business: $e');
-      if (mounted) {
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al crear negocio: ${e.toString()}'),
@@ -111,15 +111,15 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
+      if (mounted){
+        setState((){
           _isLoading = false;
         });
       }
     }
   }
 
-  void _limpiarFormulario() {
+  void _limpiarFormulario(){
     _nombreController.clear();
     _rucController.clear();
     _telefonoController.clear();
@@ -129,42 +129,42 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
     _direccionController.clear();
   }
 
-  String? _validarCampoRequerido(String? valor, String campo) {
-    if (valor == null || valor.trim().isEmpty) {
+  String? _validarCampoRequerido(String? valor, String campo){
+    if (valor == null || valor.trim().isEmpty){
       return '$campo es requerido';
     }
     return null;
   }
 
-  String? _validarRuc(String? valor) {
-    if (valor == null || valor.trim().isEmpty) {
+  String? _validarRuc(String? valor){
+    if (valor == null || valor.trim().isEmpty){
       return 'RUC es requerido';
     }
     final ruc = valor.trim();
-    if (ruc.length != 13) {
+    if (ruc.length != 13){
       return 'RUC debe tener 13 dígitos';
     }
-    if (!RegExp(r'^\d+$').hasMatch(ruc)) {
+    if (!RegExp(r'^\d+$').hasMatch(ruc)){
       return 'RUC solo debe contener números';
     }
     return null;
   }
 
-  String? _validarTelefono(String? valor) {
-    if (valor != null && valor.isNotEmpty) {
-      if (!RegExp(r'^\d{10}$').hasMatch(valor.trim())) {
+  String? _validarTelefono(String? valor){
+    if (valor != null && valor.isNotEmpty){
+      if (!RegExp(r'^\d{10}$').hasMatch(valor.trim())){
         return 'Teléfono debe tener 10 dígitos';
       }
     }
     return null;
   }
 
-  String? _validarNumeroEntero(String? valor, String campo) {
-    if (valor != null && valor.isNotEmpty) {
-      if (int.tryParse(valor) == null) {
+  String? _validarNumeroEntero(String? valor, String campo){
+    if (valor != null && valor.isNotEmpty){
+      if (int.tryParse(valor)== null){
         return '$campo debe ser un número entero';
       }
-      if (int.parse(valor) < 0) {
+      if (int.parse(valor)< 0){
         return '$campo debe ser mayor o igual a 0';
       }
     }
@@ -172,7 +172,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         title: const Text('Crear Negocio'),
@@ -247,7 +247,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
                   controller: _nombreController,
                   labelText: 'Nombre del Negocio *',
                   icon: Icons.store,
-                  validator: (value) => _validarCampoRequerido(value, 'Nombre'),
+                  validator: (value)=> _validarCampoRequerido(value, 'Nombre'),
                   textCapitalization: TextCapitalization.words,
                 ),
 
@@ -302,7 +302,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
                         controller: _durationController,
                         labelText: 'Duración (días)',
                         icon: Icons.schedule,
-                        validator: (value) =>
+                        validator: (value)=>
                             _validarNumeroEntero(value, 'Duración'),
                         keyboardType: TextInputType.number,
                         inputFormatters: [
@@ -316,7 +316,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
                         controller: _movilAccessController,
                         labelText: 'Acceso Móvil',
                         icon: Icons.smartphone,
-                        validator: (value) =>
+                        validator: (value)=>
                             _validarNumeroEntero(value, 'Acceso Móvil'),
                         keyboardType: TextInputType.number,
                         inputFormatters: [
@@ -333,7 +333,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
                   controller: _pcAccessController,
                   labelText: 'Acceso PC',
                   icon: Icons.computer,
-                  validator: (value) =>
+                  validator: (value)=>
                       _validarNumeroEntero(value, 'Acceso PC'),
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -388,7 +388,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
                                     style: TextStyle(fontSize: 16),
                                   ),
                                 ],
-                              )
+)
                             : const Text(
                                 'Crear Negocio',
                                 style: TextStyle(
@@ -421,7 +421,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Los campos marcados con (*) son obligatorios',
+                          'Los campos marcados con (*)son obligatorios',
                           style: TextStyle(
                             color: Colors.blue.shade700,
                             fontSize: 12,
@@ -439,7 +439,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title){
     return Text(
       title,
       style: TextStyle(
@@ -459,7 +459,7 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
     List<TextInputFormatter>? inputFormatters,
     int maxLines = 1,
     TextCapitalization textCapitalization = TextCapitalization.none,
-  }) {
+  }){
     return TextFormField(
       controller: controller,
       validator: validator,

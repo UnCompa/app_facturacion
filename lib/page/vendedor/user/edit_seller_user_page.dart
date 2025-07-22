@@ -6,7 +6,7 @@ class EditSellerUserPage extends StatefulWidget {
   const EditSellerUserPage({super.key});
 
   @override
-  State<StatefulWidget> createState() {
+  State<StatefulWidget> createState(){
     return _EditSellerUserPageState();
   }
 }
@@ -20,23 +20,23 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
   String? _currentRole;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _loadUserData();
   }
 
-  Future<void> _loadUserData() async {
-    setState(() {
+  Future<void> _loadUserData()async {
+    setState((){
       _isLoading = true;
     });
 
     try {
       final attributes = await Amplify.Auth.fetchUserAttributes();
 
-      for (final attribute in attributes) {
+      for (final attribute in attributes){
         print("ATRIBUTOS");
         print(attribute);
-        switch (attribute.userAttributeKey.key) {
+        switch (attribute.userAttributeKey.key){
           case 'email':
             _emailController.text = attribute.value;
             break;
@@ -48,21 +48,21 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
             break;
         }
       }
-    } catch (e) {
+    } catch (e){
       _showErrorSnackBar('Error al cargar los datos del usuario: $e');
     } finally {
-      setState(() {
+      setState((){
         _isLoading = false;
       });
     }
   }
 
-  Future<void> _updateUserAttributes() async {
-    if (!_formKey.currentState!.validate()) {
+  Future<void> _updateUserAttributes()async {
+    if (!_formKey.currentState!.validate()){
       return;
     }
 
-    setState(() {
+    setState((){
       _isLoading = true;
     });
 
@@ -74,25 +74,25 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
       final currentAttributes = await Amplify.Auth.fetchUserAttributes();
       final currentEmail = currentAttributes
           .firstWhere(
-            (attr) => attr.userAttributeKey.key == 'email',
-            orElse: () => const AuthUserAttribute(
+            (attr)=> attr.userAttributeKey.key == 'email',
+            orElse: ()=> const AuthUserAttribute(
               userAttributeKey: AuthUserAttributeKey.email,
               value: '',
             ),
-          )
+)
           .value;
       final currentPhone = currentAttributes
           .firstWhere(
-            (attr) => attr.userAttributeKey.key == 'phone_number',
-            orElse: () => const AuthUserAttribute(
+            (attr)=> attr.userAttributeKey.key == 'phone_number',
+            orElse: ()=> const AuthUserAttribute(
               userAttributeKey: AuthUserAttributeKey.phoneNumber,
               value: '',
             ),
-          )
+)
           .value;
 
       // Email
-      if (_emailController.text.trim() != currentEmail) {
+      if (_emailController.text.trim()!= currentEmail){
         final emailAttribute = AuthUserAttribute(
           userAttributeKey: AuthUserAttributeKey.email,
           value: _emailController.text.trim(),
@@ -102,8 +102,8 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
       }
 
       // Teléfono
-      if (_phoneController.text.trim() != currentPhone &&
-          _phoneController.text.trim().isNotEmpty) {
+      if (_phoneController.text.trim()!= currentPhone &&
+          _phoneController.text.trim().isNotEmpty){
         final phoneAttribute = AuthUserAttribute(
           userAttributeKey: AuthUserAttributeKey.phoneNumber,
           value: _phoneController.text.trim(),
@@ -115,17 +115,17 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
 
       await Amplify.Auth.updateUserAttributes(attributes: attributes);
 
-      if (attributesNeedingVerification.isNotEmpty) {
+      if (attributesNeedingVerification.isNotEmpty){
         // Navegar a verificación
         await _handleVerification(attributesNeedingVerification);
       } else {
         _showSuccessSnackBar('Perfil actualizado exitosamente');
         Navigator.pop(context);
       }
-    } catch (e) {
+    } catch (e){
       _showErrorSnackBar('Error al actualizar el perfil: $e');
     } finally {
-      setState(() {
+      setState((){
         _isLoading = false;
       });
     }
@@ -133,8 +133,8 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
 
   Future<void> _handleVerification(
     Map<String, AuthUserAttributeKey> attributesToVerify,
-  ) async {
-    for (final entry in attributesToVerify.entries) {
+  )async {
+    for (final entry in attributesToVerify.entries){
       final attributeName = entry.key;
       final attributeKey = entry.value;
       final attributeValue = attributeKey.key == 'email'
@@ -144,7 +144,7 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
       final result = await Navigator.push<bool>(
         context,
         MaterialPageRoute(
-          builder: (context) => VerifyAttributePage(
+          builder: (context)=> VerifyAttributePage(
             attributeKey: attributeKey,
             attributeValue: attributeValue,
             attributeName: attributeName,
@@ -152,7 +152,7 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
         ),
       );
 
-      if (result == true) {
+      if (result == true){
         // Verificación exitosa, continuar con siguiente atributo si existe
         continue;
       } else {
@@ -167,7 +167,7 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
     Navigator.pop(context);
   }
 
-  void _showErrorSnackBar(String message) {
+  void _showErrorSnackBar(String message){
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -177,7 +177,7 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
     );
   }
 
-  void _showSuccessSnackBar(String message) {
+  void _showSuccessSnackBar(String message){
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -188,14 +188,14 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
   }
 
   @override
-  void dispose() {
+  void dispose(){
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edita tu perfil'),
@@ -255,13 +255,13 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
                         helperText:
                             'Requerirá verificación si cambias el email',
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
+                      validator: (value){
+                        if (value == null || value.isEmpty){
                           return 'El email es requerido';
                         }
                         if (!RegExp(
                           r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                        ).hasMatch(value)) {
+                        ).hasMatch(value)){
                           return 'Ingresa un email válido';
                         }
                         return null;
@@ -280,11 +280,11 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
                         border: OutlineInputBorder(),
                         helperText: 'Formato: +593XXXXXXXXX',
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
+                      validator: (value){
+                        if (value == null || value.isEmpty){
                           return null; // Teléfono es opcional
                         }
-                        if (!value.startsWith('+')) {
+                        if (!value.startsWith('+')){
                           return 'El teléfono debe incluir el código de país (+593)';
                         }
                         return null;
@@ -299,7 +299,7 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
                           child: OutlinedButton(
                             onPressed: _isLoading
                                 ? null
-                                : () {
+                                : (){
                                     Navigator.pop(context);
                                   },
                             child: const Text('Cancelar'),
@@ -327,7 +327,7 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
                                         Colors.white,
                                       ),
                                     ),
-                                  )
+)
                                 : const Text('Guardar Cambios'),
                           ),
                         ),

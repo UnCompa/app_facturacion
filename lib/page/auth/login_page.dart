@@ -17,10 +17,10 @@ class LoginScreen extends StatelessWidget {
     BuildContext context,
     String username,
     String password,
-  ) async {
+  )async {
     try {
       final session = await Amplify.Auth.fetchAuthSession();
-      if (session.isSignedIn) {
+      if (session.isSignedIn){
         await Amplify.Auth.signOut();
       }
 
@@ -29,13 +29,13 @@ class LoginScreen extends StatelessWidget {
         password: password,
       );
 
-      if (result.isSignedIn) {
+      if (result.isSignedIn){
         //await _navigateByUserRole(context);
         await _navigateByUserGroup(context);
       } else {
         await _handleSignInResult(context, result, username);
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (e){
       _showErrorDialog(context, 'Error al iniciar sesión: ${e.message}');
     }
   }
@@ -44,8 +44,8 @@ class LoginScreen extends StatelessWidget {
     BuildContext context,
     SignInResult result,
     String username,
-  ) async {
-    switch (result.nextStep.signInStep) {
+  )async {
+    switch (result.nextStep.signInStep){
       case AuthSignInStep.confirmSignInWithNewPassword:
         // Guardamos el resultado para usarlo en la pantalla de cambio de contraseña
         _pendingSignInResult = result;
@@ -59,7 +59,7 @@ class LoginScreen extends StatelessWidget {
       case AuthSignInStep.resetPassword:
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => ResetPasswordPage(username: username),
+            builder: (_)=> ResetPasswordPage(username: username),
           ),
         );
         break;
@@ -78,12 +78,12 @@ class LoginScreen extends StatelessWidget {
 
   static SignInResult? get pendingSignInResult => _pendingSignInResult;
 
-  Future<void> _navigateByUserRole(BuildContext context) async {
+  Future<void> _navigateByUserRole(BuildContext context)async {
     try {
       final userAttributes = await Amplify.Auth.fetchUserAttributes();
       final roleAttr = userAttributes.firstWhere(
-        (attr) => attr.userAttributeKey.key == 'custom:role',
-        orElse: () => const AuthUserAttribute(
+        (attr)=> attr.userAttributeKey.key == 'custom:role',
+        orElse: ()=> const AuthUserAttribute(
           userAttributeKey: CognitoUserAttributeKey.custom('role'),
           value: 'unknown',
         ),
@@ -92,24 +92,24 @@ class LoginScreen extends StatelessWidget {
       final role = roleAttr.value.toLowerCase();
       print("ROL QUE INGRESA");
       print(role);
-      switch (role) {
+      switch (role){
         case 'superadmin':
           Navigator.of(context).pushReplacementNamed('/superadmin');
           break;
         case 'admin':
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const AdminPage()),
+            MaterialPageRoute(builder: (_)=> const AdminPage()),
           );
           break;
         case 'vendedor':
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const SellerPage()),
+            MaterialPageRoute(builder: (_)=> const SellerPage()),
           );
           break;
         default:
           _showErrorDialog(context, 'Rol no autorizado: $role');
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (e){
       _showErrorDialog(
         context,
         'No se pudieron obtener los atributos del usuario: ${e.message}',
@@ -117,21 +117,21 @@ class LoginScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _navigateByUserGroup(BuildContext context) async {
+  Future<void> _navigateByUserGroup(BuildContext context)async {
     try {
       final authSession = await Amplify.Auth.fetchAuthSession();
 
-      if (authSession is CognitoAuthSession) {
+      if (authSession is CognitoAuthSession){
         final idToken = authSession.userPoolTokensResult.value.idToken;
 
         final decodedToken = JwtDecoder.decode(idToken.raw);
         final List<dynamic> groups = decodedToken['cognito:groups'] ?? [];
         debugPrint(groups.toString());
-        if (groups.contains('superadmin')) {
+        if (groups.contains('superadmin')){
           Navigator.of(context).pushReplacementNamed('/superadmin');
-        } else if (groups.contains('admin')) {
+        } else if (groups.contains('admin')){
           Navigator.of(context).pushReplacementNamed('/admin');
-        } else if (groups.contains('vendedor')) {
+        } else if (groups.contains('vendedor')){
           Navigator.of(context).pushReplacementNamed('/vendedor');
         } else {
           _showErrorDialog(
@@ -142,20 +142,20 @@ class LoginScreen extends StatelessWidget {
       } else {
         _showErrorDialog(context, 'Sesión inválida');
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (e){
       _showErrorDialog(context, 'Error al obtener el token: ${e.message}');
     }
   }
 
-  void _showErrorDialog(BuildContext context, String message) {
+  void _showErrorDialog(BuildContext context, String message){
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context)=> AlertDialog(
         title: const Text('Error'),
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: ()=> Navigator.of(context).pop(),
             child: const Text('OK'),
           ),
         ],
@@ -164,10 +164,10 @@ class LoginScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       body: LoginForm(
-        onLogin: (email, password) {
+        onLogin: (email, password){
           debugPrint("Intentando login con: $email / $password");
           signInUser(context, email, password);
         },

@@ -17,7 +17,7 @@ class AdminCategoriesFormPage extends StatefulWidget {
   });
 
   @override
-  State<AdminCategoriesFormPage> createState() =>
+  State<AdminCategoriesFormPage> createState()=>
       _AdminCategoriesFormPageState();
 }
 
@@ -30,31 +30,31 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
   bool get isEditing => widget.categoria != null;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
-    if (isEditing) {
+    if (isEditing){
       _nombreController.text = widget.categoria!.nombre;
       _selectedParentId = widget.categoria!.parentCategoriaID;
     }
   }
 
   @override
-  void dispose() {
+  void dispose(){
     _nombreController.dispose();
     super.dispose();
   }
 
   List<Categoria> get categoriasParaPadre {
-    if (!isEditing) return widget.categoriasDisponibles;
+    if (!isEditing)return widget.categoriasDisponibles;
 
     // Al editar, excluir la categoría actual para evitar ciclos
     return widget.categoriasDisponibles
-        .where((cat) => cat.id != widget.categoria!.id)
+        .where((cat)=> cat.id != widget.categoria!.id)
         .toList();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -88,7 +88,7 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Información de la categoría actual (solo al editar)
-              if (isEditing) ...[
+              if (isEditing)...[
                 Card(
                   color: Colors.blue.shade50,
                   child: Padding(
@@ -132,11 +132,11 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.category),
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
+                validator: (value){
+                  if (value == null || value.trim().isEmpty){
                     return 'El nombre es obligatorio';
                   }
-                  if (value.trim().length < 2) {
+                  if (value.trim().length < 2){
                     return 'El nombre debe tener al menos 2 caracteres';
                   }
                   return null;
@@ -166,8 +166,8 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
                       subtitle: const Text('Esta será una categoría raíz'),
                       value: null,
                       groupValue: _selectedParentId,
-                      onChanged: (value) {
-                        setState(() {
+                      onChanged: (value){
+                        setState((){
                           _selectedParentId = value;
                         });
                       },
@@ -176,7 +176,7 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
                     const Divider(height: 1),
 
                     // Lista de categorías disponibles como padre
-                    ...categoriasParaPadre.map((categoria) {
+                    ...categoriasParaPadre.map((categoria){
                       return RadioListTile<String>(
                         title: Text(categoria.nombre),
                         subtitle: Text(
@@ -184,8 +184,8 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
                         ),
                         value: categoria.id,
                         groupValue: _selectedParentId,
-                        onChanged: (value) {
-                          setState(() {
+                        onChanged: (value){
+                          setState((){
                             _selectedParentId = value;
                           });
                         },
@@ -224,7 +224,7 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
                             ),
                           ],
                         ),
-                        if (_selectedParentId != null) ...[
+                        if (_selectedParentId != null)...[
                           const SizedBox(height: 4),
                           Text(
                             'Subcategoría de: ${_getSelectedParentName()}',
@@ -248,7 +248,7 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
                     child: OutlinedButton(
                       onPressed: _isLoading
                           ? null
-                          : () => Navigator.pop(context),
+                          : ()=> Navigator.pop(context),
                       child: const Text('Cancelar'),
                     ),
                   ),
@@ -261,7 +261,7 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+)
                           : Text(isEditing ? 'Actualizar' : 'Crear'),
                     ),
                   ),
@@ -274,36 +274,36 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
     );
   }
 
-  String _getParentName() {
-    if (widget.categoria?.parentCategoriaID == null) return '';
+  String _getParentName(){
+    if (widget.categoria?.parentCategoriaID == null)return '';
 
     try {
       final parent = widget.categoriasDisponibles.firstWhere(
-        (cat) => cat.id == widget.categoria!.parentCategoriaID,
+        (cat)=> cat.id == widget.categoria!.parentCategoriaID,
       );
       return parent.nombre;
-    } catch (e) {
+    } catch (e){
       return 'Categoría no encontrada';
     }
   }
 
-  String _getSelectedParentName() {
-    if (_selectedParentId == null) return '';
+  String _getSelectedParentName(){
+    if (_selectedParentId == null)return '';
 
     try {
       final parent = categoriasParaPadre.firstWhere(
-        (cat) => cat.id == _selectedParentId,
+        (cat)=> cat.id == _selectedParentId,
       );
       return parent.nombre;
-    } catch (e) {
+    } catch (e){
       return 'Categoría no encontrada';
     }
   }
 
-  Future<void> _saveCategoria() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _saveCategoria()async {
+    if (!_formKey.currentState!.validate())return;
 
-    setState(() {
+    setState((){
       _isLoading = true;
     });
 
@@ -312,7 +312,7 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
       final nombre = _nombreController.text.trim();
 
       // Aquí harías la llamada a GraphQL para crear/actualizar
-      if (isEditing) {
+      if (isEditing){
         final request = ModelMutations.update(
           widget.categoria!.copyWith(
             nombre: nombre,
@@ -337,7 +337,7 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
         print('Creando categoría: $nombre, padre: $_selectedParentId');
       }
 
-      if (mounted) {
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -351,15 +351,15 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
 
         Navigator.pop(context, true); // true indica que hubo cambios
       }
-    } catch (e) {
-      if (mounted) {
+    } catch (e){
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
+      if (mounted){
+        setState((){
           _isLoading = false;
         });
       }

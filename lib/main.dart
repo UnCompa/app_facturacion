@@ -23,25 +23,25 @@ import './routes/routes.dart';
 import 'amplifyconfiguration.dart';
 import 'models/ModelProvider.dart';
 
-void main() => runApp(const MyApp());
+void main()=> runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<MyApp> createState()=> _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
   bool _isAmplifyConfigured = false;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _configureAmplify();
   }
 
-  Future<void> _configureAmplify() async {
+  Future<void> _configureAmplify()async {
     try {
       final api = AmplifyAPI(
         options: APIPluginOptions(modelProvider: ModelProvider.instance),
@@ -50,16 +50,16 @@ class _MyAppState extends State<MyApp> {
       final storage = AmplifyStorageS3();
       await Amplify.addPlugins([auth, api, storage]);
       await Amplify.configure(amplifyconfig);
-      setState(() {
+      setState((){
         _isAmplifyConfigured = true;
       });
-    } on Exception catch (e) {
+    } on Exception catch (e){
       safePrint('An error occurred configuring Amplify: $e');
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return MaterialApp(
       title: 'Login Demo',
       theme: ThemeData(
@@ -70,24 +70,24 @@ class _MyAppState extends State<MyApp> {
           ? const AuthCheckScreen()
           : const Scaffold(body: Center(child: CircularProgressIndicator())),
       routes: {
-        Routes.loginPage: (context) => const LoginScreen(),
-        Routes.loginPageWithNewPassoword: (context) =>
+        Routes.loginPage: (context)=> const LoginScreen(),
+        Routes.loginPageWithNewPassoword: (context)=>
             const NewPasswordScreen(),
-        Routes.superAdminHome: (context) => const SuperAdminPage(),
-        Routes.superAdminHomeUsers: (context) => const UserListSuperadminPage(),
-        Routes.superAdminHomeUserCrear: (context) =>
+        Routes.superAdminHome: (context)=> const SuperAdminPage(),
+        Routes.superAdminHomeUsers: (context)=> const UserListSuperadminPage(),
+        Routes.superAdminHomeUserCrear: (context)=>
             const CreateUserSuperadminPage(),
-        Routes.superAdminHomeUserConfirm: (context) =>
+        Routes.superAdminHomeUserConfirm: (context)=>
             const UserSuperadminConfirmPage(),
-        Routes.superAdminNegocios: (context) => const NegociosSuperadminPage(),
-        Routes.superAdminNegociosCrear: (context) => const CrearNegocioScreen(),
-        Routes.adminHome: (context) => const AdminPage(),
-        Routes.adminViewInventory: (context) =>
+        Routes.superAdminNegocios: (context)=> const NegociosSuperadminPage(),
+        Routes.superAdminNegociosCrear: (context)=> const CrearNegocioScreen(),
+        Routes.adminHome: (context)=> const AdminPage(),
+        Routes.adminViewInventory: (context)=>
             const AdminViewInventoryScreen(),
-        Routes.adminViewCategorias: (context) => const AdminCategoriesListPage(),
-        Routes.adminViewUsers: (context) => const UserListAdminPage(),
-        Routes.adminViewUsersCrear: (context) => const CreateUserAdminPage(),
-        Routes.vendedorHome: (context) => const SellerPage(),
+        Routes.adminViewCategorias: (context)=> const AdminCategoriesListPage(),
+        Routes.adminViewUsers: (context)=> const UserListAdminPage(),
+        Routes.adminViewUsersCrear: (context)=> const CreateUserAdminPage(),
+        Routes.vendedorHome: (context)=> const SellerPage(),
       },
     );
   }

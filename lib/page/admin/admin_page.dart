@@ -15,7 +15,7 @@ class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
 
   @override
-  State<AdminPage> createState() => _AdminPageState();
+  State<AdminPage> createState()=> _AdminPageState();
 }
 
 class _AdminPageState extends State<AdminPage>
@@ -35,7 +35,7 @@ class _AdminPageState extends State<AdminPage>
   Timer? _refreshTimer;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _loadUserAndBusiness();
     WidgetsBinding.instance.addObserver(this);
@@ -46,24 +46,24 @@ class _AdminPageState extends State<AdminPage>
   }
 
   @override
-  void dispose() {
+  void dispose(){
     _refreshTimer?.cancel();
     disposeSessionControl();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  void _startRefreshTimer() {
-    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      if (mounted) {
+  void _startRefreshTimer(){
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_){
+      if (mounted){
         _refreshVigenciaInfo();
       }
     });
   }
 
-  Future<void> _loadUserAndBusiness() async {
+  Future<void> _loadUserAndBusiness()async {
     try {
-      setState(() {
+      setState((){
         isLoading = true;
         errorMessage = null;
       });
@@ -75,19 +75,19 @@ class _AdminPageState extends State<AdminPage>
       String? negocioId;
       String? userDisplayName;
 
-      for (final attribute in attributes) {
-        if (attribute.userAttributeKey.key == 'custom:negocioid') {
+      for (final attribute in attributes){
+        if (attribute.userAttributeKey.key == 'custom:negocioid'){
           negocioId = attribute.value;
         }
         if (attribute.userAttributeKey.key == 'name' ||
-            attribute.userAttributeKey.key == 'preferred_username') {
+            attribute.userAttributeKey.key == 'preferred_username'){
           userDisplayName = attribute.value;
         }
       }
 
       userDisplayName ??= user.username;
 
-      if (negocioId != null) {
+      if (negocioId != null){
         // Consultar los datos del negocio
         final request = ModelQueries.get(
           Negocio.classType,
@@ -95,8 +95,8 @@ class _AdminPageState extends State<AdminPage>
         );
         final response = await Amplify.API.query(request: request).response;
 
-        if (response.data != null) {
-          setState(() {
+        if (response.data != null){
+          setState((){
             userName = userDisplayName;
             negocio = response.data;
           });
@@ -104,34 +104,34 @@ class _AdminPageState extends State<AdminPage>
           // Cargar información adicional de vigencia y dispositivos
           await _loadVigenciaInfo();
         } else {
-          setState(() {
+          setState((){
             userName = userDisplayName;
             errorMessage = 'No se pudo cargar la información del negocio';
             isLoading = false;
           });
         }
       } else {
-        setState(() {
+        setState((){
           userName = userDisplayName;
           errorMessage = 'Usuario sin negocio asignado';
           isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
+    } catch (e){
+      setState((){
         errorMessage = 'Error al cargar datos: ${e.toString()}';
         isLoading = false;
       });
     }
   }
 
-  Future<void> _loadVigenciaInfo() async {
-    if (negocio == null) return;
+  Future<void> _loadVigenciaInfo()async {
+    if (negocio == null)return;
 
     try {
       // Calcular vigencia
       final now = DateTime.now().toUtc(); // Comparación justa en UTC
-      if (negocio!.createdAt != null && negocio!.duration != null) {
+      if (negocio!.createdAt != null && negocio!.duration != null){
         final fechaCreacion = negocio!.createdAt!.getDateTimeInUtc();
         fechaVencimiento = fechaCreacion.add(
           Duration(days: negocio!.duration!),
@@ -143,41 +143,41 @@ class _AdminPageState extends State<AdminPage>
       final deviceInfo = await DeviceSessionService.getConnectedDevicesInfo(
         negocio!.id,
       );
-      setState(() {
+      setState((){
         maxDispositivosMovil = negocio!.movilAccess ?? 0;
         maxDispositivosPC = negocio!.pcAccess ?? 0;
         isLoading = false;
         dispositivosConectados = deviceInfo['total'] ?? 0;
       });
-    } catch (e) {
+    } catch (e){
       safePrint('Error cargando información de vigencia: $e');
-      setState(() {
+      setState((){
         isLoading = false;
       });
     }
   }
 
-  Future<void> _refreshVigenciaInfo() async {
-    if (negocio != null && mounted) {
+  Future<void> _refreshVigenciaInfo()async {
+    if (negocio != null && mounted){
       await _loadVigenciaInfo();
     }
   }
 
-  Color _getVigenciaColor() {
-    if (!vigenciaValida) return Colors.red;
-    if (diasRestantes <= 7) return Colors.orange;
-    if (diasRestantes <= 30) return Colors.yellow[700]!;
+  Color _getVigenciaColor(){
+    if (!vigenciaValida)return Colors.red;
+    if (diasRestantes <= 7)return Colors.orange;
+    if (diasRestantes <= 30)return Colors.yellow[700]!;
     return Colors.green;
   }
 
-  IconData _getVigenciaIcon() {
-    if (!vigenciaValida) return Icons.error;
-    if (diasRestantes <= 7) return Icons.warning;
+  IconData _getVigenciaIcon(){
+    if (!vigenciaValida)return Icons.error;
+    if (diasRestantes <= 7)return Icons.warning;
     return Icons.check_circle;
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -233,7 +233,7 @@ class _AdminPageState extends State<AdminPage>
                             icon: Icons.add_box,
                             title: 'Gestionar inventario',
                             subtitle: 'Categorías y productos',
-                            onTap: () {
+                            onTap: (){
                               Navigator.of(
                                 context,
                               ).pushNamed(Routes.adminViewInventory);
@@ -243,7 +243,7 @@ class _AdminPageState extends State<AdminPage>
                             icon: Icons.group,
                             title: 'Gestionar Vendedores',
                             subtitle: 'Control de usuarios y ventas',
-                            onTap: () {
+                            onTap: (){
                               Navigator.of(
                                 context,
                               ).pushNamed(Routes.adminViewUsers);
@@ -253,7 +253,7 @@ class _AdminPageState extends State<AdminPage>
                             icon: Icons.inventory_outlined,
                             title: 'Facturación',
                             subtitle: 'Generar y gestionar facturas',
-                            onTap: () {
+                            onTap: (){
                               // Navegar a facturación
                             },
                           ),
@@ -261,7 +261,7 @@ class _AdminPageState extends State<AdminPage>
                             icon: Icons.devices,
                             title: 'Gestión de Dispositivos',
                             subtitle: 'Ver y gestionar sesiones activas',
-                            onTap: () {
+                            onTap: (){
                               _showDevicesDialog();
                             },
                           ),
@@ -269,7 +269,7 @@ class _AdminPageState extends State<AdminPage>
                             icon: Icons.settings,
                             title: 'Configuraciones',
                             subtitle: 'Ajustes del negocio',
-                            onTap: () {
+                            onTap: (){
                               // Navegar a configuraciones
                             },
                           ),
@@ -277,7 +277,7 @@ class _AdminPageState extends State<AdminPage>
                             icon: Icons.analytics,
                             title: 'Ver Reportes',
                             subtitle: 'Análisis y estadísticas',
-                            onTap: () {
+                            onTap: (){
                               // Navegar a reportes
                             },
                           ), */
@@ -291,7 +291,7 @@ class _AdminPageState extends State<AdminPage>
     );
   }
 
-  Widget _buildUserInfoCard() {
+  Widget _buildUserInfoCard(){
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -311,7 +311,7 @@ class _AdminPageState extends State<AdminPage>
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  if (negocio != null) ...[
+                  if (negocio != null)...[
                     Text(
                       'RUC: ${negocio!.ruc}',
                       style: GoogleFonts.poppins(
@@ -340,15 +340,15 @@ class _AdminPageState extends State<AdminPage>
               ),
             ),
             TextButton(
-              onPressed: () async {
+              onPressed: ()async {
                 try {
                   await Amplify.Auth.signOut();
-                  if (mounted) {
+                  if (mounted){
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      MaterialPageRoute(builder: (_)=> const LoginScreen()),
                     );
                   }
-                } catch (e) {
+                } catch (e){
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Error al cerrar sesión: $e'),
@@ -371,8 +371,8 @@ class _AdminPageState extends State<AdminPage>
     );
   }
 
-  Widget _buildVigenciaCard() {
-    if (negocio == null) return const SizedBox.shrink();
+  Widget _buildVigenciaCard(){
+    if (negocio == null)return const SizedBox.shrink();
 
     return Card(
       elevation: 1,
@@ -395,7 +395,7 @@ class _AdminPageState extends State<AdminPage>
                 ),
               ],
             ),
-            if (fechaVencimiento != null) ...[
+            if (fechaVencimiento != null)...[
               const SizedBox(height: 4),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -438,8 +438,8 @@ class _AdminPageState extends State<AdminPage>
     );
   }
 
-  Widget _buildDevicesCard() {
-    if (negocio == null) return const SizedBox.shrink();
+  Widget _buildDevicesCard(){
+    if (negocio == null)return const SizedBox.shrink();
 
     return Card(
       elevation: 1,
@@ -506,7 +506,7 @@ class _AdminPageState extends State<AdminPage>
     );
   }
 
-  Widget _buildDeviceInfo(String label, IconData icon, int count, Color color) {
+  Widget _buildDeviceInfo(String label, IconData icon, int count, Color color){
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -540,7 +540,7 @@ class _AdminPageState extends State<AdminPage>
     required String title,
     required String subtitle,
     required VoidCallback onTap,
-  }) {
+  }){
     final bool isEnabled = negocio != null && vigenciaValida;
 
     return GestureDetector(
@@ -558,7 +558,7 @@ class _AdminPageState extends State<AdminPage>
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                )
+)
               : LinearGradient(
                   colors: [Colors.grey[200]!, Colors.grey[300]!],
                   begin: Alignment.topLeft,
@@ -634,7 +634,7 @@ class _AdminPageState extends State<AdminPage>
             ),
           ),
           onTap: isEnabled
-              ? () {
+              ? (){
                   // Agregar feedback háptico (si está soportado)
                   // HapticFeedback.lightImpact();
                   onTap();
@@ -645,18 +645,18 @@ class _AdminPageState extends State<AdminPage>
     );
   }
 
-  void _showDevicesDialog() async {
-    if (negocio == null) return;
+  void _showDevicesDialog()async {
+    if (negocio == null)return;
 
     try {
       final sessions = await DeviceSessionService.getActiveSessions(
         negocio!.id,
       );
 
-      if (mounted) {
+      if (mounted){
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (context)=> AlertDialog(
             title: const Text('Dispositivos Conectados'),
             content: SizedBox(
               width: double.maxFinite,
@@ -665,9 +665,9 @@ class _AdminPageState extends State<AdminPage>
                   ? const Center(child: Text('No hay dispositivos conectados'))
                   : ListView.builder(
                       itemCount: sessions.length,
-                      itemBuilder: (context, index) {
+                      itemBuilder: (context, index){
                         final session = sessions[index];
-                        if (session == null) {
+                        if (session == null){
                           return const ListTile(title: Text('Sesión inválida'));
                         }
                         return ListTile(
@@ -684,13 +684,13 @@ class _AdminPageState extends State<AdminPage>
                             children: [
                               Text('Usuario: ${session.userId ?? 'N/A'}'),
                               Text(
-                                'Último acceso: ${session.lastActivity.getDateTimeInUtc().toLocal().toString().substring(0, 16) ?? 'N/A'}',
+                                'Último acceso: ${session.lastActivity.getDateTimeInUtc().toLocal().toString().substring(0, 16)?? 'N/A'}',
                               ),
                             ],
                           ),
                           trailing: IconButton(
                             icon: const Icon(Icons.close, color: Colors.red),
-                            onPressed: () {
+                            onPressed: (){
                               _disconnectDevice(session.id);
                               Navigator.of(context).pop();
                             },
@@ -701,15 +701,15 @@ class _AdminPageState extends State<AdminPage>
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: ()=> Navigator.of(context).pop(),
                 child: const Text('Cerrar'),
               ),
             ],
           ),
         );
       }
-    } catch (e) {
-      if (mounted) {
+    } catch (e){
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al cargar dispositivos: $e'),
@@ -720,12 +720,12 @@ class _AdminPageState extends State<AdminPage>
     }
   }
 
-  Future<void> _disconnectDevice(String sessionId) async {
+  Future<void> _disconnectDevice(String sessionId)async {
     try {
       await DeviceSessionService.closeSpecificSession(sessionId);
       await _refreshVigenciaInfo();
 
-      if (mounted) {
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Dispositivo desconectado exitosamente'),
@@ -733,8 +733,8 @@ class _AdminPageState extends State<AdminPage>
           ),
         );
       }
-    } catch (e) {
-      if (mounted) {
+    } catch (e){
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al desconectar dispositivo: $e'),

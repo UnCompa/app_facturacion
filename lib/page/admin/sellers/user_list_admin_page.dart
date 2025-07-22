@@ -22,7 +22,7 @@ class User {
     required this.email,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
+  factory User.fromJson(Map<String, dynamic> json){
     return User(
       username: json['username'],
       enabled: json['enabled'],
@@ -39,10 +39,10 @@ class UsersResponse {
 
   UsersResponse({required this.users});
 
-  factory UsersResponse.fromJson(Map<String, dynamic> json) {
+  factory UsersResponse.fromJson(Map<String, dynamic> json){
     var usersJson = json['users'] as List;
     List<User> usersList = usersJson
-        .map((userJson) => User.fromJson(userJson))
+        .map((userJson)=> User.fromJson(userJson))
         .toList();
 
     return UsersResponse(users: usersList);
@@ -53,7 +53,7 @@ class UserListAdminPage extends StatefulWidget {
   const UserListAdminPage({super.key});
 
   @override
-  State<UserListAdminPage> createState() => _UserListAdminPageState();
+  State<UserListAdminPage> createState()=> _UserListAdminPageState();
 }
 
 class _UserListAdminPageState extends State<UserListAdminPage> {
@@ -62,22 +62,22 @@ class _UserListAdminPageState extends State<UserListAdminPage> {
   String? error;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     fetchUsers();
   }
 
-  Future<void> fetchUsers() async {
+  Future<void> fetchUsers()async {
     try {
 
-      setState(() {
+      setState((){
         isLoading = true;
         error = null;
       });
       final info = await NegocioService.getCurrentUserInfo();
       final negocioId = info.negocioId;
       var token = await GetToken.getIdTokenSimple();
-      if (token == null) {
+      if (token == null){
         print('No se pudo obtener el token');
         return;
       }
@@ -91,30 +91,30 @@ class _UserListAdminPageState extends State<UserListAdminPage> {
         },
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200){
         final jsonData = json.decode(response.body);
         final usersResponse = UsersResponse.fromJson(jsonData);
 
-        setState(() {
+        setState((){
           users = usersResponse.users;
           isLoading = false;
         });
       } else {
-        setState(() {
+        setState((){
           error = 'Error al cargar usuarios: ${response.statusCode}';
           isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
+    } catch (e){
+      setState((){
         error = 'Error de conexión: $e';
         isLoading = false;
       });
     }
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toUpperCase()) {
+  Color _getStatusColor(String status){
+    switch (status.toUpperCase()){
       case 'CONFIRMED':
         return Colors.green;
       case 'PENDING':
@@ -126,12 +126,12 @@ class _UserListAdminPageState extends State<UserListAdminPage> {
     }
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime date){
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -151,7 +151,7 @@ class _UserListAdminPageState extends State<UserListAdminPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
+        onPressed: (){
           Navigator.of(context).pushNamed(Routes.adminViewUsersCrear);
         },
         label: Text("Agregar vendedor"),
@@ -200,8 +200,8 @@ class _UserListAdminPageState extends State<UserListAdminPage> {
     );
   }
 
-  Widget _buildContent() {
-    if (isLoading) {
+  Widget _buildContent(){
+    if (isLoading){
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -214,7 +214,7 @@ class _UserListAdminPageState extends State<UserListAdminPage> {
       );
     }
 
-    if (error != null) {
+    if (error != null){
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -236,7 +236,7 @@ class _UserListAdminPageState extends State<UserListAdminPage> {
       );
     }
 
-    if (users.isEmpty) {
+    if (users.isEmpty){
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -254,7 +254,7 @@ class _UserListAdminPageState extends State<UserListAdminPage> {
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: users.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (context, index){
           final user = users[index];
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
@@ -353,7 +353,7 @@ class _UserListAdminPageState extends State<UserListAdminPage> {
                 color: Colors.grey[400],
                 size: 16,
               ),
-              onTap: () {
+              onTap: (){
                 // Aquí puedes agregar navegación a detalle del usuario
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

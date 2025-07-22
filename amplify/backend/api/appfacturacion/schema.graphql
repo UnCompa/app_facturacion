@@ -6,7 +6,7 @@ type Negocio
       { allow: groups, groups: ["admin"], operations: [read, update] }
       { allow: groups, groups: ["vendedor"], operations: [read] }
     ]
-  ) {
+  ){
   id: ID!
   nombre: String!
   ruc: String!
@@ -21,7 +21,7 @@ type Negocio
 
 type Producto
   @model
-  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]) {
+  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]){
   id: ID!
   nombre: String!
   descripcion: String
@@ -39,7 +39,7 @@ type Producto
 
 type Categoria
   @model
-  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]) {
+  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]){
   id: ID!
   nombre: String!
   negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
@@ -53,7 +53,7 @@ type Categoria
 
 type Invoice
   @model
-  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]) {
+  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]){
   id: ID!
   invoiceNumber: String!
   invoiceDate: AWSDateTime!
@@ -67,7 +67,7 @@ type Invoice
 
 type InvoiceItem
   @model
-  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]) {
+  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]){
   id: ID!
   invoiceID: ID! @index(name: "byInvoice")
   producto: Producto @belongsTo(fields: ["productoID"])
@@ -82,7 +82,7 @@ type InvoiceItem
 
 type Order
   @model
-  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]) {
+  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]){
   id: ID!
   orderNumber: String!
   orderDate: AWSDateTime!
@@ -96,7 +96,7 @@ type Order
 
 type OrderItem
   @model
-  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]) {
+  @auth(rules: [{ allow: groups, groups: ["admin", "vendedor"] }]){
   id: ID!
   orderID: ID! @index(name: "byOrder")
   producto: Producto @belongsTo(fields: ["productoID"])
@@ -125,7 +125,7 @@ type SesionDispositivo
         operations: [read, create, delete]
       }
     ]
-  ) {
+  ){
   id: ID!
   negocioId: ID! @index(name: "byNegocio")
   userId: String!

@@ -23,11 +23,11 @@
           "env": "dev",
           "secretsPathAmplifyAppId": "d36lnj4nlnwrhp",
           "deploymentBucketName": "amplify-appfacturacion-dev-92e69-deployment",
-          "s3Key": "amplify-builds/appfacturacion4a4aefb5-736a7a666a3462545a47-build.zip"
+          "s3Key": "amplify-builds/appfacturacion4a4aefb5-4d64786b593631766763-build.zip"
         },
         "getuserapp": {
           "deploymentBucketName": "amplify-appfacturacion-dev-92e69-deployment",
-          "s3Key": "amplify-builds/getuserapp-77446b6c65656a557330-build.zip"
+          "s3Key": "amplify-builds/getuserapp-6576566279516e334444-build.zip"
         }
       },
       "api": {

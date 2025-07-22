@@ -9,7 +9,7 @@ class NegociosSuperadminPage extends StatefulWidget {
   const NegociosSuperadminPage({super.key});
 
   @override
-  State<StatefulWidget> createState() {
+  State<StatefulWidget> createState(){
     return NegociosSuperadminPageState();
   }
 }
@@ -20,14 +20,14 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
   String? errorMessage;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     getAllBussines();
   }
 
-  Future<List<Negocio>> getAllBussines() async {
+  Future<List<Negocio>> getAllBussines()async {
     try {
-      setState(() {
+      setState((){
         isLoading = true;
         errorMessage = null;
       });
@@ -35,7 +35,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
       final request = ModelQueries.list(Negocio.classType);
       final response = await Amplify.API.query(request: request).response;
 
-      if (response.hasErrors) {
+      if (response.hasErrors){
         safePrint('Errores en la respuesta: ${response.errors}');
         throw Exception('Error al obtener los negocios');
       }
@@ -44,19 +44,19 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
 
       final negociosList =
           negociosItems
-              ?.where((item) => item != null)
-              .map((item) => item!)
-              .toList() ??
+              ?.where((item)=> item != null)
+              .map((item)=> item!)
+              .toList()??
           [];
 
-      setState(() {
+      setState((){
         negocios = negociosList;
         isLoading = false;
       });
 
       return negociosList;
-    } catch (e) {
-      setState(() {
+    } catch (e){
+      setState((){
         isLoading = false;
         errorMessage = 'Error al cargar los negocios: ${e.toString()}';
       });
@@ -66,12 +66,12 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
     }
   }
 
-  Future<void> refreshNegocios() async {
+  Future<void> refreshNegocios()async {
     await getAllBussines();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gestión de Negocios'),
@@ -86,7 +86,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
       ),
       body: _buildBody(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: (){
           // Aquí puedes navegar a una página para crear un nuevo negocio
           Navigator.of(context).pushNamed(Routes.superAdminNegociosCrear);
         },
@@ -96,12 +96,12 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
     );
   }
 
-  Widget _buildBody() {
-    if (isLoading) {
+  Widget _buildBody(){
+    if (isLoading){
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (errorMessage != null) {
+    if (errorMessage != null){
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -123,7 +123,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
       );
     }
 
-    if (negocios.isEmpty) {
+    if (negocios.isEmpty){
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -144,7 +144,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
       child: ListView.builder(
         padding: const EdgeInsets.all(8.0),
         itemCount: negocios.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (context, index){
           final negocio = negocios[index];
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 4.0),
@@ -152,7 +152,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
               leading: CircleAvatar(
                 backgroundColor: Colors.blue,
                 child: Text(
-                  negocio.nombre.substring(0, 1).toUpperCase() ?? 'N',
+                  negocio.nombre.substring(0, 1).toUpperCase()?? 'N',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -166,7 +166,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (negocio.direccion != null) Text(negocio.direccion!),
+                  if (negocio.direccion != null)Text(negocio.direccion!),
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -191,12 +191,12 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
                 ],
               ),
               trailing: PopupMenuButton<String>(
-                onSelected: (value) {
-                  switch (value) {
+                onSelected: (value){
+                  switch (value){
                     case 'editar':
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => EditBussinesSuperadminPage(negocio: negocio),
+                          builder: (_)=> EditBussinesSuperadminPage(negocio: negocio),
                         ),
                       );
                       break;
@@ -205,7 +205,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
                       break;
                   }
                 },
-                itemBuilder: (BuildContext context) => [
+                itemBuilder: (BuildContext context)=> [
                   const PopupMenuItem<String>(
                     value: 'editar',
                     child: Row(
@@ -235,10 +235,10 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
     );
   }
 
-  void _showDeleteDialog(Negocio negocio) {
+  void _showDeleteDialog(Negocio negocio){
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext context){
         return AlertDialog(
           title: const Text('Confirmar eliminación'),
           content: Text(
@@ -246,13 +246,13 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
+              onPressed: (){
                 Navigator.of(context).pop();
               },
               child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: (){
                 Navigator.of(context).pop();
                 _deleteNegocio(negocio);
               },
@@ -265,7 +265,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
     );
   }
 
-  Future<void> _deleteNegocio(Negocio negocio) async {
+  Future<void> _deleteNegocio(Negocio negocio)async {
     try {
       final request = ModelMutations.delete(negocio);
       await Amplify.API.mutate(request: request).response;
@@ -277,7 +277,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
       );
 
       refreshNegocios();
-    } catch (e) {
+    } catch (e){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al eliminar negocio: ${e.toString()}'),

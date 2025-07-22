@@ -15,25 +15,25 @@ mixin SessionControlMixin<T extends StatefulWidget>
   bool _isSessionActive = false;
 
   /// Override este método si necesitas lógica personalizada cuando la sesión expire
-  Future<void> onSessionExpired(String reason) async {
+  Future<void> onSessionExpired(String reason)async {
     await _performLogout(reason);
   }
 
   /// Override este método si necesitas lógica personalizada cuando la vigencia expire
-  Future<void> onVigenciaExpired() async {
+  Future<void> onVigenciaExpired()async {
     await _showVigenciaExpiredDialog();
   }
 
   /// Inicializa el control de sesión
-  /// Llama esto en initState() de tu widget
-  Future<bool> initializeSessionControl() async {
+  /// Llama esto en initState()de tu widget
+  Future<bool> initializeSessionControl()async {
     try {
       // Verificar sesión actual
       final userInfo = await NegocioService.getCurrentUserInfo();
       final negocioId = userInfo.negocioId;
 
       final negocio = await NegocioService.getNegocioById(negocioId);
-      if (negocio == null) {
+      if (negocio == null){
         await onSessionExpired('No se pudo cargar información del negocio');
         return false;
       }
@@ -42,7 +42,7 @@ mixin SessionControlMixin<T extends StatefulWidget>
       final isVigenciaValid = await DeviceSessionService.checkNegocioVigencia(
         negocio,
       );
-      if (!isVigenciaValid) {
+      if (!isVigenciaValid){
         await onVigenciaExpired();
         return false;
       }
@@ -53,8 +53,8 @@ mixin SessionControlMixin<T extends StatefulWidget>
         userInfo.userId ?? '',
       );
 
-      if (!accessResult.success) {
-        if (accessResult.isExpired) {
+      if (!accessResult.success){
+        if (accessResult.isExpired){
           await onVigenciaExpired();
         } else {
           await onSessionExpired(
@@ -68,64 +68,64 @@ mixin SessionControlMixin<T extends StatefulWidget>
       _startSessionTimers();
       _isSessionActive = true;
       return true;
-    } catch (e) {
+    } catch (e){
       await onSessionExpired('Error al inicializar sesión: $e');
       return false;
     }
   }
 
   /// Inicia los timers para mantener la sesión
-  void _startSessionTimers() {
+  void _startSessionTimers(){
     // Timer para mantener la sesión activa cada 5 minutos
     _sessionKeepAliveTimer = Timer.periodic(const Duration(minutes: 5), (
       _,
-    ) async {
-      if (_isSessionActive) {
+    )async {
+      if (_isSessionActive){
         try {
           await DeviceSessionService.keepSessionAlive();
-        } catch (e) {
+        } catch (e){
           await onSessionExpired('Error manteniendo sesión: $e');
         }
       }
     });
 
     // Timer para verificar vigencia cada hora
-    _vigenciaCheckTimer = Timer.periodic(const Duration(hours: 1), (_) async {
-      if (_isSessionActive) {
+    _vigenciaCheckTimer = Timer.periodic(const Duration(hours: 1), (_)async {
+      if (_isSessionActive){
         await _checkVigencia();
       }
     });
   }
 
   /// Verifica la vigencia del negocio
-  Future<void> _checkVigencia() async {
+  Future<void> _checkVigencia()async {
     try {
       final userInfo = await NegocioService.getCurrentUserInfo();
       final negocioId = userInfo.negocioId;
 
       final negocio = await NegocioService.getNegocioById(negocioId);
-      if (negocio != null) {
+      if (negocio != null){
         final isValid = await DeviceSessionService.checkNegocioVigencia(
           negocio,
         );
-        if (!isValid) {
+        if (!isValid){
           await onVigenciaExpired();
         }
       }
-        } catch (e) {
+        } catch (e){
       safePrint('Error verificando vigencia: $e');
     }
   }
 
   /// Muestra el diálogo de vigencia expirada
-  Future<void> _showVigenciaExpiredDialog() async {
-    if (!mounted) return;
+  Future<void> _showVigenciaExpiredDialog()async {
+    if (!mounted)return;
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => WillPopScope(
-        onWillPop: () async => false,
+      builder: (context)=> WillPopScope(
+        onWillPop: ()async => false,
         child: AlertDialog(
           title: const Text('Vigencia Expirada'),
           content: const Text(
@@ -134,7 +134,7 @@ mixin SessionControlMixin<T extends StatefulWidget>
           ),
           actions: [
             TextButton(
-              onPressed: () async {
+              onPressed: ()async {
                 Navigator.of(context).pop();
                 await _performLogout('Vigencia expirada');
               },
@@ -147,20 +147,20 @@ mixin SessionControlMixin<T extends StatefulWidget>
   }
 
   /// Realiza el logout y navega a la pantalla de login
-  Future<void> _performLogout(String reason) async {
+  Future<void> _performLogout(String reason)async {
     try {
       _isSessionActive = false;
       await DeviceSessionService.closeCurrentSession();
       await Amplify.Auth.signOut();
 
-      if (mounted) {
+      if (mounted){
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-          (route) => false,
+          MaterialPageRoute(builder: (_)=> const LoginScreen()),
+          (route)=> false,
         );
       }
-    } catch (e) {
-      if (mounted) {
+    } catch (e){
+      if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al cerrar sesión: $e'),
@@ -172,8 +172,8 @@ mixin SessionControlMixin<T extends StatefulWidget>
   }
 
   /// Limpia los recursos de la sesión
-  /// Llama esto en dispose() de tu widget
-  void disposeSessionControl() {
+  /// Llama esto en dispose()de tu widget
+  void disposeSessionControl(){
     _isSessionActive = false;
     _sessionKeepAliveTimer?.cancel();
     _vigenciaCheckTimer?.cancel();
@@ -181,15 +181,15 @@ mixin SessionControlMixin<T extends StatefulWidget>
 
   /// Maneja los cambios en el ciclo de vida de la app
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  void didChangeAppLifecycleState(AppLifecycleState state){
     super.didChangeAppLifecycleState(state);
 
-    if (!_isSessionActive) return;
+    if (!_isSessionActive)return;
 
-    switch (state) {
+    switch (state){
       case AppLifecycleState.resumed:
         // Verificar sesión al volver a la app
-        DeviceSessionService.keepSessionAlive().catchError((e) {
+        DeviceSessionService.keepSessionAlive().catchError((e){
           onSessionExpired('Error al reanudar sesión: $e');
         });
         break;
@@ -214,7 +214,7 @@ mixin SessionControlMixin<T extends StatefulWidget>
   bool get isSessionActive => _isSessionActive;
 
   /// Fuerza una verificación de sesión
-  Future<bool> refreshSession() async {
+  Future<bool> refreshSession()async {
     return await initializeSessionControl();
   }
 }

@@ -9,12 +9,12 @@ class GetImageFromBucket {
   static Future<List<String>> getSignedImageUrls({
     required List<String> s3Keys,
     Duration expiresIn = const Duration(minutes: 60),
-  }) async {
+  })async {
     try {
       List<String> signedUrls = [];
 
       // Iterar sobre cada clave de S3
-      for (String key in s3Keys) {
+      for (String key in s3Keys){
         final result = await Amplify.Storage.getUrl(
           path: StoragePath.fromString(key),
           options: StorageGetUrlOptions(
@@ -29,7 +29,7 @@ class GetImageFromBucket {
       }
 
       return signedUrls;
-    } catch (e) {
+    } catch (e){
       print('Error al obtener URLs firmadas: $e');
       return [];
     }

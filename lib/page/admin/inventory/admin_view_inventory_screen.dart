@@ -12,7 +12,7 @@ class AdminViewInventoryScreen extends StatefulWidget {
   const AdminViewInventoryScreen({super.key});
 
   @override
-  _AdminViewInventoryScreenState createState() =>
+  _AdminViewInventoryScreenState createState()=>
       _AdminViewInventoryScreenState();
 }
 
@@ -27,27 +27,27 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
   String _sortBy = 'nombre'; // nombre, precio, stock
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _initializeData();
     _searchController.addListener(_filterProducts);
   }
 
   @override
-  void dispose() {
+  void dispose(){
     _searchController.removeListener(_filterProducts);
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _initializeData() async {
+  Future<void> _initializeData()async {
     await Future.wait([_getProductosByNegocio(), _getCategorias()]);
-    setState(() {
+    setState((){
       _isLoading = false;
     });
   }
 
-  Future<void> _getProductosByNegocio() async {
+  Future<void> _getProductosByNegocio()async {
     try {
       final info = await NegocioService.getCurrentUserInfo();
       final negocioId = info.negocioId;
@@ -60,23 +60,23 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
 
       final response = await Amplify.API.query(request: request).response;
 
-      if (response.data != null) {
+      if (response.data != null){
         final products = response.data!.items.whereType<Producto>().toList();
 
-        setState(() {
+        setState((){
           _allProducts = products;
           _filteredProducts = List.from(products);
           _sortProducts();
         });
-      } else if (response.errors.isNotEmpty) {
+      } else if (response.errors.isNotEmpty){
         print('Query failed: ${response.errors}');
       }
-    } catch (e) {
+    } catch (e){
       print('Error fetching products: $e');
     }
   }
 
-  Future<void> _getCategorias() async {
+  Future<void> _getCategorias()async {
     try {
       final negocioInfo = await NegocioService.getCurrentUserInfo();
       final request = ModelQueries.list(
@@ -85,23 +85,23 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
       );
       final response = await Amplify.API.query(request: request).response;
 
-      if (response.data != null) {
+      if (response.data != null){
         final categories = response.data!.items.whereType<Categoria>().toList();
 
-        setState(() {
+        setState((){
           _categories = categories;
         });
       }
-    } catch (e) {
+    } catch (e){
       print('Error fetching categories: $e');
     }
   }
 
-  void _filterProducts() {
+  void _filterProducts(){
     final query = _searchController.text.toLowerCase();
 
-    setState(() {
-      _filteredProducts = _allProducts.where((product) {
+    setState((){
+      _filteredProducts = _allProducts.where((product){
         final matchesName = product.nombre.toLowerCase().contains(query);
         final matchesCategory = _selectedCategoryId == null;
 
@@ -112,9 +112,9 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
     });
   }
 
-  void _sortProducts() {
-    _filteredProducts.sort((a, b) {
-      switch (_sortBy) {
+  void _sortProducts(){
+    _filteredProducts.sort((a, b){
+      switch (_sortBy){
         case 'precio':
           return a.precio.compareTo(b.precio);
         case 'stock':
@@ -126,24 +126,24 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
     });
   }
 
-  String _getCategoryName(String? categoryId) {
-    if (categoryId == null) return 'Sin categoría';
+  String _getCategoryName(String? categoryId){
+    if (categoryId == null)return 'Sin categoría';
 
     final category = _categories.firstWhere(
-      (cat) => cat.id == categoryId,
-      orElse: () => Categoria(nombre: 'Sin categoría', id: '', negocioID: ''),
+      (cat)=> cat.id == categoryId,
+      orElse: ()=> Categoria(nombre: 'Sin categoría', id: '', negocioID: ''),
     );
 
     return category.nombre;
   }
 
-  Color _getStockColor(int stock) {
-    if (stock == 0) return Colors.red;
-    if (stock <= 10) return Colors.orange;
+  Color _getStockColor(int stock){
+    if (stock == 0)return Colors.red;
+    if (stock <= 10)return Colors.orange;
     return Colors.green;
   }
 
-  Widget _buildStockChip(int stock) {
+  Widget _buildStockChip(int stock){
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -163,7 +163,7 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -173,13 +173,13 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
         actions: [
           PopupMenuButton<String>(
             icon: Icon(Icons.sort),
-            onSelected: (value) {
-              setState(() {
+            onSelected: (value){
+              setState((){
                 _sortBy = value;
                 _sortProducts();
               });
             },
-            itemBuilder: (context) => [
+            itemBuilder: (context)=> [
               PopupMenuItem(value: 'nombre', child: Text('Ordenar por Nombre')),
               PopupMenuItem(value: 'precio', child: Text('Ordenar por Precio')),
               PopupMenuItem(value: 'stock', child: Text('Ordenar por Stock')),
@@ -202,7 +202,7 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
                         width: double.infinity,
                         margin: EdgeInsets.only(bottom: 16),
                         child: ElevatedButton.icon(
-                          onPressed: () {
+                          onPressed: (){
                             Navigator.of(
                               context,
                             ).pushNamed(Routes.adminViewCategorias);
@@ -224,10 +224,10 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
                                   icon: Icon(Icons.clear),
-                                  onPressed: () {
+                                  onPressed: (){
                                     _searchController.clear();
                                   },
-                                )
+)
                               : null,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -252,15 +252,15 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
                             value: null,
                             child: Text('Todas las categorías'),
                           ),
-                          ..._categories.map((categoria) {
+                          ..._categories.map((categoria){
                             return DropdownMenuItem<String?>(
                               value: categoria.id,
                               child: Text(categoria.nombre),
                             );
                           }),
                         ],
-                        onChanged: (value) {
-                          setState(() {
+                        onChanged: (value){
+                          setState((){
                             _selectedCategoryId = value;
                             _filterProducts();
                           });
@@ -311,9 +311,9 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
                               if (_searchController.text.isNotEmpty ||
                                   _selectedCategoryId != null)
                                 TextButton(
-                                  onPressed: () {
+                                  onPressed: (){
                                     _searchController.clear();
-                                    setState(() {
+                                    setState((){
                                       _selectedCategoryId = null;
                                       _filterProducts();
                                     });
@@ -322,11 +322,11 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
                                 ),
                             ],
                           ),
-                        )
+)
                       : ListView.builder(
                           padding: EdgeInsets.all(16),
                           itemCount: _filteredProducts.length,
-                          itemBuilder: (context, index) {
+                          itemBuilder: (context, index){
                             final product = _filteredProducts[index];
                             return _buildProductCard(product);
                           },
@@ -335,15 +335,15 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
               ],
             ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
+        onPressed: ()async {
           final result = await Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) =>
+              builder: (_)=>
                   AdminCreateInventoryProduct(negocioID: _negocioID),
             ),
           );
 
-          if (result == true) {
+          if (result == true){
             // Refrescar la lista si se creó un nuevo producto
             _getProductosByNegocio();
           }
@@ -354,23 +354,23 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
     );
   }
 
-  Widget _buildProductCard(Producto product) {
+  Widget _buildProductCard(Producto product){
     return Card(
       margin: EdgeInsets.only(bottom: 12),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () async {
+        onTap: ()async {
           final result = await Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => AdminViewInventoryDetailsScreen(
+              builder: (_)=> AdminViewInventoryDetailsScreen(
                 product: product,
                 negocioID: _negocioID,
               ),
             ),
           );
 
-          if (result == true) {
+          if (result == true){
             // Refrescar la lista si se editó o eliminó un producto
             _getProductosByNegocio();
           }

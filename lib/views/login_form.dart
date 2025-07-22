@@ -8,7 +8,7 @@ class LoginForm extends StatefulWidget {
   const LoginForm({super.key, this.onLogin});
 
   @override
-  State<LoginForm> createState() => _LoginFormState();
+  State<LoginForm> createState()=> _LoginFormState();
 }
 
 class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
@@ -30,7 +30,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
   static const Color backgroundBlue = Color(0xFFF3F8FF);
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 1500),
@@ -54,38 +54,38 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
   }
 
   @override
-  void dispose() {
+  void dispose(){
     _fadeController.dispose();
     _slideController.dispose();
     super.dispose();
   }
 
-  void _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+  void _handleLogin()async {
+    if (!_formKey.currentState!.validate())return;
 
-    setState(() => _isLoading = true);
+    setState(()=> _isLoading = true);
 
     await Future.delayed(const Duration(seconds: 2)); // Simulación
 
-    if (widget.onLogin != null) {
+    if (widget.onLogin != null){
       widget.onLogin!(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
     }
 
-    setState(() => _isLoading = false);
+    setState(()=> _isLoading = false);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       body: KeyboardListener(
         focusNode: FocusNode(),
-        onKeyEvent: (KeyEvent event) {
+        onKeyEvent: (KeyEvent event){
           if (event is KeyDownEvent &&
-              event.logicalKey == LogicalKeyboardKey.enter) {
-            if (_formKey.currentState!.validate()) {
+              event.logicalKey == LogicalKeyboardKey.enter){
+            if (_formKey.currentState!.validate()){
               _handleLogin();
             }
           }
@@ -286,7 +286,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
 
                                         // Título InvoExpress con efecto
                                         ShaderMask(
-                                          shaderCallback: (bounds) =>
+                                          shaderCallback: (bounds)=>
                                               LinearGradient(
                                                 colors: [
                                                   primaryBlue,
@@ -430,7 +430,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                                     vertical: 18,
                                                   ),
                                             ),
-                                            validator: (value) {
+                                            validator: (value){
                                               if (value == null ||
                                                   value.isEmpty)
                                                 return 'Campo obligatorio';
@@ -494,8 +494,8 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                                             .visibility_outlined,
                                                   color: primaryBlue,
                                                 ),
-                                                onPressed: () => setState(
-                                                  () => _obscurePassword =
+                                                onPressed: ()=> setState(
+                                                  ()=> _obscurePassword =
                                                       !_obscurePassword,
                                                 ),
                                               ),
@@ -532,7 +532,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                                     vertical: 18,
                                                   ),
                                             ),
-                                            validator: (value) {
+                                            validator: (value){
                                               if (value == null ||
                                                   value.isEmpty)
                                                 return 'Campo obligatorio';
@@ -563,7 +563,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                                       >(primaryBlue),
                                                   strokeWidth: 3,
                                                 ),
-                                              )
+)
                                             : Container(
                                                 width: double.infinity,
                                                 decoration: BoxDecoration(
@@ -681,7 +681,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                               MainAxisAlignment.spaceEvenly,
                                           children: [
                                             TextButton.icon(
-                                              onPressed: () {},
+                                              onPressed: (){},
                                               icon: Icon(
                                                 Icons.help_outline,
                                                 size: 16,
@@ -704,7 +704,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
                                               ),
                                             ),
                                             TextButton.icon(
-                                              onPressed: () {},
+                                              onPressed: (){},
                                               icon: Icon(
                                                 Icons.lock_reset,
                                                 size: 16,

@@ -15,7 +15,7 @@ class AdminCreateInventoryProduct extends StatefulWidget {
   const AdminCreateInventoryProduct({super.key, required this.negocioID});
 
   @override
-  State<AdminCreateInventoryProduct> createState() =>
+  State<AdminCreateInventoryProduct> createState()=>
       _AdminCreateInventoryProductState();
 }
 
@@ -46,13 +46,13 @@ class _AdminCreateInventoryProductState
   final List<String> _estadosDisponibles = ['activo', 'inactivo', 'agotado'];
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _cargarCategorias();
   }
 
   @override
-  void dispose() {
+  void dispose(){
     _nombreController.dispose();
     _descripcionController.dispose();
     _precioController.dispose();
@@ -60,7 +60,7 @@ class _AdminCreateInventoryProductState
     super.dispose();
   }
 
-  Future<void> _cargarCategorias() async {
+  Future<void> _cargarCategorias()async {
     try {
       // Cargar categorías principales (sin categoría padre)
       final negocioInfo = await NegocioService.getCurrentUserInfo();
@@ -70,23 +70,23 @@ class _AdminCreateInventoryProductState
       );
       final response = await Amplify.API.query(request: request).response;
       print(response.data?.items);
-      if (response.data?.items != null) {
-        setState(() {
+      if (response.data?.items != null){
+        setState((){
           _categorias = response.data!.items.whereType<Categoria>().toList();
           _categoriasFiltradas = _categorias;
           _isLoadingCategorias = false;
         });
       }
-    } catch (e) {
+    } catch (e){
       safePrint('Error cargando categorías: $e');
-      setState(() {
+      setState((){
         _isLoadingCategorias = false;
       });
       _mostrarError('Error al cargar las categorías');
     }
   }
 
-  Future<void> _seleccionarImagenes() async {
+  Future<void> _seleccionarImagenes()async {
     try {
       final List<XFile> images = await _picker.pickMultiImage(
         maxWidth: 1024,
@@ -94,23 +94,23 @@ class _AdminCreateInventoryProductState
         imageQuality: 85,
       );
 
-      if (images.isNotEmpty) {
+      if (images.isNotEmpty){
         // Limitar a máximo 5 imágenes
         final imagenesAUsar = images.take(5).toList();
 
-        setState(() {
+        setState((){
           _imagenesSeleccionadas = imagenesAUsar
-              .map((xfile) => File(xfile.path))
+              .map((xfile)=> File(xfile.path))
               .toList();
         });
       }
-    } catch (e) {
+    } catch (e){
       safePrint('Error seleccionando imágenes: $e');
       _mostrarError('Error al seleccionar las imágenes');
     }
   }
 
-  Future<void> _tomarFoto() async {
+  Future<void> _tomarFoto()async {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.camera,
@@ -119,31 +119,31 @@ class _AdminCreateInventoryProductState
         imageQuality: 85,
       );
 
-      if (image != null) {
-        setState(() {
-          if (_imagenesSeleccionadas.length < 5) {
+      if (image != null){
+        setState((){
+          if (_imagenesSeleccionadas.length < 5){
             _imagenesSeleccionadas.add(File(image.path));
           }
         });
       }
-    } catch (e) {
+    } catch (e){
       safePrint('Error tomando foto: $e');
       _mostrarError('Error al tomar la foto');
     }
   }
 
-  void _eliminarImagen(int index) {
-    setState(() {
+  void _eliminarImagen(int index){
+    setState((){
       _imagenesSeleccionadas.removeAt(index);
     });
   }
 
-  Future<List<String>> _subirImagenes() async {
-    if (_imagenesSeleccionadas.isEmpty) {
+  Future<List<String>> _subirImagenes()async {
+    if (_imagenesSeleccionadas.isEmpty){
       return [];
     }
 
-    setState(() {
+    setState((){
       _isUploadingImages = true;
     });
 
@@ -151,7 +151,7 @@ class _AdminCreateInventoryProductState
     const uuid = Uuid();
 
     try {
-      for (int i = 0; i < _imagenesSeleccionadas.length; i++) {
+      for (int i = 0; i < _imagenesSeleccionadas.length; i++){
         final file = _imagenesSeleccionadas[i];
         final extension = file.path.split('.').last.toLowerCase();
         final keyPath = 'productos/${uuid.v4()}.$extension';
@@ -167,12 +167,12 @@ class _AdminCreateInventoryProductState
         uploadedKeys.add(uploadResult.uploadedItem.path);
         safePrint('Imagen subida: ${uploadResult.uploadedItem.path}');
       }
-    } catch (e) {
+    } catch (e){
       safePrint('Error subiendo imágenes: $e');
       _mostrarError('Error al subir las imágenes');
       return [];
     } finally {
-      setState(() {
+      setState((){
         _isUploadingImages = false;
       });
     }
@@ -180,26 +180,26 @@ class _AdminCreateInventoryProductState
     return uploadedKeys;
   }
 
-  Future<void> _crearProducto() async {
-    if (!_formKey.currentState!.validate()) {
+  Future<void> _crearProducto()async {
+    if (!_formKey.currentState!.validate()){
       return;
     }
 
-    if (_categoriaSeleccionada == null) {
+    if (_categoriaSeleccionada == null){
       _mostrarError('Por favor selecciona una categoría');
       return;
     }
 
-    setState(() {
+    setState((){
       _isLoading = true;
     });
 
     try {
       // Primero subir las imágenes
       List<String> imageKeys = [];
-      if (_imagenesSeleccionadas.isNotEmpty) {
+      if (_imagenesSeleccionadas.isNotEmpty){
         imageKeys = await _subirImagenes();
-        if (imageKeys.isEmpty && _imagenesSeleccionadas.isNotEmpty) {
+        if (imageKeys.isEmpty && _imagenesSeleccionadas.isNotEmpty){
           // Si falló la subida de imágenes, no continuar
           return;
         }
@@ -224,7 +224,7 @@ class _AdminCreateInventoryProductState
 
       final createdProducto = response.data;
 
-      if (createdProducto == null) {
+      if (createdProducto == null){
         safePrint('Errores al crear producto: ${response.errors}');
         _mostrarError('Error al crear el producto. Intenta de nuevo.');
         return;
@@ -237,27 +237,27 @@ class _AdminCreateInventoryProductState
 
       // Esperar un momento para mostrar el mensaje y luego regresar
       await Future.delayed(const Duration(seconds: 1));
-      if (mounted) {
+      if (mounted){
         Navigator.of(context).pop(createdProducto);
       }
-    } on ApiException catch (e) {
+    } on ApiException catch (e){
       safePrint('Error en la mutación: $e');
       _mostrarError(
         'Error de conexión. Verifica tu internet e intenta de nuevo.',
       );
-    } catch (e) {
+    } catch (e){
       safePrint('Error inesperado: $e');
       _mostrarError('Error inesperado. Intenta de nuevo.');
     } finally {
-      if (mounted) {
-        setState(() {
+      if (mounted){
+        setState((){
           _isLoading = false;
         });
       }
     }
   }
 
-  void _mostrarError(String mensaje) {
+  void _mostrarError(String mensaje){
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
@@ -267,7 +267,7 @@ class _AdminCreateInventoryProductState
     );
   }
 
-  void _mostrarExito(String mensaje) {
+  void _mostrarExito(String mensaje){
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
@@ -278,7 +278,7 @@ class _AdminCreateInventoryProductState
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         title: const Text('Crear Producto'),
@@ -301,11 +301,11 @@ class _AdminCreateInventoryProductState
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.shopping_bag),
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
+                validator: (value){
+                  if (value == null || value.trim().isEmpty){
                     return 'El nombre es obligatorio';
                   }
-                  if (value.trim().length < 2) {
+                  if (value.trim().length < 2){
                     return 'El nombre debe tener al menos 2 caracteres';
                   }
                   return null;
@@ -337,7 +337,7 @@ class _AdminCreateInventoryProductState
                         padding: EdgeInsets.all(16.0),
                         child: CircularProgressIndicator(),
                       ),
-                    )
+)
                   : DropdownButtonFormField<Categoria>(
                       value: _categoriaSeleccionada,
                       decoration: const InputDecoration(
@@ -346,19 +346,19 @@ class _AdminCreateInventoryProductState
                         prefixIcon: Icon(Icons.category),
                       ),
                       hint: const Text('Selecciona una categoría'),
-                      items: _categoriasFiltradas.map((categoria) {
+                      items: _categoriasFiltradas.map((categoria){
                         return DropdownMenuItem<Categoria>(
                           value: categoria,
                           child: Text(categoria.nombre),
                         );
                       }).toList(),
-                      onChanged: (Categoria? newValue) {
-                        setState(() {
+                      onChanged: (Categoria? newValue){
+                        setState((){
                           _categoriaSeleccionada = newValue;
                         });
                       },
-                      validator: (value) {
-                        if (value == null) {
+                      validator: (value){
+                        if (value == null){
                           return 'Selecciona una categoría';
                         }
                         return null;
@@ -380,15 +380,15 @@ class _AdminCreateInventoryProductState
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
+                validator: (value){
+                  if (value == null || value.trim().isEmpty){
                     return 'El precio es obligatorio';
                   }
                   final precio = double.tryParse(value);
-                  if (precio == null) {
+                  if (precio == null){
                     return 'Ingresa un precio válido';
                   }
-                  if (precio <= 0) {
+                  if (precio <= 0){
                     return 'El precio debe ser mayor a 0';
                   }
                   return null;
@@ -408,15 +408,15 @@ class _AdminCreateInventoryProductState
                   suffixText: 'unidades',
                 ),
                 keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
+                validator: (value){
+                  if (value == null || value.trim().isEmpty){
                     return 'El stock es obligatorio';
                   }
                   final stock = int.tryParse(value);
-                  if (stock == null) {
+                  if (stock == null){
                     return 'Ingresa un stock válido';
                   }
-                  if (stock < 0) {
+                  if (stock < 0){
                     return 'El stock no puede ser negativo';
                   }
                   return null;
@@ -433,14 +433,14 @@ class _AdminCreateInventoryProductState
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.toggle_on),
                 ),
-                items: _estadosDisponibles.map((estado) {
+                items: _estadosDisponibles.map((estado){
                   return DropdownMenuItem<String>(
                     value: estado,
                     child: Text(estado.toUpperCase()),
                   );
                 }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
+                onChanged: (String? newValue){
+                  setState((){
                     _estadoSeleccionado = newValue!;
                   });
                 },
@@ -504,7 +504,7 @@ class _AdminCreateInventoryProductState
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: _imagenesSeleccionadas.length,
-                            itemBuilder: (context, index) {
+                            itemBuilder: (context, index){
                               return Container(
                                 margin: const EdgeInsets.only(right: 8),
                                 child: Stack(
@@ -522,7 +522,7 @@ class _AdminCreateInventoryProductState
                                       top: 4,
                                       right: 4,
                                       child: GestureDetector(
-                                        onTap: () => _eliminarImagen(index),
+                                        onTap: ()=> _eliminarImagen(index),
                                         child: Container(
                                           padding: const EdgeInsets.all(4),
                                           decoration: const BoxDecoration(
@@ -600,7 +600,7 @@ class _AdminCreateInventoryProductState
                                 : 'Creando producto...',
                           ),
                         ],
-                      )
+)
                     : const Text(
                         'Crear Producto',
                         style: TextStyle(
@@ -616,7 +616,7 @@ class _AdminCreateInventoryProductState
               OutlinedButton(
                 onPressed: (_isLoading || _isUploadingImages)
                     ? null
-                    : () => Navigator.of(context).pop(),
+                    : ()=> Navigator.of(context).pop(),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(

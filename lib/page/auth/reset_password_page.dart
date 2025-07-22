@@ -6,7 +6,7 @@ class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key, required this.username});
 
   @override
-  State<ResetPasswordPage> createState() => _ResetPasswordPageState();
+  State<ResetPasswordPage> createState()=> _ResetPasswordPageState();
 }
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
@@ -15,10 +15,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _codeController = TextEditingController(); // Controlador para el código
   bool _isLoading = false;
 
-  Future<void> _submitNewPassword() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _submitNewPassword()async {
+    if (!_formKey.currentState!.validate())return;
 
-    setState(() {
+    setState((){
       _isLoading = true;
     });
 
@@ -39,7 +39,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         password: newPassword,
       );
 
-      if (signInResult.isSignedIn) {
+      if (signInResult.isSignedIn){
         // Navegar a la pantalla principal
         Navigator.of(context).pushReplacementNamed('/home');
       } else {
@@ -47,26 +47,26 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           "No se pudo iniciar sesión después de restablecer la contraseña.",
         );
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (e){
       _showError(e.message);
-    } catch (e) {
+    } catch (e){
       _showError(e.toString());
     } finally {
-      setState(() {
+      setState((){
         _isLoading = false;
       });
     }
   }
 
-  void _showError(String? message) {
+  void _showError(String? message){
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (_)=> AlertDialog(
         title: const Text('Error'),
         content: Text(message ?? 'Error desconocido'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: ()=> Navigator.of(context).pop(),
             child: const Text('OK'),
           ),
         ],
@@ -75,14 +75,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   @override
-  void dispose() {
+  void dispose(){
     _passwordController.dispose();
     _codeController.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(title: const Text('Restablecer Contraseña')),
       body: Padding(
@@ -99,8 +99,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   labelText: 'Código de verificación',
                 ),
                 keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
+                validator: (value){
+                  if (value == null || value.isEmpty){
                     return 'El código de verificación es requerido';
                   }
                   return null;
@@ -113,11 +113,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   labelText: 'Nueva contraseña',
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
+                validator: (value){
+                  if (value == null || value.isEmpty){
                     return 'La contraseña no puede estar vacía';
                   }
-                  if (value.length < 8) {
+                  if (value.length < 8){
                     return 'La contraseña debe tener al menos 8 caracteres';
                   }
                   return null;

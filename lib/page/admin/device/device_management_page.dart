@@ -10,7 +10,7 @@ class DeviceManagementPage extends StatefulWidget {
   const DeviceManagementPage({super.key});
 
   @override
-  State<DeviceManagementPage> createState() => _DeviceManagementPageState();
+  State<DeviceManagementPage> createState()=> _DeviceManagementPageState();
 }
 
 class _DeviceManagementPageState extends State<DeviceManagementPage> {
@@ -20,14 +20,14 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
   String? errorMessage;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _loadDevices();
   }
 
-  Future<void> _loadDevices() async {
+  Future<void> _loadDevices()async {
     try {
-      setState(() {
+      setState((){
         isLoading = true;
         errorMessage = null;
       });
@@ -37,8 +37,8 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
       final negocioId = userInfo.negocioId;
 
       final negocioData = await NegocioService.getNegocioById(negocioId);
-      if (negocioData == null) {
-        setState(() {
+      if (negocioData == null){
+        setState((){
           errorMessage = 'No se pudo cargar la información del negocio';
           isLoading = false;
         });
@@ -48,13 +48,13 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
       // Obtener sesiones activas
       final sessions = await _getAllActiveSessions(negocioId);
 
-      setState(() {
+      setState((){
         negocio = negocioData;
         activeSessions = sessions;
         isLoading = false;
       });
-    } catch (e) {
-      setState(() {
+    } catch (e){
+      setState((){
         errorMessage = 'Error al cargar dispositivos: ${e.toString()}';
         isLoading = false;
       });
@@ -63,16 +63,16 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
 
   Future<List<SesionDispositivo>> _getAllActiveSessions(
     String negocioId,
-  ) async {
+  )async {
     try {
       const String query = '''
-        query ListSesionesDispositivo(\$negocioId: ID!) {
+        query ListSesionesDispositivo(\$negocioId: ID!){
           listSesionDispositivos(
             filter: {
               negocioId: { eq: \$negocioId }
               isActive: { eq: true }
             }
-          ) {
+          ){
             items {
               id
               negocioId
@@ -96,20 +96,20 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
 
       final response = await Amplify.API.query(request: request).response;
 
-      if (response.data != null) {
+      if (response.data != null){
         final data = response.data as Map<String, dynamic>;
         final items = data['listSesionDispositivos']['items'] as List;
 
-        return items.map((item) => SesionDispositivo.fromJson(item)).toList();
+        return items.map((item)=> SesionDispositivo.fromJson(item)).toList();
       }
       return [];
-    } catch (e) {
+    } catch (e){
       safePrint('Error obteniendo sesiones: $e');
       return [];
     }
   }
 
-  Future<void> _disconnectDevice(SesionDispositivo session) async {
+  Future<void> _disconnectDevice(SesionDispositivo session)async {
     try {
       final updatedSession = session.copyWith(isActive: false);
       final request = ModelMutations.update(updatedSession);
@@ -124,7 +124,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
           backgroundColor: Colors.green,
         ),
       );
-    } catch (e) {
+    } catch (e){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al desconectar dispositivo: $e'),
@@ -135,7 +135,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gestión de Dispositivos'),
@@ -171,7 +171,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
                         ? _buildEmptyState()
                         : ListView.builder(
                             itemCount: activeSessions.length,
-                            itemBuilder: (context, index) {
+                            itemBuilder: (context, index){
                               return _buildDeviceCard(activeSessions[index]);
                             },
                           ),
@@ -182,12 +182,12 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
     );
   }
 
-  Widget _buildSummaryCard() {
-    if (negocio == null) return const SizedBox.shrink();
+  Widget _buildSummaryCard(){
+    if (negocio == null)return const SizedBox.shrink();
 
-    final pcSessions = activeSessions.where((s) => s.deviceType == 'PC').length;
+    final pcSessions = activeSessions.where((s)=> s.deviceType == 'PC').length;
     final mobilSessions = activeSessions
-        .where((s) => s.deviceType == 'MOVIL')
+        .where((s)=> s.deviceType == 'MOVIL')
         .length;
 
     return Card(
@@ -233,7 +233,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
     );
   }
 
-  Widget _buildUsageIndicator(String label, int used, int max, IconData icon) {
+  Widget _buildUsageIndicator(String label, int used, int max, IconData icon){
     final percentage = max > 0 ? used / max : 0.0;
     final isOverLimit = used > max;
 
@@ -288,7 +288,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
           ),
           const SizedBox(height: 8),
           LinearProgressIndicator(
-            value: max > 0 ? (used / max).clamp(0.0, 1.0) : 0.0,
+            value: max > 0 ? (used / max).clamp(0.0, 1.0): 0.0,
             backgroundColor: Colors.grey[300],
             valueColor: AlwaysStoppedAnimation(
               isOverLimit
@@ -303,17 +303,17 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
     );
   }
 
-  Widget _buildDeviceCard(SesionDispositivo session) {
+  Widget _buildDeviceCard(SesionDispositivo session){
     final lastActivity = session.lastActivity.getDateTimeInUtc();
     final now = DateTime.now();
     String activityText = 'Desconocido';
 
     final difference = now.difference(lastActivity);
-    if (difference.inMinutes < 1) {
+    if (difference.inMinutes < 1){
       activityText = 'Activo ahora';
-    } else if (difference.inHours < 1) {
+    } else if (difference.inHours < 1){
       activityText = 'Hace ${difference.inMinutes} min';
-    } else if (difference.inDays < 1) {
+    } else if (difference.inDays < 1){
       activityText = 'Hace ${difference.inHours}h';
     } else {
       activityText = 'Hace ${difference.inDays} días';
@@ -378,7 +378,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
         trailing: isCurrentDevice
             ? const Icon(Icons.smartphone, color: Colors.blue)
             : IconButton(
-                onPressed: () => _showDisconnectDialog(session),
+                onPressed: ()=> _showDisconnectDialog(session),
                 icon: const Icon(Icons.close, color: Colors.red),
                 tooltip: 'Desconectar',
               ),
@@ -386,7 +386,7 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(){
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -408,10 +408,10 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
     );
   }
 
-  void _showDisconnectDialog(SesionDispositivo session) {
+  void _showDisconnectDialog(SesionDispositivo session){
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context)=> AlertDialog(
         title: const Text('Desconectar Dispositivo'),
         content: Text(
           '¿Estás seguro de que quieres desconectar "${session.deviceInfo}"?\n\n'
@@ -419,11 +419,11 @@ class _DeviceManagementPageState extends State<DeviceManagementPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: ()=> Navigator.of(context).pop(),
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: (){
               Navigator.of(context).pop();
               _disconnectDevice(session);
             },

@@ -17,7 +17,7 @@ type SesionDispositivo
       { allow: groups, groups: ["admin"], operations: [read, update, create, delete] }
       { allow: groups, groups: ["vendedor"], operations: [read, create, delete] }
     ]
-  ) {
+  ){
   id: ID!
   negocioId: ID! @index(name: "byNegocio")
   userId: String!
@@ -35,11 +35,11 @@ class DeviceSessionService {
   static const int SESSION_TIMEOUT_HOURS = 24;
 
   /// Verifica la vigencia del negocio
-  static Future<bool> checkNegocioVigencia(Negocio negocio) async {
-    if (negocio.duration == null) return true; // Sin límite de duración
+  static Future<bool> checkNegocioVigencia(Negocio negocio)async {
+    if (negocio.duration == null)return true; // Sin límite de duración
 
     final createdAt = negocio.createdAt;
-    if (createdAt == null) return true;
+    if (createdAt == null)return true;
 
     final now = DateTime.now();
     final createdDate = createdAt.getDateTimeInUtc();
@@ -49,35 +49,35 @@ class DeviceSessionService {
   }
 
   /// Obtiene información del dispositivo actual
-  static Future<Map<String, String>> getDeviceInfo() async {
+  static Future<Map<String, String>> getDeviceInfo()async {
     final deviceInfo = DeviceInfoPlugin();
     String deviceId = '';
     String deviceType = '';
     String deviceDescription = '';
 
     try {
-      if (kIsWeb) {
+      if (kIsWeb){
         final webInfo = await deviceInfo.webBrowserInfo;
         deviceId = '${webInfo.browserName}_${webInfo.userAgent?.hashCode}';
         deviceType = 'PC';
         deviceDescription = '${webInfo.browserName} ${webInfo.platform}';
-      } else if (Platform.isAndroid) {
+      } else if (Platform.isAndroid){
         final androidInfo = await deviceInfo.androidInfo;
         deviceId = androidInfo.id;
         deviceType = 'MOVIL';
         deviceDescription = '${androidInfo.brand} ${androidInfo.model}';
-      } else if (Platform.isIOS) {
+      } else if (Platform.isIOS){
         final iosInfo = await deviceInfo.iosInfo;
         deviceId = iosInfo.identifierForVendor ?? 'unknown';
         deviceType = 'MOVIL';
         deviceDescription = '${iosInfo.name} ${iosInfo.model}';
-      } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux){
         deviceId = Platform.localHostname;
         deviceType = 'PC';
         deviceDescription =
             '${Platform.operatingSystem} ${Platform.localHostname}';
       }
-    } catch (e) {
+    } catch (e){
       safePrint('Error obteniendo info del dispositivo: $e');
       deviceId = 'unknown_${DateTime.now().millisecondsSinceEpoch}';
       deviceType = kIsWeb ? 'PC' : 'MOVIL';
@@ -95,10 +95,10 @@ class DeviceSessionService {
   static Future<DeviceAccessResult> checkDeviceAccess(
     Negocio negocio,
     String userId,
-  ) async {
+  )async {
     try {
       // 1. Verificar vigencia del negocio
-      if (!await checkNegocioVigencia(negocio)) {
+      if (!await checkNegocioVigencia(negocio)){
         return DeviceAccessResult.expired();
       }
 
@@ -109,7 +109,7 @@ class DeviceSessionService {
 
       // 3. Verificar si este dispositivo ya tiene una sesión activa
       final existingSession = await _getActiveSession(negocio.id, deviceId);
-      if (existingSession != null) {
+      if (existingSession != null){
         // Actualizar última actividad
         await _updateSessionActivity(existingSession);
         return DeviceAccessResult.success(existingSession);
@@ -121,7 +121,7 @@ class DeviceSessionService {
           ? negocio.pcAccess
           : negocio.movilAccess;
 
-      if (maxDevices != null && activeSessions.length >= maxDevices) {
+      if (maxDevices != null && activeSessions.length >= maxDevices){
         return DeviceAccessResult.limitReached(deviceType, maxDevices);
       }
 
@@ -135,7 +135,7 @@ class DeviceSessionService {
       );
 
       return DeviceAccessResult.success(newSession);
-    } catch (e) {
+    } catch (e){
       safePrint('Error verificando acceso del dispositivo: $e');
       return DeviceAccessResult.error(e.toString());
     }
@@ -145,20 +145,20 @@ class DeviceSessionService {
   static Future<SesionDispositivo?> _getActiveSession(
     String negocioId,
     String deviceId,
-  ) async {
+  )async {
     try {
       const String query = '''
         query ListSesionesDispositivo(
           \$negocioId: ID!
           \$filter: ModelSesionDispositivoFilterInput
-        ) {
+        ){
           listSesionDispositivos(
             filter: {
               negocioId: { eq: \$negocioId }
               deviceId: { eq: \$deviceId }
               isActive: { eq: true }
             }
-          ) {
+          ){
             items {
               id
               negocioId
@@ -182,11 +182,11 @@ class DeviceSessionService {
 
       final response = await Amplify.API.query(request: request).response;
 
-      if (response.data != null) {
+      if (response.data != null){
         final data = response.data as Map<String, dynamic>;
         final items = data['listSesionDispositivos']['items'] as List;
 
-        if (items.isNotEmpty) {
+        if (items.isNotEmpty){
           final session = SesionDispositivo.fromJson(items.first);
 
           // Verificar si la sesión no ha expirado
@@ -194,7 +194,7 @@ class DeviceSessionService {
           final now = DateTime.now();
           final hoursSinceActivity = now.difference(lastActivity).inHours;
 
-          if (hoursSinceActivity > SESSION_TIMEOUT_HOURS) {
+          if (hoursSinceActivity > SESSION_TIMEOUT_HOURS){
             // Marcar sesión como inactiva
             await _deactivateSession(session.id);
             return null;
@@ -204,7 +204,7 @@ class DeviceSessionService {
         }
       }
       return null;
-    } catch (e) {
+    } catch (e){
       safePrint('Error obteniendo sesión activa: $e');
       return null;
     }
@@ -214,17 +214,17 @@ class DeviceSessionService {
   static Future<List<SesionDispositivo>> _getActiveSessions(
     String negocioId,
     String deviceType,
-  ) async {
+  )async {
     try {
       const String query = '''
-        query ListSesionesDispositivo(\$negocioId: ID!) {
+        query ListSesionesDispositivo(\$negocioId: ID!){
           listSesionDispositivos(
             filter: {
               negocioId: { eq: \$negocioId }
               deviceType: { eq: \$deviceType }
               isActive: { eq: true }
             }
-          ) {
+          ){
             items {
               id
               negocioId
@@ -248,20 +248,20 @@ class DeviceSessionService {
 
       final response = await Amplify.API.query(request: request).response;
 
-      if (response.data != null) {
+      if (response.data != null){
         final data = response.data as Map<String, dynamic>;
         final items = data['listSesionDispositivos']['items'] as List;
 
         List<SesionDispositivo> activeSessions = [];
         final now = DateTime.now();
 
-        for (final item in items) {
+        for (final item in items){
           final session = SesionDispositivo.fromJson(item);
           final lastActivity = session.lastActivity.getDateTimeInUtc();
 
           final hoursSinceActivity = now.difference(lastActivity).inHours;
 
-          if (hoursSinceActivity > SESSION_TIMEOUT_HOURS) {
+          if (hoursSinceActivity > SESSION_TIMEOUT_HOURS){
             // Desactivar sesión expirada
             await _deactivateSession(session.id);
           } else {
@@ -272,7 +272,7 @@ class DeviceSessionService {
         return activeSessions;
       }
       return [];
-    } catch (e) {
+    } catch (e){
       safePrint('Error obteniendo sesiones activas: $e');
       return [];
     }
@@ -285,7 +285,7 @@ class DeviceSessionService {
     String deviceId,
     String deviceType,
     String deviceInfo,
-  ) async {
+  )async {
     final session = SesionDispositivo(
       negocioId: negocioId,
       userId: userId,
@@ -299,7 +299,7 @@ class DeviceSessionService {
     final request = ModelMutations.create(session);
     final response = await Amplify.API.mutate(request: request).response;
 
-    if (response.data != null) {
+    if (response.data != null){
       return response.data!;
     } else {
       throw Exception('Error creando sesión: ${response.errors}');
@@ -307,7 +307,7 @@ class DeviceSessionService {
   }
 
   /// Actualiza la última actividad de una sesión
-  static Future<void> _updateSessionActivity(SesionDispositivo session) async {
+  static Future<void> _updateSessionActivity(SesionDispositivo session)async {
     try {
       final updatedSession = session.copyWith(
         lastActivity: TemporalDateTime.now(),
@@ -315,13 +315,13 @@ class DeviceSessionService {
 
       final request = ModelMutations.update(updatedSession);
       await Amplify.API.mutate(request: request).response;
-    } catch (e) {
+    } catch (e){
       safePrint('Error actualizando actividad de sesión: $e');
     }
   }
 
   /// Desactiva una sesión
-  static Future<void> _deactivateSession(String sessionId) async {
+  static Future<void> _deactivateSession(String sessionId)async {
     try {
       // Primero obtener la sesión
       final getRequest = ModelQueries.get(
@@ -330,18 +330,18 @@ class DeviceSessionService {
       );
       final getResponse = await Amplify.API.query(request: getRequest).response;
 
-      if (getResponse.data != null) {
+      if (getResponse.data != null){
         final session = getResponse.data!.copyWith(isActive: false);
         final updateRequest = ModelMutations.update(session);
         await Amplify.API.mutate(request: updateRequest).response;
       }
-    } catch (e) {
+    } catch (e){
       safePrint('Error desactivando sesión: $e');
     }
   }
 
   /// Cierra la sesión del dispositivo actual
-  static Future<void> closeCurrentSession() async {
+  static Future<void> closeCurrentSession()async {
     try {
       final deviceInfo = await getDeviceInfo();
       final user = await Amplify.Auth.getCurrentUser();
@@ -352,16 +352,16 @@ class DeviceSessionService {
         negocioId,
         deviceInfo['deviceId']!,
       );
-      if (session != null) {
+      if (session != null){
         await _deactivateSession(session.id);
       }
-    } catch (e) {
+    } catch (e){
       safePrint('Error cerrando sesión actual: $e');
     }
   }
 
   /// Mantiene la sesión activa (llamar periódicamente)
-  static Future<void> keepSessionAlive() async {
+  static Future<void> keepSessionAlive()async {
     try {
       final deviceInfo = await getDeviceInfo();
       final userInfo = await NegocioService.getCurrentUserInfo();
@@ -371,15 +371,15 @@ class DeviceSessionService {
         negocioId,
         deviceInfo['deviceId']!,
       );
-      if (session != null) {
+      if (session != null){
         await _updateSessionActivity(session);
       }
-        } catch (e) {
+        } catch (e){
       safePrint('Error manteniendo sesión activa: $e');
     }
   }
   /// Obtiene todas las sesiones activas para un negocio
-  static Future<List<SesionDispositivo?>> getActiveSessions(String negocioId) async {
+  static Future<List<SesionDispositivo?>> getActiveSessions(String negocioId)async {
     try {
       final request = ModelQueries.list(
         SesionDispositivo.classType,
@@ -390,7 +390,7 @@ class DeviceSessionService {
       final response = await Amplify.API.query(request: request).response;
 
       final sessions = response.data?.items;
-      if (sessions == null) {
+      if (sessions == null){
         safePrint('Errores: ${response.errors}');
         return const [];
       }
@@ -398,12 +398,12 @@ class DeviceSessionService {
       List<SesionDispositivo?> activeSessions = [];
       final now = DateTime.now();
 
-      for (final session in sessions) {
-        if (session == null) continue;
+      for (final session in sessions){
+        if (session == null)continue;
         final lastActivity = session.lastActivity.getDateTimeInUtc();
         final hoursSinceActivity = now.difference(lastActivity).inHours;
 
-        if (hoursSinceActivity > SESSION_TIMEOUT_HOURS) {
+        if (hoursSinceActivity > SESSION_TIMEOUT_HOURS){
           // Desactivar sesión expirada
           await _deactivateSession(session.id);
         } else {
@@ -412,14 +412,14 @@ class DeviceSessionService {
       }
 
       return activeSessions;
-    } on ApiException catch (e) {
+    } on ApiException catch (e){
       safePrint('Consulta de sesiones fallida: $e');
       return const [];
     }
   }
 
   /// Cierra una sesión específica
-  static Future<void> closeSpecificSession(String sessionId) async {
+  static Future<void> closeSpecificSession(String sessionId)async {
     try {
       final getRequest = ModelQueries.get(
         SesionDispositivo.classType,
@@ -428,12 +428,12 @@ class DeviceSessionService {
       final getResponse = await Amplify.API.query(request: getRequest).response;
 
       final session = getResponse.data;
-      if (session == null) {
+      if (session == null){
         safePrint('Errores: ${getResponse.errors}');
         throw Exception('Sesión no encontrada');
       }
 
-      if (!session.isActive) {
+      if (!session.isActive){
         return;
       }
 
@@ -443,11 +443,11 @@ class DeviceSessionService {
           .mutate(request: updateRequest)
           .response;
 
-      if (updateResponse.data == null) {
+      if (updateResponse.data == null){
         safePrint('Errores al actualizar: ${updateResponse.errors}');
         throw Exception('Error al cerrar la sesión');
       }
-    } on ApiException catch (e) {
+    } on ApiException catch (e){
       safePrint('Cierre de sesión fallido: $e');
       rethrow;
     }
@@ -456,7 +456,7 @@ class DeviceSessionService {
 /// Obtiene información de los dispositivos conectados para un negocio
 static Future<Map<String, dynamic>> getConnectedDevicesInfo(
   String negocioId,
-) async {
+)async {
   try {
     final request = ModelQueries.list(
       SesionDispositivo.classType,
@@ -467,7 +467,7 @@ static Future<Map<String, dynamic>> getConnectedDevicesInfo(
     final response = await Amplify.API.query(request: request).response;
 
     final sessions = response.data?.items;
-    if (sessions == null) {
+    if (sessions == null){
       safePrint('Errores: ${response.errors}');
       return {'devices': [], 'total': 0};
     }
@@ -475,12 +475,12 @@ static Future<Map<String, dynamic>> getConnectedDevicesInfo(
     List<Map<String, dynamic>> connectedDevices = [];
     final now = DateTime.now();
 
-    for (final session in sessions) {
-      if (session == null) continue;
+    for (final session in sessions){
+      if (session == null)continue;
       final lastActivity = session.lastActivity.getDateTimeInUtc();
       final hoursSinceActivity = now.difference(lastActivity).inHours;
 
-      if (hoursSinceActivity > SESSION_TIMEOUT_HOURS) {
+      if (hoursSinceActivity > SESSION_TIMEOUT_HOURS){
         // Desactivar sesión expirada
         await _deactivateSession(session.id);
         continue;
@@ -491,7 +491,7 @@ static Future<Map<String, dynamic>> getConnectedDevicesInfo(
       try {
         final userInfo = await NegocioService.getCurrentUserInfo();
         userName = userInfo.userId ?? session.userId; // Ajusta según tu modelo
-      } catch (e) {
+      } catch (e){
         safePrint(
           'Error obteniendo nombre de usuario para ${session.userId}: $e',
         );
@@ -514,7 +514,7 @@ static Future<Map<String, dynamic>> getConnectedDevicesInfo(
       'devices': connectedDevices,
       'total': connectedDevices.length,
     };
-  } on ApiException catch (e) {
+  } on ApiException catch (e){
     safePrint('Consulta de dispositivos conectados fallida: $e');
     return {'devices': [], 'total': 0};
   }
@@ -539,11 +539,11 @@ class DeviceAccessResult {
     this.isExpired = false,
   });
 
-  factory DeviceAccessResult.success(SesionDispositivo session) {
+  factory DeviceAccessResult.success(SesionDispositivo session){
     return DeviceAccessResult._(success: true, session: session);
   }
 
-  factory DeviceAccessResult.limitReached(String deviceType, int maxDevices) {
+  factory DeviceAccessResult.limitReached(String deviceType, int maxDevices){
     return DeviceAccessResult._(
       success: false,
       errorMessage:
@@ -553,7 +553,7 @@ class DeviceAccessResult {
     );
   }
 
-  factory DeviceAccessResult.expired() {
+  factory DeviceAccessResult.expired(){
     return DeviceAccessResult._(
       success: false,
       errorMessage: 'La vigencia del negocio ha expirado',
@@ -561,7 +561,7 @@ class DeviceAccessResult {
     );
   }
 
-  factory DeviceAccessResult.error(String message) {
+  factory DeviceAccessResult.error(String message){
     return DeviceAccessResult._(success: false, errorMessage: message);
   }
 }

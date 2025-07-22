@@ -6,26 +6,26 @@ class AuthCheckScreen extends StatefulWidget {
   const AuthCheckScreen({super.key});
 
   @override
-  State<AuthCheckScreen> createState() => _AuthCheckScreenState();
+  State<AuthCheckScreen> createState()=> _AuthCheckScreenState();
 }
 
 class _AuthCheckScreenState extends State<AuthCheckScreen> {
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _checkUserAuth();
   }
 
-  Future<void> _checkUserAuth() async {
+  Future<void> _checkUserAuth()async {
     try {
       final session = await Amplify.Auth.fetchAuthSession();
 
-      if (session.isSignedIn) {
+      if (session.isSignedIn){
         final userAttributes = await Amplify.Auth.fetchUserAttributes();
 
         final roleAttr = userAttributes.firstWhere(
-          (attr) => attr.userAttributeKey.key == 'custom:role',
-          orElse: () => const AuthUserAttribute(
+          (attr)=> attr.userAttributeKey.key == 'custom:role',
+          orElse: ()=> const AuthUserAttribute(
             userAttributeKey: CognitoUserAttributeKey.custom('role'),
             value: 'unknown',
           ),
@@ -33,13 +33,13 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
 
         final role = roleAttr.value.toLowerCase();
 
-        switch (role) {
+        switch (role){
           case 'superadmin':
             Navigator.of(context).pushReplacementNamed('/superadmin');
             break;
           case 'admin':
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const AdminPage()),
+              MaterialPageRoute(builder: (_)=> const AdminPage()),
             );
             break;
           default:
@@ -48,18 +48,18 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
       } else {
         _goToLogin();
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (e){
       debugPrint("Error verificando sesión: ${e.message}");
       _goToLogin();
     }
   }
 
-  void _goToLogin() {
+  void _goToLogin(){
     Navigator.of(context).pushReplacementNamed('/login');
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

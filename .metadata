@@ -36,7 +36,7 @@ migration:
 
   # User provided section
 
-  # List of Local paths (relative to this file) that should be
+  # List of Local paths (relative to this file)that should be
   # ignored by the migrate tool.
   #
   # Files that are not part of the templates will be ignored by default.

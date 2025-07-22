@@ -15,11 +15,11 @@ class ResponsiveTwoColumn extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return LayoutBuilder(
-      builder: (context, constraints) {
+      builder: (context, constraints){
         final isWide = constraints.maxWidth >= breakpoint;
-        if (isWide) {
+        if (isWide){
           return Row(
             children: [
               Expanded(child: first),

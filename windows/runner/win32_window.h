@@ -15,14 +15,14 @@ class Win32Window {
   struct Point {
     unsigned int x;
     unsigned int y;
-    Point(unsigned int x, unsigned int y) : x(x), y(y) {}
+    Point(unsigned int x, unsigned int y): x(x), y(y){}
   };
 
   struct Size {
     unsigned int width;
     unsigned int height;
     Size(unsigned int width, unsigned int height)
-        : width(width), height(height) {}
+        : width(width), height(height){}
   };
 
   Win32Window();
@@ -62,7 +62,7 @@ class Win32Window {
   virtual LRESULT MessageHandler(HWND window,
                                  UINT const message,
                                  WPARAM const wparam,
-                                 LPARAM const lparam) noexcept;
+                                 LPARAM const lparam)noexcept;
 
   // Called when CreateAndShow is called, allowing subclass window-related
   // setup. Subclasses should return false if setup fails.
@@ -82,10 +82,10 @@ class Win32Window {
   static LRESULT CALLBACK WndProc(HWND const window,
                                   UINT const message,
                                   WPARAM const wparam,
-                                  LPARAM const lparam) noexcept;
+                                  LPARAM const lparam)noexcept;
 
   // Retrieves a class instance pointer for |window|
-  static Win32Window* GetThisFromHandle(HWND const window) noexcept;
+  static Win32Window* GetThisFromHandle(HWND const window)noexcept;
 
   // Update the window frame's theme to match the system theme.
   static void UpdateTheme(HWND const window);

@@ -8,7 +8,7 @@ class SuperAdminPage extends StatelessWidget {
   const SuperAdminPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
@@ -40,10 +40,10 @@ class SuperAdminPage extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () async {
+                  onPressed: ()async {
                     await Amplify.Auth.signOut();
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      MaterialPageRoute(builder: (_)=> const LoginScreen()),
                     );
                   },
                   child: Text(
@@ -72,7 +72,7 @@ class SuperAdminPage extends StatelessWidget {
                 _buildOptionCard(
                   icon: Icons.location_city,
                   title: 'Negocios',
-                  onTap: () {
+                  onTap: (){
                     Navigator.pushNamed(context, Routes.superAdminNegocios);
                   },
                 ),
@@ -97,7 +97,7 @@ class SuperAdminPage extends StatelessWidget {
                 _buildOptionCard(
                   icon: Icons.people,
                   title: 'Usuarios',
-                  onTap: () {
+                  onTap: (){
                     Navigator.pushNamed(context, "/superadmin/users");
                   },
                 ),
@@ -122,17 +122,17 @@ class SuperAdminPage extends StatelessWidget {
                 _buildOptionCard(
                   icon: Icons.settings,
                   title: 'Parámetros Generales',
-                  onTap: () {},
+                  onTap: (){},
                 ),
                 _buildOptionCard(
                   icon: Icons.receipt_long,
                   title: 'Facturación',
-                  onTap: () {},
+                  onTap: (){},
                 ),
                 _buildOptionCard(
                   icon: Icons.analytics,
                   title: 'Reportes',
-                  onTap: () {},
+                  onTap: (){},
                 ),
               ],
             ), */
@@ -146,7 +146,7 @@ class SuperAdminPage extends StatelessWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-  }) {
+  }){
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),

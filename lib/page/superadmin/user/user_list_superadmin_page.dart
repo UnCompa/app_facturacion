@@ -21,7 +21,7 @@ class User {
     required this.email,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
+  factory User.fromJson(Map<String, dynamic> json){
     return User(
       username: json['username'],
       enabled: json['enabled'],
@@ -38,10 +38,10 @@ class UsersResponse {
 
   UsersResponse({required this.users});
 
-  factory UsersResponse.fromJson(Map<String, dynamic> json) {
+  factory UsersResponse.fromJson(Map<String, dynamic> json){
     var usersJson = json['users'] as List;
     List<User> usersList = usersJson
-        .map((userJson) => User.fromJson(userJson))
+        .map((userJson)=> User.fromJson(userJson))
         .toList();
 
     return UsersResponse(users: usersList);
@@ -52,7 +52,7 @@ class UserListSuperadminPage extends StatefulWidget {
   const UserListSuperadminPage({super.key});
 
   @override
-  State<UserListSuperadminPage> createState() => _UserListSuperadminPageState();
+  State<UserListSuperadminPage> createState()=> _UserListSuperadminPageState();
 }
 
 class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
@@ -61,19 +61,19 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
   String? error;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     fetchUsers();
   }
 
-  Future<void> fetchUsers() async {
+  Future<void> fetchUsers()async {
     try {
-      setState(() {
+      setState((){
         isLoading = true;
         error = null;
       });
       var token = await GetToken.getIdTokenSimple();
-      if (token == null) {
+      if (token == null){
         print('No se pudo obtener el token');
         return;
       }
@@ -87,30 +87,30 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
         },
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200){
         final jsonData = json.decode(response.body);
         final usersResponse = UsersResponse.fromJson(jsonData);
 
-        setState(() {
+        setState((){
           users = usersResponse.users;
           isLoading = false;
         });
       } else {
-        setState(() {
+        setState((){
           error = 'Error al cargar usuarios: ${response.statusCode}';
           isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
+    } catch (e){
+      setState((){
         error = 'Error de conexión: $e';
         isLoading = false;
       });
     }
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toUpperCase()) {
+  Color _getStatusColor(String status){
+    switch (status.toUpperCase()){
       case 'CONFIRMED':
         return Colors.green;
       case 'PENDING':
@@ -122,12 +122,12 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
     }
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime date){
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -147,7 +147,7 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: (){
           Navigator.of(context).pushNamed(Routes.superAdminHomeUserCrear);
         },
         child: Icon(Icons.add),
@@ -194,8 +194,8 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
     );
   }
 
-  Widget _buildContent() {
-    if (isLoading) {
+  Widget _buildContent(){
+    if (isLoading){
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -208,7 +208,7 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
       );
     }
 
-    if (error != null) {
+    if (error != null){
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -230,7 +230,7 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
       );
     }
 
-    if (users.isEmpty) {
+    if (users.isEmpty){
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -248,7 +248,7 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: users.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (context, index){
           final user = users[index];
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
@@ -347,7 +347,7 @@ class _UserListSuperadminPageState extends State<UserListSuperadminPage> {
                 color: Colors.grey[400],
                 size: 16,
               ),
-              onTap: () {
+              onTap: (){
                 // Aquí puedes agregar navegación a detalle del usuario
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

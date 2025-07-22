@@ -14,7 +14,7 @@ class SellerPage extends StatefulWidget {
   const SellerPage({super.key});
 
   @override
-  State<SellerPage> createState()=> _SellerPageState();
+  State<SellerPage> createState() => _SellerPageState();
 }
 
 class _SellerPageState extends State<SellerPage>
@@ -34,7 +34,7 @@ class _SellerPageState extends State<SellerPage>
   Timer? _refreshTimer;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _loadUserAndBusiness();
     WidgetsBinding.instance.addObserver(this);
@@ -45,24 +45,24 @@ class _SellerPageState extends State<SellerPage>
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _refreshTimer?.cancel();
     disposeSessionControl();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  void _startRefreshTimer(){
-    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_){
-      if (mounted){
+  void _startRefreshTimer() {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) {
         _refreshVigenciaInfo();
       }
     });
   }
 
-  Future<void> _loadUserAndBusiness()async {
+  Future<void> _loadUserAndBusiness() async {
     try {
-      setState((){
+      setState(() {
         isLoading = true;
         errorMessage = null;
       });
@@ -74,19 +74,19 @@ class _SellerPageState extends State<SellerPage>
       String? negocioId;
       String? userDisplayName;
 
-      for (final attribute in attributes){
-        if (attribute.userAttributeKey.key == 'custom:negocioid'){
+      for (final attribute in attributes) {
+        if (attribute.userAttributeKey.key == 'custom:negocioid') {
           negocioId = attribute.value;
         }
         if (attribute.userAttributeKey.key == 'name' ||
-            attribute.userAttributeKey.key == 'preferred_username'){
+            attribute.userAttributeKey.key == 'preferred_username') {
           userDisplayName = attribute.value;
         }
       }
 
       userDisplayName ??= user.username;
 
-      if (negocioId != null){
+      if (negocioId != null) {
         // Consultar los datos del negocio
         final request = ModelQueries.get(
           Negocio.classType,
@@ -94,8 +94,8 @@ class _SellerPageState extends State<SellerPage>
         );
         final response = await Amplify.API.query(request: request).response;
 
-        if (response.data != null){
-          setState((){
+        if (response.data != null) {
+          setState(() {
             userName = userDisplayName;
             negocio = response.data;
           });
@@ -103,34 +103,34 @@ class _SellerPageState extends State<SellerPage>
           // Cargar información adicional de vigencia y dispositivos
           await _loadVigenciaInfo();
         } else {
-          setState((){
+          setState(() {
             userName = userDisplayName;
             errorMessage = 'No se pudo cargar la información del negocio';
             isLoading = false;
           });
         }
       } else {
-        setState((){
+        setState(() {
           userName = userDisplayName;
           errorMessage = 'Usuario sin negocio asignado';
           isLoading = false;
         });
       }
-    } catch (e){
-      setState((){
+    } catch (e) {
+      setState(() {
         errorMessage = 'Error al cargar datos: ${e.toString()}';
         isLoading = false;
       });
     }
   }
 
-  Future<void> _loadVigenciaInfo()async {
-    if (negocio == null)return;
+  Future<void> _loadVigenciaInfo() async {
+    if (negocio == null) return;
 
     try {
       // Calcular vigencia
       final now = DateTime.now().toUtc(); // Comparación justa en UTC
-      if (negocio!.createdAt != null && negocio!.duration != null){
+      if (negocio!.createdAt != null && negocio!.duration != null) {
         final fechaCreacion = negocio!.createdAt!.getDateTimeInUtc();
         fechaVencimiento = fechaCreacion.add(
           Duration(days: negocio!.duration!),
@@ -142,28 +142,28 @@ class _SellerPageState extends State<SellerPage>
       final deviceInfo = await DeviceSessionService.getConnectedDevicesInfo(
         negocio!.id,
       );
-      setState((){
+      setState(() {
         maxDispositivosMovil = negocio!.movilAccess ?? 0;
         maxDispositivosPC = negocio!.pcAccess ?? 0;
         isLoading = false;
         dispositivosConectados = deviceInfo['total'] ?? 0;
       });
-    } catch (e){
+    } catch (e) {
       safePrint('Error cargando información de vigencia: $e');
-      setState((){
+      setState(() {
         isLoading = false;
       });
     }
   }
 
-  Future<void> _refreshVigenciaInfo()async {
-    if (negocio != null && mounted){
+  Future<void> _refreshVigenciaInfo() async {
+    if (negocio != null && mounted) {
       await _loadVigenciaInfo();
     }
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -212,10 +212,10 @@ class _SellerPageState extends State<SellerPage>
                             icon: Icons.person,
                             title: 'Gestionar usuario',
                             subtitle: 'Datos personales',
-                            onTap: (){
+                            onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (_)=> EditSellerUserPage(),
+                                  builder: (_) => EditSellerUserPage(),
                                 ),
                               );
                             },
@@ -224,7 +224,7 @@ class _SellerPageState extends State<SellerPage>
                             icon: Icons.document_scanner,
                             title: 'Venta por Factura',
                             subtitle: 'Seguimiento de ventas por factura',
-                            onTap: (){
+                            onTap: () {
                               /*  Navigator.of(
                                 context,
                               ).pushNamed(Routes.adminViewUsers); */
@@ -234,7 +234,7 @@ class _SellerPageState extends State<SellerPage>
                             icon: Icons.fast_forward,
                             title: 'Venta Rapida',
                             subtitle: 'Selecciona los productos, y listo!',
-                            onTap: (){
+                            onTap: () {
                               /*  Navigator.of(
                                 context,
                               ).pushNamed(Routes.adminViewUsers); */
@@ -282,7 +282,7 @@ class _SellerPageState extends State<SellerPage>
     );
   }
 
-  Widget _buildUserInfoCard(){
+  Widget _buildUserInfoCard() {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -302,7 +302,7 @@ class _SellerPageState extends State<SellerPage>
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  if (negocio != null)...[
+                  if (negocio != null) ...[
                     Text(
                       'RUC: ${negocio!.ruc}',
                       style: GoogleFonts.poppins(
@@ -331,15 +331,15 @@ class _SellerPageState extends State<SellerPage>
               ),
             ),
             TextButton(
-              onPressed: ()async {
+              onPressed: () async {
                 try {
                   await Amplify.Auth.signOut();
-                  if (mounted){
+                  if (mounted) {
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_)=> const LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
                     );
                   }
-                } catch (e){
+                } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Error al cerrar sesión: $e'),
@@ -367,7 +367,7 @@ class _SellerPageState extends State<SellerPage>
     required String title,
     required String subtitle,
     required VoidCallback onTap,
-  }){
+  }) {
     final bool isEnabled = negocio != null && vigenciaValida;
 
     return GestureDetector(
@@ -385,7 +385,7 @@ class _SellerPageState extends State<SellerPage>
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-)
+                )
               : LinearGradient(
                   colors: [Colors.grey[200]!, Colors.grey[300]!],
                   begin: Alignment.topLeft,
@@ -461,7 +461,7 @@ class _SellerPageState extends State<SellerPage>
             ),
           ),
           onTap: isEnabled
-              ? (){
+              ? () {
                   // Agregar feedback háptico (si está soportado)
                   // HapticFeedback.lightImpact();
                   onTap();

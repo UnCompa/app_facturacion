@@ -190,7 +190,7 @@ class _VerifyAttributePageState extends State<VerifyAttributePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Verificar ${widget.attributeName}'),
-        backgroundColor: Colors.greenAccent,
+        backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0,
       ),

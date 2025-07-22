@@ -199,7 +199,7 @@ class _EditSellerUserPageState extends State<EditSellerUserPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edita tu perfil'),
-        backgroundColor: Colors.greenAccent,
+        backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0,
       ),

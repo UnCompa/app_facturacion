@@ -82,7 +82,8 @@ class _EditBussinesSuperadminPageState
           createdAt: TemporalDateTime(
             DateTime.parse(_createdAtController.text),
           ),
-          updatedAt: TemporalDateTime(DateTime.now())
+          updatedAt: TemporalDateTime(DateTime.now()),
+          isDeleted: false,
         ),
       );
       final response = await Amplify.API.mutate(request: request).response;

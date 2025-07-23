@@ -21,20 +21,20 @@
 
 import 'ModelProvider.dart';
 import 'package:amplify_core/amplify_core.dart' as amplify_core;
+import 'package:collection/collection.dart';
 
 
-/** This is an auto generated class representing the OrderItem type in your schema. */
-class OrderItem extends amplify_core.Model {
-  static const classType = const _OrderItemModelType();
+/** This is an auto generated class representing the Caja type in your schema. */
+class Caja extends amplify_core.Model {
+  static const classType = const _CajaModelType();
   final String id;
-  final String? _orderID;
-  final String? _productoID;
-  final int? _quantity;
-  final int? _tax;
-  final double? _subtotal;
-  final double? _total;
+  final String? _negocioID;
+  final bool? _isDeleted;
+  final double? _saldoInicial;
+  final bool? _isActive;
   final amplify_core.TemporalDateTime? _createdAt;
   final amplify_core.TemporalDateTime? _updatedAt;
+  final List<CajaMoneda>? _cajaMonedas;
 
   @override
   getInstanceType() => classType;
@@ -43,15 +43,15 @@ class OrderItem extends amplify_core.Model {
   @override
   String getId() => id;
   
-  OrderItemModelIdentifier get modelIdentifier {
-      return OrderItemModelIdentifier(
+  CajaModelIdentifier get modelIdentifier {
+      return CajaModelIdentifier(
         id: id
       );
   }
   
-  String get orderID {
+  String get negocioID {
     try {
-      return _orderID!;
+      return _negocioID!;
     } catch(e) {
       throw amplify_core.AmplifyCodeGenModelException(
           amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
@@ -62,9 +62,9 @@ class OrderItem extends amplify_core.Model {
     }
   }
   
-  String get productoID {
+  bool get isDeleted {
     try {
-      return _productoID!;
+      return _isDeleted!;
     } catch(e) {
       throw amplify_core.AmplifyCodeGenModelException(
           amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
@@ -75,9 +75,9 @@ class OrderItem extends amplify_core.Model {
     }
   }
   
-  int get quantity {
+  double get saldoInicial {
     try {
-      return _quantity!;
+      return _saldoInicial!;
     } catch(e) {
       throw amplify_core.AmplifyCodeGenModelException(
           amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
@@ -88,26 +88,9 @@ class OrderItem extends amplify_core.Model {
     }
   }
   
-  int? get tax {
-    return _tax;
-  }
-  
-  double get subtotal {
+  bool get isActive {
     try {
-      return _subtotal!;
-    } catch(e) {
-      throw amplify_core.AmplifyCodeGenModelException(
-          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
-          recoverySuggestion:
-            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
-          underlyingException: e.toString()
-          );
-    }
-  }
-  
-  double get total {
-    try {
-      return _total!;
+      return _isActive!;
     } catch(e) {
       throw amplify_core.AmplifyCodeGenModelException(
           amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
@@ -126,19 +109,22 @@ class OrderItem extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const OrderItem._internal({required this.id, required orderID, required productoID, required quantity, tax, required subtotal, required total, createdAt, updatedAt}): _orderID = orderID, _productoID = productoID, _quantity = quantity, _tax = tax, _subtotal = subtotal, _total = total, _createdAt = createdAt, _updatedAt = updatedAt;
+  List<CajaMoneda>? get cajaMonedas {
+    return _cajaMonedas;
+  }
   
-  factory OrderItem({String? id, required String orderID, required String productoID, required int quantity, int? tax, required double subtotal, required double total, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
-    return OrderItem._internal(
+  const Caja._internal({required this.id, required negocioID, required isDeleted, required saldoInicial, required isActive, createdAt, updatedAt, cajaMonedas}): _negocioID = negocioID, _isDeleted = isDeleted, _saldoInicial = saldoInicial, _isActive = isActive, _createdAt = createdAt, _updatedAt = updatedAt, _cajaMonedas = cajaMonedas;
+  
+  factory Caja({String? id, required String negocioID, required bool isDeleted, required double saldoInicial, required bool isActive, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt, List<CajaMoneda>? cajaMonedas}) {
+    return Caja._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
-      orderID: orderID,
-      productoID: productoID,
-      quantity: quantity,
-      tax: tax,
-      subtotal: subtotal,
-      total: total,
+      negocioID: negocioID,
+      isDeleted: isDeleted,
+      saldoInicial: saldoInicial,
+      isActive: isActive,
       createdAt: createdAt,
-      updatedAt: updatedAt);
+      updatedAt: updatedAt,
+      cajaMonedas: cajaMonedas != null ? List<CajaMoneda>.unmodifiable(cajaMonedas) : cajaMonedas);
   }
   
   bool equals(Object other) {
@@ -148,16 +134,15 @@ class OrderItem extends amplify_core.Model {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is OrderItem &&
+    return other is Caja &&
       id == other.id &&
-      _orderID == other._orderID &&
-      _productoID == other._productoID &&
-      _quantity == other._quantity &&
-      _tax == other._tax &&
-      _subtotal == other._subtotal &&
-      _total == other._total &&
+      _negocioID == other._negocioID &&
+      _isDeleted == other._isDeleted &&
+      _saldoInicial == other._saldoInicial &&
+      _isActive == other._isActive &&
       _createdAt == other._createdAt &&
-      _updatedAt == other._updatedAt;
+      _updatedAt == other._updatedAt &&
+      DeepCollectionEquality().equals(_cajaMonedas, other._cajaMonedas);
   }
   
   @override
@@ -167,14 +152,12 @@ class OrderItem extends amplify_core.Model {
   String toString() {
     var buffer = new StringBuffer();
     
-    buffer.write("OrderItem {");
+    buffer.write("Caja {");
     buffer.write("id=" + "$id" + ", ");
-    buffer.write("orderID=" + "$_orderID" + ", ");
-    buffer.write("productoID=" + "$_productoID" + ", ");
-    buffer.write("quantity=" + (_quantity != null ? _quantity!.toString() : "null") + ", ");
-    buffer.write("tax=" + (_tax != null ? _tax!.toString() : "null") + ", ");
-    buffer.write("subtotal=" + (_subtotal != null ? _subtotal!.toString() : "null") + ", ");
-    buffer.write("total=" + (_total != null ? _total!.toString() : "null") + ", ");
+    buffer.write("negocioID=" + "$_negocioID" + ", ");
+    buffer.write("isDeleted=" + (_isDeleted != null ? _isDeleted!.toString() : "null") + ", ");
+    buffer.write("saldoInicial=" + (_saldoInicial != null ? _saldoInicial!.toString() : "null") + ", ");
+    buffer.write("isActive=" + (_isActive != null ? _isActive!.toString() : "null") + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
     buffer.write("}");
@@ -182,82 +165,90 @@ class OrderItem extends amplify_core.Model {
     return buffer.toString();
   }
   
-  OrderItem copyWith({String? orderID, String? productoID, int? quantity, int? tax, double? subtotal, double? total, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
-    return OrderItem._internal(
+  Caja copyWith({String? negocioID, bool? isDeleted, double? saldoInicial, bool? isActive, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt, List<CajaMoneda>? cajaMonedas}) {
+    return Caja._internal(
       id: id,
-      orderID: orderID ?? this.orderID,
-      productoID: productoID ?? this.productoID,
-      quantity: quantity ?? this.quantity,
-      tax: tax ?? this.tax,
-      subtotal: subtotal ?? this.subtotal,
-      total: total ?? this.total,
+      negocioID: negocioID ?? this.negocioID,
+      isDeleted: isDeleted ?? this.isDeleted,
+      saldoInicial: saldoInicial ?? this.saldoInicial,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt);
+      updatedAt: updatedAt ?? this.updatedAt,
+      cajaMonedas: cajaMonedas ?? this.cajaMonedas);
   }
   
-  OrderItem copyWithModelFieldValues({
-    ModelFieldValue<String>? orderID,
-    ModelFieldValue<String>? productoID,
-    ModelFieldValue<int>? quantity,
-    ModelFieldValue<int?>? tax,
-    ModelFieldValue<double>? subtotal,
-    ModelFieldValue<double>? total,
+  Caja copyWithModelFieldValues({
+    ModelFieldValue<String>? negocioID,
+    ModelFieldValue<bool>? isDeleted,
+    ModelFieldValue<double>? saldoInicial,
+    ModelFieldValue<bool>? isActive,
     ModelFieldValue<amplify_core.TemporalDateTime?>? createdAt,
-    ModelFieldValue<amplify_core.TemporalDateTime?>? updatedAt
+    ModelFieldValue<amplify_core.TemporalDateTime?>? updatedAt,
+    ModelFieldValue<List<CajaMoneda>?>? cajaMonedas
   }) {
-    return OrderItem._internal(
+    return Caja._internal(
       id: id,
-      orderID: orderID == null ? this.orderID : orderID.value,
-      productoID: productoID == null ? this.productoID : productoID.value,
-      quantity: quantity == null ? this.quantity : quantity.value,
-      tax: tax == null ? this.tax : tax.value,
-      subtotal: subtotal == null ? this.subtotal : subtotal.value,
-      total: total == null ? this.total : total.value,
+      negocioID: negocioID == null ? this.negocioID : negocioID.value,
+      isDeleted: isDeleted == null ? this.isDeleted : isDeleted.value,
+      saldoInicial: saldoInicial == null ? this.saldoInicial : saldoInicial.value,
+      isActive: isActive == null ? this.isActive : isActive.value,
       createdAt: createdAt == null ? this.createdAt : createdAt.value,
-      updatedAt: updatedAt == null ? this.updatedAt : updatedAt.value
+      updatedAt: updatedAt == null ? this.updatedAt : updatedAt.value,
+      cajaMonedas: cajaMonedas == null ? this.cajaMonedas : cajaMonedas.value
     );
   }
   
-  OrderItem.fromJson(Map<String, dynamic> json)  
+  Caja.fromJson(Map<String, dynamic> json)  
     : id = json['id'],
-      _orderID = json['orderID'],
-      _productoID = json['productoID'],
-      _quantity = (json['quantity'] as num?)?.toInt(),
-      _tax = (json['tax'] as num?)?.toInt(),
-      _subtotal = (json['subtotal'] as num?)?.toDouble(),
-      _total = (json['total'] as num?)?.toDouble(),
+      _negocioID = json['negocioID'],
+      _isDeleted = json['isDeleted'],
+      _saldoInicial = (json['saldoInicial'] as num?)?.toDouble(),
+      _isActive = json['isActive'],
       _createdAt = json['createdAt'] != null ? amplify_core.TemporalDateTime.fromString(json['createdAt']) : null,
-      _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
+      _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null,
+      _cajaMonedas = json['cajaMonedas']  is Map
+        ? (json['cajaMonedas']['items'] is List
+          ? (json['cajaMonedas']['items'] as List)
+              .where((e) => e != null)
+              .map((e) => CajaMoneda.fromJson(new Map<String, dynamic>.from(e)))
+              .toList()
+          : null)
+        : (json['cajaMonedas'] is List
+          ? (json['cajaMonedas'] as List)
+              .where((e) => e?['serializedData'] != null)
+              .map((e) => CajaMoneda.fromJson(new Map<String, dynamic>.from(e?['serializedData'])))
+              .toList()
+          : null);
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'orderID': _orderID, 'productoID': _productoID, 'quantity': _quantity, 'tax': _tax, 'subtotal': _subtotal, 'total': _total, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'negocioID': _negocioID, 'isDeleted': _isDeleted, 'saldoInicial': _saldoInicial, 'isActive': _isActive, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format(), 'cajaMonedas': _cajaMonedas?.map((CajaMoneda? e) => e?.toJson()).toList()
   };
   
   Map<String, Object?> toMap() => {
     'id': id,
-    'orderID': _orderID,
-    'productoID': _productoID,
-    'quantity': _quantity,
-    'tax': _tax,
-    'subtotal': _subtotal,
-    'total': _total,
+    'negocioID': _negocioID,
+    'isDeleted': _isDeleted,
+    'saldoInicial': _saldoInicial,
+    'isActive': _isActive,
     'createdAt': _createdAt,
-    'updatedAt': _updatedAt
+    'updatedAt': _updatedAt,
+    'cajaMonedas': _cajaMonedas
   };
 
-  static final amplify_core.QueryModelIdentifier<OrderItemModelIdentifier> MODEL_IDENTIFIER = amplify_core.QueryModelIdentifier<OrderItemModelIdentifier>();
+  static final amplify_core.QueryModelIdentifier<CajaModelIdentifier> MODEL_IDENTIFIER = amplify_core.QueryModelIdentifier<CajaModelIdentifier>();
   static final ID = amplify_core.QueryField(fieldName: "id");
-  static final ORDERID = amplify_core.QueryField(fieldName: "orderID");
-  static final PRODUCTOID = amplify_core.QueryField(fieldName: "productoID");
-  static final QUANTITY = amplify_core.QueryField(fieldName: "quantity");
-  static final TAX = amplify_core.QueryField(fieldName: "tax");
-  static final SUBTOTAL = amplify_core.QueryField(fieldName: "subtotal");
-  static final TOTAL = amplify_core.QueryField(fieldName: "total");
+  static final NEGOCIOID = amplify_core.QueryField(fieldName: "negocioID");
+  static final ISDELETED = amplify_core.QueryField(fieldName: "isDeleted");
+  static final SALDOINICIAL = amplify_core.QueryField(fieldName: "saldoInicial");
+  static final ISACTIVE = amplify_core.QueryField(fieldName: "isActive");
   static final CREATEDAT = amplify_core.QueryField(fieldName: "createdAt");
   static final UPDATEDAT = amplify_core.QueryField(fieldName: "updatedAt");
+  static final CAJAMONEDAS = amplify_core.QueryField(
+    fieldName: "cajaMonedas",
+    fieldType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.model, ofModelName: 'CajaMoneda'));
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
-    modelSchemaDefinition.name = "OrderItem";
-    modelSchemaDefinition.pluralName = "OrderItems";
+    modelSchemaDefinition.name = "Caja";
+    modelSchemaDefinition.pluralName = "Cajas";
     
     modelSchemaDefinition.authRules = [
       amplify_core.AuthRule(
@@ -277,91 +268,84 @@ class OrderItem extends amplify_core.Model {
         groups: [ "vendedor" ],
         provider: amplify_core.AuthRuleProvider.USERPOOLS,
         operations: const [
-          amplify_core.ModelOperation.READ,
-          amplify_core.ModelOperation.CREATE
+          amplify_core.ModelOperation.READ
         ])
     ];
     
     modelSchemaDefinition.indexes = [
-      amplify_core.ModelIndex(fields: const ["orderID"], name: "byOrder"),
-      amplify_core.ModelIndex(fields: const ["productoID"], name: "byProducto")
+      amplify_core.ModelIndex(fields: const ["negocioID"], name: "byNegocio")
     ];
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.id());
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: OrderItem.ORDERID,
+      key: Caja.NEGOCIOID,
       isRequired: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: OrderItem.PRODUCTOID,
+      key: Caja.ISDELETED,
       isRequired: true,
-      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.bool)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: OrderItem.QUANTITY,
-      isRequired: true,
-      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
-    ));
-    
-    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: OrderItem.TAX,
-      isRequired: false,
-      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
-    ));
-    
-    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: OrderItem.SUBTOTAL,
+      key: Caja.SALDOINICIAL,
       isRequired: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.double)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: OrderItem.TOTAL,
+      key: Caja.ISACTIVE,
       isRequired: true,
-      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.double)
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.bool)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: OrderItem.CREATEDAT,
+      key: Caja.CREATEDAT,
       isRequired: false,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.dateTime)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: OrderItem.UPDATEDAT,
+      key: Caja.UPDATEDAT,
       isRequired: false,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.dateTime)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.hasMany(
+      key: Caja.CAJAMONEDAS,
+      isRequired: false,
+      ofModelName: 'CajaMoneda',
+      associatedKey: CajaMoneda.CAJAID
     ));
   });
 }
 
-class _OrderItemModelType extends amplify_core.ModelType<OrderItem> {
-  const _OrderItemModelType();
+class _CajaModelType extends amplify_core.ModelType<Caja> {
+  const _CajaModelType();
   
   @override
-  OrderItem fromJson(Map<String, dynamic> jsonData) {
-    return OrderItem.fromJson(jsonData);
+  Caja fromJson(Map<String, dynamic> jsonData) {
+    return Caja.fromJson(jsonData);
   }
   
   @override
   String modelName() {
-    return 'OrderItem';
+    return 'Caja';
   }
 }
 
 /**
  * This is an auto generated class representing the model identifier
- * of [OrderItem] in your schema.
+ * of [Caja] in your schema.
  */
-class OrderItemModelIdentifier implements amplify_core.ModelIdentifier<OrderItem> {
+class CajaModelIdentifier implements amplify_core.ModelIdentifier<Caja> {
   final String id;
 
-  /** Create an instance of OrderItemModelIdentifier using [id] the primary key. */
-  const OrderItemModelIdentifier({
+  /** Create an instance of CajaModelIdentifier using [id] the primary key. */
+  const CajaModelIdentifier({
     required this.id});
   
   @override
@@ -379,7 +363,7 @@ class OrderItemModelIdentifier implements amplify_core.ModelIdentifier<OrderItem
   String serializeAsString() => serializeAsMap().values.join('#');
   
   @override
-  String toString() => 'OrderItemModelIdentifier(id: $id)';
+  String toString() => 'CajaModelIdentifier(id: $id)';
   
   @override
   bool operator ==(Object other) {
@@ -387,7 +371,7 @@ class OrderItemModelIdentifier implements amplify_core.ModelIdentifier<OrderItem
       return true;
     }
     
-    return other is OrderItemModelIdentifier &&
+    return other is CajaModelIdentifier &&
       id == other.id;
   }
   

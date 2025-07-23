@@ -36,9 +36,11 @@ class Producto extends amplify_core.Model {
   final List<String>? _productoImages;
   final String? _negocioID;
   final String? _categoriaID;
+  final List<ProductoPrecios>? _productoPrecios;
   final String? _estado;
   final List<InvoiceItem>? _invoiceItems;
   final List<OrderItem>? _orderItems;
+  final bool? _isDeleted;
   final amplify_core.TemporalDateTime? _createdAt;
   final amplify_core.TemporalDateTime? _updatedAt;
 
@@ -132,6 +134,10 @@ class Producto extends amplify_core.Model {
     }
   }
   
+  List<ProductoPrecios>? get productoPrecios {
+    return _productoPrecios;
+  }
+  
   String? get estado {
     return _estado;
   }
@@ -144,6 +150,19 @@ class Producto extends amplify_core.Model {
     return _orderItems;
   }
   
+  bool get isDeleted {
+    try {
+      return _isDeleted!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
+  }
+  
   amplify_core.TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -152,9 +171,9 @@ class Producto extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const Producto._internal({required this.id, required nombre, descripcion, required precio, required stock, barCode, productoImages, required negocioID, required categoriaID, estado, invoiceItems, orderItems, createdAt, updatedAt}): _nombre = nombre, _descripcion = descripcion, _precio = precio, _stock = stock, _barCode = barCode, _productoImages = productoImages, _negocioID = negocioID, _categoriaID = categoriaID, _estado = estado, _invoiceItems = invoiceItems, _orderItems = orderItems, _createdAt = createdAt, _updatedAt = updatedAt;
+  const Producto._internal({required this.id, required nombre, descripcion, required precio, required stock, barCode, productoImages, required negocioID, required categoriaID, productoPrecios, estado, invoiceItems, orderItems, required isDeleted, createdAt, updatedAt}): _nombre = nombre, _descripcion = descripcion, _precio = precio, _stock = stock, _barCode = barCode, _productoImages = productoImages, _negocioID = negocioID, _categoriaID = categoriaID, _productoPrecios = productoPrecios, _estado = estado, _invoiceItems = invoiceItems, _orderItems = orderItems, _isDeleted = isDeleted, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory Producto({String? id, required String nombre, String? descripcion, required double precio, required int stock, String? barCode, List<String>? productoImages, required String negocioID, required String categoriaID, String? estado, List<InvoiceItem>? invoiceItems, List<OrderItem>? orderItems, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+  factory Producto({String? id, required String nombre, String? descripcion, required double precio, required int stock, String? barCode, List<String>? productoImages, required String negocioID, required String categoriaID, List<ProductoPrecios>? productoPrecios, String? estado, List<InvoiceItem>? invoiceItems, List<OrderItem>? orderItems, required bool isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return Producto._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       nombre: nombre,
@@ -165,9 +184,11 @@ class Producto extends amplify_core.Model {
       productoImages: productoImages != null ? List<String>.unmodifiable(productoImages) : productoImages,
       negocioID: negocioID,
       categoriaID: categoriaID,
+      productoPrecios: productoPrecios != null ? List<ProductoPrecios>.unmodifiable(productoPrecios) : productoPrecios,
       estado: estado,
       invoiceItems: invoiceItems != null ? List<InvoiceItem>.unmodifiable(invoiceItems) : invoiceItems,
       orderItems: orderItems != null ? List<OrderItem>.unmodifiable(orderItems) : orderItems,
+      isDeleted: isDeleted,
       createdAt: createdAt,
       updatedAt: updatedAt);
   }
@@ -189,9 +210,11 @@ class Producto extends amplify_core.Model {
       DeepCollectionEquality().equals(_productoImages, other._productoImages) &&
       _negocioID == other._negocioID &&
       _categoriaID == other._categoriaID &&
+      DeepCollectionEquality().equals(_productoPrecios, other._productoPrecios) &&
       _estado == other._estado &&
       DeepCollectionEquality().equals(_invoiceItems, other._invoiceItems) &&
       DeepCollectionEquality().equals(_orderItems, other._orderItems) &&
+      _isDeleted == other._isDeleted &&
       _createdAt == other._createdAt &&
       _updatedAt == other._updatedAt;
   }
@@ -207,21 +230,22 @@ class Producto extends amplify_core.Model {
     buffer.write("id=" + "$id" + ", ");
     buffer.write("nombre=" + "$_nombre" + ", ");
     buffer.write("descripcion=" + "$_descripcion" + ", ");
-    buffer.write("precio=" + (_precio != null ? _precio.toString() : "null") + ", ");
-    buffer.write("stock=" + (_stock != null ? _stock.toString() : "null") + ", ");
+    buffer.write("precio=" + (_precio != null ? _precio!.toString() : "null") + ", ");
+    buffer.write("stock=" + (_stock != null ? _stock!.toString() : "null") + ", ");
     buffer.write("barCode=" + "$_barCode" + ", ");
-    buffer.write("productoImages=" + (_productoImages != null ? _productoImages.toString() : "null") + ", ");
+    buffer.write("productoImages=" + (_productoImages != null ? _productoImages!.toString() : "null") + ", ");
     buffer.write("negocioID=" + "$_negocioID" + ", ");
     buffer.write("categoriaID=" + "$_categoriaID" + ", ");
     buffer.write("estado=" + "$_estado" + ", ");
-    buffer.write("createdAt=" + (_createdAt != null ? _createdAt.format() : "null") + ", ");
-    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt.format() : "null"));
+    buffer.write("isDeleted=" + (_isDeleted != null ? _isDeleted!.toString() : "null") + ", ");
+    buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
+    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
     buffer.write("}");
     
     return buffer.toString();
   }
   
-  Producto copyWith({String? nombre, String? descripcion, double? precio, int? stock, String? barCode, List<String>? productoImages, String? negocioID, String? categoriaID, String? estado, List<InvoiceItem>? invoiceItems, List<OrderItem>? orderItems, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+  Producto copyWith({String? nombre, String? descripcion, double? precio, int? stock, String? barCode, List<String>? productoImages, String? negocioID, String? categoriaID, List<ProductoPrecios>? productoPrecios, String? estado, List<InvoiceItem>? invoiceItems, List<OrderItem>? orderItems, bool? isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return Producto._internal(
       id: id,
       nombre: nombre ?? this.nombre,
@@ -232,9 +256,11 @@ class Producto extends amplify_core.Model {
       productoImages: productoImages ?? this.productoImages,
       negocioID: negocioID ?? this.negocioID,
       categoriaID: categoriaID ?? this.categoriaID,
+      productoPrecios: productoPrecios ?? this.productoPrecios,
       estado: estado ?? this.estado,
       invoiceItems: invoiceItems ?? this.invoiceItems,
       orderItems: orderItems ?? this.orderItems,
+      isDeleted: isDeleted ?? this.isDeleted,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt);
   }
@@ -248,9 +274,11 @@ class Producto extends amplify_core.Model {
     ModelFieldValue<List<String>?>? productoImages,
     ModelFieldValue<String>? negocioID,
     ModelFieldValue<String>? categoriaID,
+    ModelFieldValue<List<ProductoPrecios>?>? productoPrecios,
     ModelFieldValue<String?>? estado,
     ModelFieldValue<List<InvoiceItem>?>? invoiceItems,
     ModelFieldValue<List<OrderItem>?>? orderItems,
+    ModelFieldValue<bool>? isDeleted,
     ModelFieldValue<amplify_core.TemporalDateTime?>? createdAt,
     ModelFieldValue<amplify_core.TemporalDateTime?>? updatedAt
   }) {
@@ -264,9 +292,11 @@ class Producto extends amplify_core.Model {
       productoImages: productoImages == null ? this.productoImages : productoImages.value,
       negocioID: negocioID == null ? this.negocioID : negocioID.value,
       categoriaID: categoriaID == null ? this.categoriaID : categoriaID.value,
+      productoPrecios: productoPrecios == null ? this.productoPrecios : productoPrecios.value,
       estado: estado == null ? this.estado : estado.value,
       invoiceItems: invoiceItems == null ? this.invoiceItems : invoiceItems.value,
       orderItems: orderItems == null ? this.orderItems : orderItems.value,
+      isDeleted: isDeleted == null ? this.isDeleted : isDeleted.value,
       createdAt: createdAt == null ? this.createdAt : createdAt.value,
       updatedAt: updatedAt == null ? this.updatedAt : updatedAt.value
     );
@@ -282,6 +312,19 @@ class Producto extends amplify_core.Model {
       _productoImages = json['productoImages']?.cast<String>(),
       _negocioID = json['negocioID'],
       _categoriaID = json['categoriaID'],
+      _productoPrecios = json['productoPrecios']  is Map
+        ? (json['productoPrecios']['items'] is List
+          ? (json['productoPrecios']['items'] as List)
+              .where((e) => e != null)
+              .map((e) => ProductoPrecios.fromJson(new Map<String, dynamic>.from(e)))
+              .toList()
+          : null)
+        : (json['productoPrecios'] is List
+          ? (json['productoPrecios'] as List)
+              .where((e) => e?['serializedData'] != null)
+              .map((e) => ProductoPrecios.fromJson(new Map<String, dynamic>.from(e?['serializedData'])))
+              .toList()
+          : null),
       _estado = json['estado'],
       _invoiceItems = json['invoiceItems']  is Map
         ? (json['invoiceItems']['items'] is List
@@ -309,11 +352,12 @@ class Producto extends amplify_core.Model {
               .map((e) => OrderItem.fromJson(new Map<String, dynamic>.from(e?['serializedData'])))
               .toList()
           : null),
+      _isDeleted = json['isDeleted'],
       _createdAt = json['createdAt'] != null ? amplify_core.TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'nombre': _nombre, 'descripcion': _descripcion, 'precio': _precio, 'stock': _stock, 'barCode': _barCode, 'productoImages': _productoImages, 'negocioID': _negocioID, 'categoriaID': _categoriaID, 'estado': _estado, 'invoiceItems': _invoiceItems?.map((InvoiceItem? e) => e?.toJson()).toList(), 'orderItems': _orderItems?.map((OrderItem? e) => e?.toJson()).toList(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'nombre': _nombre, 'descripcion': _descripcion, 'precio': _precio, 'stock': _stock, 'barCode': _barCode, 'productoImages': _productoImages, 'negocioID': _negocioID, 'categoriaID': _categoriaID, 'productoPrecios': _productoPrecios?.map((ProductoPrecios? e) => e?.toJson()).toList(), 'estado': _estado, 'invoiceItems': _invoiceItems?.map((InvoiceItem? e) => e?.toJson()).toList(), 'orderItems': _orderItems?.map((OrderItem? e) => e?.toJson()).toList(), 'isDeleted': _isDeleted, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
   
   Map<String, Object?> toMap() => {
@@ -326,9 +370,11 @@ class Producto extends amplify_core.Model {
     'productoImages': _productoImages,
     'negocioID': _negocioID,
     'categoriaID': _categoriaID,
+    'productoPrecios': _productoPrecios,
     'estado': _estado,
     'invoiceItems': _invoiceItems,
     'orderItems': _orderItems,
+    'isDeleted': _isDeleted,
     'createdAt': _createdAt,
     'updatedAt': _updatedAt
   };
@@ -343,6 +389,9 @@ class Producto extends amplify_core.Model {
   static final PRODUCTOIMAGES = amplify_core.QueryField(fieldName: "productoImages");
   static final NEGOCIOID = amplify_core.QueryField(fieldName: "negocioID");
   static final CATEGORIAID = amplify_core.QueryField(fieldName: "categoriaID");
+  static final PRODUCTOPRECIOS = amplify_core.QueryField(
+    fieldName: "productoPrecios",
+    fieldType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.model, ofModelName: 'ProductoPrecios'));
   static final ESTADO = amplify_core.QueryField(fieldName: "estado");
   static final INVOICEITEMS = amplify_core.QueryField(
     fieldName: "invoiceItems",
@@ -350,6 +399,7 @@ class Producto extends amplify_core.Model {
   static final ORDERITEMS = amplify_core.QueryField(
     fieldName: "orderItems",
     fieldType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.model, ofModelName: 'OrderItem'));
+  static final ISDELETED = amplify_core.QueryField(fieldName: "isDeleted");
   static final CREATEDAT = amplify_core.QueryField(fieldName: "createdAt");
   static final UPDATEDAT = amplify_core.QueryField(fieldName: "updatedAt");
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
@@ -360,12 +410,20 @@ class Producto extends amplify_core.Model {
       amplify_core.AuthRule(
         authStrategy: amplify_core.AuthStrategy.GROUPS,
         groupClaim: "cognito:groups",
-        groups: [ "admin", "vendedor" ],
+        groups: [ "admin" ],
         provider: amplify_core.AuthRuleProvider.USERPOOLS,
         operations: const [
           amplify_core.ModelOperation.CREATE,
+          amplify_core.ModelOperation.READ,
           amplify_core.ModelOperation.UPDATE,
-          amplify_core.ModelOperation.DELETE,
+          amplify_core.ModelOperation.DELETE
+        ]),
+      amplify_core.AuthRule(
+        authStrategy: amplify_core.AuthStrategy.GROUPS,
+        groupClaim: "cognito:groups",
+        groups: [ "vendedor" ],
+        provider: amplify_core.AuthRuleProvider.USERPOOLS,
+        operations: const [
           amplify_core.ModelOperation.READ
         ])
     ];
@@ -426,6 +484,13 @@ class Producto extends amplify_core.Model {
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));
     
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.hasMany(
+      key: Producto.PRODUCTOPRECIOS,
+      isRequired: false,
+      ofModelName: 'ProductoPrecios',
+      associatedKey: ProductoPrecios.PRODUCTOID
+    ));
+    
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
       key: Producto.ESTADO,
       isRequired: false,
@@ -444,6 +509,12 @@ class Producto extends amplify_core.Model {
       isRequired: false,
       ofModelName: 'OrderItem',
       associatedKey: OrderItem.PRODUCTOID
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: Producto.ISDELETED,
+      isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.bool)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(

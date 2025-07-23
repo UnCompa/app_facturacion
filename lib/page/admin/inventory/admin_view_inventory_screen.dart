@@ -131,7 +131,7 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
 
     final category = _categories.firstWhere(
       (cat)=> cat.id == categoryId,
-      orElse: ()=> Categoria(nombre: 'Sin categoría', id: '', negocioID: ''),
+      orElse: ()=> Categoria(nombre: 'Sin categoría', id: '', negocioID: '', isDeleted: false),
     );
 
     return category.nombre;

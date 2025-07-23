@@ -32,7 +32,10 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
         errorMessage = null;
       });
 
-      final request = ModelQueries.list(Negocio.classType);
+      final request = ModelQueries.list(
+        Negocio.classType,
+        where: Negocio.ISDELETED.eq(false),
+      );
       final response = await Amplify.API.query(request: request).response;
 
       if (response.hasErrors) {
@@ -86,9 +89,13 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
       ),
       body: _buildBody(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Aquí puedes navegar a una página para crear un nuevo negocio
-          Navigator.of(context).pushNamed(Routes.superAdminNegociosCrear);
+        onPressed: () async {
+          final result = await Navigator.of(
+            context,
+          ).pushNamed(Routes.superAdminNegociosCrear);
+          if (result == true) {
+            refreshNegocios();
+          }
         },
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add),
@@ -221,13 +228,18 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
                         onSelected: (value) {
                           switch (value) {
                             case 'editar':
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => EditBussinesSuperadminPage(
-                                    negocio: negocio,
+                              () async {
+                                final result = await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => EditBussinesSuperadminPage(
+                                      negocio: negocio,
+                                    ),
                                   ),
-                                ),
-                              );
+                                );
+                                if (result == true) {
+                                  refreshNegocios();
+                                }
+                              };
                               break;
                             case 'eliminar':
                               _showDeleteDialog(negocio);
@@ -464,7 +476,8 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
 
   Future<void> _deleteNegocio(Negocio negocio) async {
     try {
-      final request = ModelMutations.delete(negocio);
+      final negocioUpdate = negocio.copyWith(isDeleted: true);
+      final request = ModelMutations.update(negocioUpdate);
       await Amplify.API.mutate(request: request).response;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

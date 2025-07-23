@@ -20,29 +20,41 @@
 // ignore_for_file: public_member_api_docs, annotate_overrides, dead_code, dead_codepublic_member_api_docs, depend_on_referenced_packages, file_names, library_private_types_in_public_api, no_leading_underscores_for_library_prefixes, no_leading_underscores_for_local_identifiers, non_constant_identifier_names, null_check_on_nullable_type_parameter, override_on_non_overriding_member, prefer_adjacent_string_concatenation, prefer_const_constructors, prefer_if_null_operators, prefer_interpolation_to_compose_strings, slash_for_doc_comments, sort_child_properties_last, unnecessary_const, unnecessary_constructor_name, unnecessary_late, unnecessary_new, unnecessary_null_aware_assignments, unnecessary_nullable_for_final_variable_declarations, unnecessary_string_interpolations, use_build_context_synchronously
 
 import 'package:amplify_core/amplify_core.dart' as amplify_core;
+import 'Caja.dart';
+import 'CajaMoneda.dart';
+import 'CajaMovimiento.dart';
 import 'Categoria.dart';
+import 'CierreCaja.dart';
+import 'CierreCajaHistorial.dart';
 import 'Invoice.dart';
 import 'InvoiceItem.dart';
 import 'Negocio.dart';
 import 'Order.dart';
 import 'OrderItem.dart';
 import 'Producto.dart';
+import 'ProductoPrecios.dart';
 import 'SesionDispositivo.dart';
 
+export 'Caja.dart';
+export 'CajaMoneda.dart';
+export 'CajaMovimiento.dart';
 export 'Categoria.dart';
+export 'CierreCaja.dart';
+export 'CierreCajaHistorial.dart';
 export 'Invoice.dart';
 export 'InvoiceItem.dart';
 export 'Negocio.dart';
 export 'Order.dart';
 export 'OrderItem.dart';
 export 'Producto.dart';
+export 'ProductoPrecios.dart';
 export 'SesionDispositivo.dart';
 
 class ModelProvider implements amplify_core.ModelProviderInterface {
   @override
-  String version = "9e914150e9948adf0914cebf8d0f6c74";
+  String version = "e68099ec39e71e5b3fb1f793832b86e8";
   @override
-  List<amplify_core.ModelSchema> modelSchemas = [Categoria.schema, Invoice.schema, InvoiceItem.schema, Negocio.schema, Order.schema, OrderItem.schema, Producto.schema, SesionDispositivo.schema];
+  List<amplify_core.ModelSchema> modelSchemas = [Caja.schema, CajaMoneda.schema, CajaMovimiento.schema, Categoria.schema, CierreCaja.schema, CierreCajaHistorial.schema, Invoice.schema, InvoiceItem.schema, Negocio.schema, Order.schema, OrderItem.schema, Producto.schema, ProductoPrecios.schema, SesionDispositivo.schema];
   @override
   List<amplify_core.ModelSchema> customTypeSchemas = [];
   static final ModelProvider _instance = ModelProvider();
@@ -51,8 +63,18 @@ class ModelProvider implements amplify_core.ModelProviderInterface {
   
   amplify_core.ModelType getModelTypeByModelName(String modelName) {
     switch(modelName) {
+      case "Caja":
+        return Caja.classType;
+      case "CajaMoneda":
+        return CajaMoneda.classType;
+      case "CajaMovimiento":
+        return CajaMovimiento.classType;
       case "Categoria":
         return Categoria.classType;
+      case "CierreCaja":
+        return CierreCaja.classType;
+      case "CierreCajaHistorial":
+        return CierreCajaHistorial.classType;
       case "Invoice":
         return Invoice.classType;
       case "InvoiceItem":
@@ -65,6 +87,8 @@ class ModelProvider implements amplify_core.ModelProviderInterface {
         return OrderItem.classType;
       case "Producto":
         return Producto.classType;
+      case "ProductoPrecios":
+        return ProductoPrecios.classType;
       case "SesionDispositivo":
         return SesionDispositivo.classType;
       default:

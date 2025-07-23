@@ -23,17 +23,14 @@ import 'ModelProvider.dart';
 import 'package:amplify_core/amplify_core.dart' as amplify_core;
 
 
-/** This is an auto generated class representing the Negocio type in your schema. */
-class Negocio extends amplify_core.Model {
-  static const classType = const _NegocioModelType();
+/** This is an auto generated class representing the ProductoPrecios type in your schema. */
+class ProductoPrecios extends amplify_core.Model {
+  static const classType = const _ProductoPreciosModelType();
   final String id;
   final String? _nombre;
-  final String? _ruc;
-  final String? _telefono;
-  final int? _duration;
-  final int? _movilAccess;
-  final int? _pcAccess;
-  final String? _direccion;
+  final String? _negocioID;
+  final double? _precio;
+  final String? _productoID;
   final bool? _isDeleted;
   final amplify_core.TemporalDateTime? _createdAt;
   final amplify_core.TemporalDateTime? _updatedAt;
@@ -45,8 +42,8 @@ class Negocio extends amplify_core.Model {
   @override
   String getId() => id;
   
-  NegocioModelIdentifier get modelIdentifier {
-      return NegocioModelIdentifier(
+  ProductoPreciosModelIdentifier get modelIdentifier {
+      return ProductoPreciosModelIdentifier(
         id: id
       );
   }
@@ -64,9 +61,9 @@ class Negocio extends amplify_core.Model {
     }
   }
   
-  String get ruc {
+  String get negocioID {
     try {
-      return _ruc!;
+      return _negocioID!;
     } catch(e) {
       throw amplify_core.AmplifyCodeGenModelException(
           amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
@@ -77,24 +74,30 @@ class Negocio extends amplify_core.Model {
     }
   }
   
-  String? get telefono {
-    return _telefono;
+  double get precio {
+    try {
+      return _precio!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
   }
   
-  int? get duration {
-    return _duration;
-  }
-  
-  int? get movilAccess {
-    return _movilAccess;
-  }
-  
-  int? get pcAccess {
-    return _pcAccess;
-  }
-  
-  String? get direccion {
-    return _direccion;
+  String get productoID {
+    try {
+      return _productoID!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
   }
   
   bool get isDeleted {
@@ -118,18 +121,15 @@ class Negocio extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const Negocio._internal({required this.id, required nombre, required ruc, telefono, duration, movilAccess, pcAccess, direccion, required isDeleted, createdAt, updatedAt}): _nombre = nombre, _ruc = ruc, _telefono = telefono, _duration = duration, _movilAccess = movilAccess, _pcAccess = pcAccess, _direccion = direccion, _isDeleted = isDeleted, _createdAt = createdAt, _updatedAt = updatedAt;
+  const ProductoPrecios._internal({required this.id, required nombre, required negocioID, required precio, required productoID, required isDeleted, createdAt, updatedAt}): _nombre = nombre, _negocioID = negocioID, _precio = precio, _productoID = productoID, _isDeleted = isDeleted, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory Negocio({String? id, required String nombre, required String ruc, String? telefono, int? duration, int? movilAccess, int? pcAccess, String? direccion, required bool isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
-    return Negocio._internal(
+  factory ProductoPrecios({String? id, required String nombre, required String negocioID, required double precio, required String productoID, required bool isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+    return ProductoPrecios._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       nombre: nombre,
-      ruc: ruc,
-      telefono: telefono,
-      duration: duration,
-      movilAccess: movilAccess,
-      pcAccess: pcAccess,
-      direccion: direccion,
+      negocioID: negocioID,
+      precio: precio,
+      productoID: productoID,
       isDeleted: isDeleted,
       createdAt: createdAt,
       updatedAt: updatedAt);
@@ -142,15 +142,12 @@ class Negocio extends amplify_core.Model {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is Negocio &&
+    return other is ProductoPrecios &&
       id == other.id &&
       _nombre == other._nombre &&
-      _ruc == other._ruc &&
-      _telefono == other._telefono &&
-      _duration == other._duration &&
-      _movilAccess == other._movilAccess &&
-      _pcAccess == other._pcAccess &&
-      _direccion == other._direccion &&
+      _negocioID == other._negocioID &&
+      _precio == other._precio &&
+      _productoID == other._productoID &&
       _isDeleted == other._isDeleted &&
       _createdAt == other._createdAt &&
       _updatedAt == other._updatedAt;
@@ -163,15 +160,12 @@ class Negocio extends amplify_core.Model {
   String toString() {
     var buffer = new StringBuffer();
     
-    buffer.write("Negocio {");
+    buffer.write("ProductoPrecios {");
     buffer.write("id=" + "$id" + ", ");
     buffer.write("nombre=" + "$_nombre" + ", ");
-    buffer.write("ruc=" + "$_ruc" + ", ");
-    buffer.write("telefono=" + "$_telefono" + ", ");
-    buffer.write("duration=" + (_duration != null ? _duration!.toString() : "null") + ", ");
-    buffer.write("movilAccess=" + (_movilAccess != null ? _movilAccess!.toString() : "null") + ", ");
-    buffer.write("pcAccess=" + (_pcAccess != null ? _pcAccess!.toString() : "null") + ", ");
-    buffer.write("direccion=" + "$_direccion" + ", ");
+    buffer.write("negocioID=" + "$_negocioID" + ", ");
+    buffer.write("precio=" + (_precio != null ? _precio!.toString() : "null") + ", ");
+    buffer.write("productoID=" + "$_productoID" + ", ");
     buffer.write("isDeleted=" + (_isDeleted != null ? _isDeleted!.toString() : "null") + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
@@ -180,115 +174,88 @@ class Negocio extends amplify_core.Model {
     return buffer.toString();
   }
   
-  Negocio copyWith({String? nombre, String? ruc, String? telefono, int? duration, int? movilAccess, int? pcAccess, String? direccion, bool? isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
-    return Negocio._internal(
+  ProductoPrecios copyWith({String? nombre, String? negocioID, double? precio, String? productoID, bool? isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+    return ProductoPrecios._internal(
       id: id,
       nombre: nombre ?? this.nombre,
-      ruc: ruc ?? this.ruc,
-      telefono: telefono ?? this.telefono,
-      duration: duration ?? this.duration,
-      movilAccess: movilAccess ?? this.movilAccess,
-      pcAccess: pcAccess ?? this.pcAccess,
-      direccion: direccion ?? this.direccion,
+      negocioID: negocioID ?? this.negocioID,
+      precio: precio ?? this.precio,
+      productoID: productoID ?? this.productoID,
       isDeleted: isDeleted ?? this.isDeleted,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt);
   }
   
-  Negocio copyWithModelFieldValues({
+  ProductoPrecios copyWithModelFieldValues({
     ModelFieldValue<String>? nombre,
-    ModelFieldValue<String>? ruc,
-    ModelFieldValue<String?>? telefono,
-    ModelFieldValue<int?>? duration,
-    ModelFieldValue<int?>? movilAccess,
-    ModelFieldValue<int?>? pcAccess,
-    ModelFieldValue<String?>? direccion,
+    ModelFieldValue<String>? negocioID,
+    ModelFieldValue<double>? precio,
+    ModelFieldValue<String>? productoID,
     ModelFieldValue<bool>? isDeleted,
     ModelFieldValue<amplify_core.TemporalDateTime?>? createdAt,
     ModelFieldValue<amplify_core.TemporalDateTime?>? updatedAt
   }) {
-    return Negocio._internal(
+    return ProductoPrecios._internal(
       id: id,
       nombre: nombre == null ? this.nombre : nombre.value,
-      ruc: ruc == null ? this.ruc : ruc.value,
-      telefono: telefono == null ? this.telefono : telefono.value,
-      duration: duration == null ? this.duration : duration.value,
-      movilAccess: movilAccess == null ? this.movilAccess : movilAccess.value,
-      pcAccess: pcAccess == null ? this.pcAccess : pcAccess.value,
-      direccion: direccion == null ? this.direccion : direccion.value,
+      negocioID: negocioID == null ? this.negocioID : negocioID.value,
+      precio: precio == null ? this.precio : precio.value,
+      productoID: productoID == null ? this.productoID : productoID.value,
       isDeleted: isDeleted == null ? this.isDeleted : isDeleted.value,
       createdAt: createdAt == null ? this.createdAt : createdAt.value,
       updatedAt: updatedAt == null ? this.updatedAt : updatedAt.value
     );
   }
   
-  Negocio.fromJson(Map<String, dynamic> json)  
+  ProductoPrecios.fromJson(Map<String, dynamic> json)  
     : id = json['id'],
       _nombre = json['nombre'],
-      _ruc = json['ruc'],
-      _telefono = json['telefono'],
-      _duration = (json['duration'] as num?)?.toInt(),
-      _movilAccess = (json['movilAccess'] as num?)?.toInt(),
-      _pcAccess = (json['pcAccess'] as num?)?.toInt(),
-      _direccion = json['direccion'],
+      _negocioID = json['negocioID'],
+      _precio = (json['precio'] as num?)?.toDouble(),
+      _productoID = json['productoID'],
       _isDeleted = json['isDeleted'],
       _createdAt = json['createdAt'] != null ? amplify_core.TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'nombre': _nombre, 'ruc': _ruc, 'telefono': _telefono, 'duration': _duration, 'movilAccess': _movilAccess, 'pcAccess': _pcAccess, 'direccion': _direccion, 'isDeleted': _isDeleted, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'nombre': _nombre, 'negocioID': _negocioID, 'precio': _precio, 'productoID': _productoID, 'isDeleted': _isDeleted, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
   
   Map<String, Object?> toMap() => {
     'id': id,
     'nombre': _nombre,
-    'ruc': _ruc,
-    'telefono': _telefono,
-    'duration': _duration,
-    'movilAccess': _movilAccess,
-    'pcAccess': _pcAccess,
-    'direccion': _direccion,
+    'negocioID': _negocioID,
+    'precio': _precio,
+    'productoID': _productoID,
     'isDeleted': _isDeleted,
     'createdAt': _createdAt,
     'updatedAt': _updatedAt
   };
 
-  static final amplify_core.QueryModelIdentifier<NegocioModelIdentifier> MODEL_IDENTIFIER = amplify_core.QueryModelIdentifier<NegocioModelIdentifier>();
+  static final amplify_core.QueryModelIdentifier<ProductoPreciosModelIdentifier> MODEL_IDENTIFIER = amplify_core.QueryModelIdentifier<ProductoPreciosModelIdentifier>();
   static final ID = amplify_core.QueryField(fieldName: "id");
   static final NOMBRE = amplify_core.QueryField(fieldName: "nombre");
-  static final RUC = amplify_core.QueryField(fieldName: "ruc");
-  static final TELEFONO = amplify_core.QueryField(fieldName: "telefono");
-  static final DURATION = amplify_core.QueryField(fieldName: "duration");
-  static final MOVILACCESS = amplify_core.QueryField(fieldName: "movilAccess");
-  static final PCACCESS = amplify_core.QueryField(fieldName: "pcAccess");
-  static final DIRECCION = amplify_core.QueryField(fieldName: "direccion");
+  static final NEGOCIOID = amplify_core.QueryField(fieldName: "negocioID");
+  static final PRECIO = amplify_core.QueryField(fieldName: "precio");
+  static final PRODUCTOID = amplify_core.QueryField(fieldName: "productoID");
   static final ISDELETED = amplify_core.QueryField(fieldName: "isDeleted");
   static final CREATEDAT = amplify_core.QueryField(fieldName: "createdAt");
   static final UPDATEDAT = amplify_core.QueryField(fieldName: "updatedAt");
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
-    modelSchemaDefinition.name = "Negocio";
-    modelSchemaDefinition.pluralName = "Negocios";
+    modelSchemaDefinition.name = "ProductoPrecios";
+    modelSchemaDefinition.pluralName = "ProductoPrecios";
     
     modelSchemaDefinition.authRules = [
-      amplify_core.AuthRule(
-        authStrategy: amplify_core.AuthStrategy.GROUPS,
-        groupClaim: "cognito:groups",
-        groups: [ "superadmin" ],
-        provider: amplify_core.AuthRuleProvider.USERPOOLS,
-        operations: const [
-          amplify_core.ModelOperation.CREATE,
-          amplify_core.ModelOperation.UPDATE,
-          amplify_core.ModelOperation.DELETE,
-          amplify_core.ModelOperation.READ
-        ]),
       amplify_core.AuthRule(
         authStrategy: amplify_core.AuthStrategy.GROUPS,
         groupClaim: "cognito:groups",
         groups: [ "admin" ],
         provider: amplify_core.AuthRuleProvider.USERPOOLS,
         operations: const [
+          amplify_core.ModelOperation.CREATE,
           amplify_core.ModelOperation.READ,
-          amplify_core.ModelOperation.UPDATE
+          amplify_core.ModelOperation.UPDATE,
+          amplify_core.ModelOperation.DELETE
         ]),
       amplify_core.AuthRule(
         authStrategy: amplify_core.AuthStrategy.GROUPS,
@@ -300,93 +267,80 @@ class Negocio extends amplify_core.Model {
         ])
     ];
     
+    modelSchemaDefinition.indexes = [
+      amplify_core.ModelIndex(fields: const ["negocioID", "nombre"], name: "byNegocio"),
+      amplify_core.ModelIndex(fields: const ["productoID"], name: "byProducto")
+    ];
+    
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.id());
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Negocio.NOMBRE,
+      key: ProductoPrecios.NOMBRE,
       isRequired: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Negocio.RUC,
+      key: ProductoPrecios.NEGOCIOID,
       isRequired: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Negocio.TELEFONO,
-      isRequired: false,
+      key: ProductoPrecios.PRECIO,
+      isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.double)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: ProductoPrecios.PRODUCTOID,
+      isRequired: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Negocio.DURATION,
-      isRequired: false,
-      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
-    ));
-    
-    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Negocio.MOVILACCESS,
-      isRequired: false,
-      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
-    ));
-    
-    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Negocio.PCACCESS,
-      isRequired: false,
-      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
-    ));
-    
-    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Negocio.DIRECCION,
-      isRequired: false,
-      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
-    ));
-    
-    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Negocio.ISDELETED,
+      key: ProductoPrecios.ISDELETED,
       isRequired: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.bool)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Negocio.CREATEDAT,
+      key: ProductoPrecios.CREATEDAT,
       isRequired: false,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.dateTime)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Negocio.UPDATEDAT,
+      key: ProductoPrecios.UPDATEDAT,
       isRequired: false,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.dateTime)
     ));
   });
 }
 
-class _NegocioModelType extends amplify_core.ModelType<Negocio> {
-  const _NegocioModelType();
+class _ProductoPreciosModelType extends amplify_core.ModelType<ProductoPrecios> {
+  const _ProductoPreciosModelType();
   
   @override
-  Negocio fromJson(Map<String, dynamic> jsonData) {
-    return Negocio.fromJson(jsonData);
+  ProductoPrecios fromJson(Map<String, dynamic> jsonData) {
+    return ProductoPrecios.fromJson(jsonData);
   }
   
   @override
   String modelName() {
-    return 'Negocio';
+    return 'ProductoPrecios';
   }
 }
 
 /**
  * This is an auto generated class representing the model identifier
- * of [Negocio] in your schema.
+ * of [ProductoPrecios] in your schema.
  */
-class NegocioModelIdentifier implements amplify_core.ModelIdentifier<Negocio> {
+class ProductoPreciosModelIdentifier implements amplify_core.ModelIdentifier<ProductoPrecios> {
   final String id;
 
-  /** Create an instance of NegocioModelIdentifier using [id] the primary key. */
-  const NegocioModelIdentifier({
+  /** Create an instance of ProductoPreciosModelIdentifier using [id] the primary key. */
+  const ProductoPreciosModelIdentifier({
     required this.id});
   
   @override
@@ -404,7 +358,7 @@ class NegocioModelIdentifier implements amplify_core.ModelIdentifier<Negocio> {
   String serializeAsString() => serializeAsMap().values.join('#');
   
   @override
-  String toString() => 'NegocioModelIdentifier(id: $id)';
+  String toString() => 'ProductoPreciosModelIdentifier(id: $id)';
   
   @override
   bool operator ==(Object other) {
@@ -412,7 +366,7 @@ class NegocioModelIdentifier implements amplify_core.ModelIdentifier<Negocio> {
       return true;
     }
     
-    return other is NegocioModelIdentifier &&
+    return other is ProductoPreciosModelIdentifier &&
       id == other.id;
   }
   

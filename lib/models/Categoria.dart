@@ -33,6 +33,7 @@ class Categoria extends amplify_core.Model {
   final String? _parentCategoriaID;
   final List<Producto>? _productos;
   final List<Categoria>? _subCategorias;
+  final bool? _isDeleted;
   final amplify_core.TemporalDateTime? _createdAt;
   final amplify_core.TemporalDateTime? _updatedAt;
 
@@ -87,6 +88,19 @@ class Categoria extends amplify_core.Model {
     return _subCategorias;
   }
   
+  bool get isDeleted {
+    try {
+      return _isDeleted!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
+  }
+  
   amplify_core.TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -95,9 +109,9 @@ class Categoria extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const Categoria._internal({required this.id, required nombre, required negocioID, parentCategoriaID, productos, subCategorias, createdAt, updatedAt}): _nombre = nombre, _negocioID = negocioID, _parentCategoriaID = parentCategoriaID, _productos = productos, _subCategorias = subCategorias, _createdAt = createdAt, _updatedAt = updatedAt;
+  const Categoria._internal({required this.id, required nombre, required negocioID, parentCategoriaID, productos, subCategorias, required isDeleted, createdAt, updatedAt}): _nombre = nombre, _negocioID = negocioID, _parentCategoriaID = parentCategoriaID, _productos = productos, _subCategorias = subCategorias, _isDeleted = isDeleted, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory Categoria({String? id, required String nombre, required String negocioID, String? parentCategoriaID, List<Producto>? productos, List<Categoria>? subCategorias, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+  factory Categoria({String? id, required String nombre, required String negocioID, String? parentCategoriaID, List<Producto>? productos, List<Categoria>? subCategorias, required bool isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return Categoria._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       nombre: nombre,
@@ -105,6 +119,7 @@ class Categoria extends amplify_core.Model {
       parentCategoriaID: parentCategoriaID,
       productos: productos != null ? List<Producto>.unmodifiable(productos) : productos,
       subCategorias: subCategorias != null ? List<Categoria>.unmodifiable(subCategorias) : subCategorias,
+      isDeleted: isDeleted,
       createdAt: createdAt,
       updatedAt: updatedAt);
   }
@@ -123,6 +138,7 @@ class Categoria extends amplify_core.Model {
       _parentCategoriaID == other._parentCategoriaID &&
       DeepCollectionEquality().equals(_productos, other._productos) &&
       DeepCollectionEquality().equals(_subCategorias, other._subCategorias) &&
+      _isDeleted == other._isDeleted &&
       _createdAt == other._createdAt &&
       _updatedAt == other._updatedAt;
   }
@@ -139,14 +155,15 @@ class Categoria extends amplify_core.Model {
     buffer.write("nombre=" + "$_nombre" + ", ");
     buffer.write("negocioID=" + "$_negocioID" + ", ");
     buffer.write("parentCategoriaID=" + "$_parentCategoriaID" + ", ");
-    buffer.write("createdAt=" + (_createdAt != null ? _createdAt.format() : "null") + ", ");
-    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt.format() : "null"));
+    buffer.write("isDeleted=" + (_isDeleted != null ? _isDeleted!.toString() : "null") + ", ");
+    buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
+    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
     buffer.write("}");
     
     return buffer.toString();
   }
   
-  Categoria copyWith({String? nombre, String? negocioID, String? parentCategoriaID, List<Producto>? productos, List<Categoria>? subCategorias, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+  Categoria copyWith({String? nombre, String? negocioID, String? parentCategoriaID, List<Producto>? productos, List<Categoria>? subCategorias, bool? isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return Categoria._internal(
       id: id,
       nombre: nombre ?? this.nombre,
@@ -154,6 +171,7 @@ class Categoria extends amplify_core.Model {
       parentCategoriaID: parentCategoriaID ?? this.parentCategoriaID,
       productos: productos ?? this.productos,
       subCategorias: subCategorias ?? this.subCategorias,
+      isDeleted: isDeleted ?? this.isDeleted,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt);
   }
@@ -164,6 +182,7 @@ class Categoria extends amplify_core.Model {
     ModelFieldValue<String?>? parentCategoriaID,
     ModelFieldValue<List<Producto>?>? productos,
     ModelFieldValue<List<Categoria>?>? subCategorias,
+    ModelFieldValue<bool>? isDeleted,
     ModelFieldValue<amplify_core.TemporalDateTime?>? createdAt,
     ModelFieldValue<amplify_core.TemporalDateTime?>? updatedAt
   }) {
@@ -174,6 +193,7 @@ class Categoria extends amplify_core.Model {
       parentCategoriaID: parentCategoriaID == null ? this.parentCategoriaID : parentCategoriaID.value,
       productos: productos == null ? this.productos : productos.value,
       subCategorias: subCategorias == null ? this.subCategorias : subCategorias.value,
+      isDeleted: isDeleted == null ? this.isDeleted : isDeleted.value,
       createdAt: createdAt == null ? this.createdAt : createdAt.value,
       updatedAt: updatedAt == null ? this.updatedAt : updatedAt.value
     );
@@ -210,11 +230,12 @@ class Categoria extends amplify_core.Model {
               .map((e) => Categoria.fromJson(new Map<String, dynamic>.from(e?['serializedData'])))
               .toList()
           : null),
+      _isDeleted = json['isDeleted'],
       _createdAt = json['createdAt'] != null ? amplify_core.TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'nombre': _nombre, 'negocioID': _negocioID, 'parentCategoriaID': _parentCategoriaID, 'productos': _productos?.map((Producto? e) => e?.toJson()).toList(), 'subCategorias': _subCategorias?.map((Categoria? e) => e?.toJson()).toList(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'nombre': _nombre, 'negocioID': _negocioID, 'parentCategoriaID': _parentCategoriaID, 'productos': _productos?.map((Producto? e) => e?.toJson()).toList(), 'subCategorias': _subCategorias?.map((Categoria? e) => e?.toJson()).toList(), 'isDeleted': _isDeleted, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
   
   Map<String, Object?> toMap() => {
@@ -224,6 +245,7 @@ class Categoria extends amplify_core.Model {
     'parentCategoriaID': _parentCategoriaID,
     'productos': _productos,
     'subCategorias': _subCategorias,
+    'isDeleted': _isDeleted,
     'createdAt': _createdAt,
     'updatedAt': _updatedAt
   };
@@ -239,6 +261,7 @@ class Categoria extends amplify_core.Model {
   static final SUBCATEGORIAS = amplify_core.QueryField(
     fieldName: "subCategorias",
     fieldType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.model, ofModelName: 'Categoria'));
+  static final ISDELETED = amplify_core.QueryField(fieldName: "isDeleted");
   static final CREATEDAT = amplify_core.QueryField(fieldName: "createdAt");
   static final UPDATEDAT = amplify_core.QueryField(fieldName: "updatedAt");
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
@@ -249,12 +272,20 @@ class Categoria extends amplify_core.Model {
       amplify_core.AuthRule(
         authStrategy: amplify_core.AuthStrategy.GROUPS,
         groupClaim: "cognito:groups",
-        groups: [ "admin", "vendedor" ],
+        groups: [ "admin" ],
         provider: amplify_core.AuthRuleProvider.USERPOOLS,
         operations: const [
           amplify_core.ModelOperation.CREATE,
+          amplify_core.ModelOperation.READ,
           amplify_core.ModelOperation.UPDATE,
-          amplify_core.ModelOperation.DELETE,
+          amplify_core.ModelOperation.DELETE
+        ]),
+      amplify_core.AuthRule(
+        authStrategy: amplify_core.AuthStrategy.GROUPS,
+        groupClaim: "cognito:groups",
+        groups: [ "vendedor" ],
+        provider: amplify_core.AuthRuleProvider.USERPOOLS,
+        operations: const [
           amplify_core.ModelOperation.READ
         ])
     ];
@@ -296,6 +327,12 @@ class Categoria extends amplify_core.Model {
       isRequired: false,
       ofModelName: 'Categoria',
       associatedKey: Categoria.PARENTCATEGORIAID
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: Categoria.ISDELETED,
+      isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.bool)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(

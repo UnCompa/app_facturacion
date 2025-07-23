@@ -329,6 +329,7 @@ class _AdminCategoriesFormPageState extends State<AdminCategoriesFormPage> {
           nombre: nombre,
           parentCategoriaID: _selectedParentId,
           negocioID: negocio.negocioId,
+          isDeleted: false,
         );
         final request = ModelMutations.create(newCategoria);
         await Amplify.API.mutate(request: request).response;

@@ -1,6 +1,7 @@
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/models/ModelProvider.dart';
+import 'package:app_facturacion/services/negocio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -121,6 +122,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Future<void> _saveInvoice() async {
+    
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -137,12 +139,16 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     });
 
     try {
+      final userData = await NegocioService.getCurrentUserInfo();
       // Crear la factura
       final invoice = Invoice(
         invoiceNumber: _invoiceNumberController.text,
         invoiceDate: TemporalDateTime(_selectedDate),
         invoiceTotal: _calculateTotal(),
         invoiceStatus: _selectedStatus,
+        sellerID: userData.userId,
+        negocioID: userData.negocioId,
+        isDeleted: false,
       );
 
       final createInvoiceRequest = ModelMutations.create(invoice);

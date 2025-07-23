@@ -171,12 +171,12 @@ class InvoiceItem extends amplify_core.Model {
     buffer.write("id=" + "$id" + ", ");
     buffer.write("invoiceID=" + "$_invoiceID" + ", ");
     buffer.write("productoID=" + "$_productoID" + ", ");
-    buffer.write("quantity=" + (_quantity != null ? _quantity.toString() : "null") + ", ");
-    buffer.write("tax=" + (_tax != null ? _tax.toString() : "null") + ", ");
-    buffer.write("subtotal=" + (_subtotal != null ? _subtotal.toString() : "null") + ", ");
-    buffer.write("total=" + (_total != null ? _total.toString() : "null") + ", ");
-    buffer.write("createdAt=" + (_createdAt != null ? _createdAt.format() : "null") + ", ");
-    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt.format() : "null"));
+    buffer.write("quantity=" + (_quantity != null ? _quantity!.toString() : "null") + ", ");
+    buffer.write("tax=" + (_tax != null ? _tax!.toString() : "null") + ", ");
+    buffer.write("subtotal=" + (_subtotal != null ? _subtotal!.toString() : "null") + ", ");
+    buffer.write("total=" + (_total != null ? _total!.toString() : "null") + ", ");
+    buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
+    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
     buffer.write("}");
     
     return buffer.toString();
@@ -263,13 +263,22 @@ class InvoiceItem extends amplify_core.Model {
       amplify_core.AuthRule(
         authStrategy: amplify_core.AuthStrategy.GROUPS,
         groupClaim: "cognito:groups",
-        groups: [ "admin", "vendedor" ],
+        groups: [ "admin" ],
         provider: amplify_core.AuthRuleProvider.USERPOOLS,
         operations: const [
           amplify_core.ModelOperation.CREATE,
+          amplify_core.ModelOperation.READ,
           amplify_core.ModelOperation.UPDATE,
-          amplify_core.ModelOperation.DELETE,
-          amplify_core.ModelOperation.READ
+          amplify_core.ModelOperation.DELETE
+        ]),
+      amplify_core.AuthRule(
+        authStrategy: amplify_core.AuthStrategy.GROUPS,
+        groupClaim: "cognito:groups",
+        groups: [ "vendedor" ],
+        provider: amplify_core.AuthRuleProvider.USERPOOLS,
+        operations: const [
+          amplify_core.ModelOperation.READ,
+          amplify_core.ModelOperation.CREATE
         ])
     ];
     

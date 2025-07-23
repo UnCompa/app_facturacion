@@ -77,12 +77,11 @@ type ProductoPrecios
 
 
 type Invoice
-  @key(name: "byFecha", fields: ["invoiceDate"])
   @model
   @auth(rules: [{ allow: groups, groups: ["admin"], operations: [create, read, update, delete] }, { allow: groups, groups: ["vendedor"], operations: [read, create] }]) {
   id: ID!
   sellerID: String! # sub de cognito de vendedor
-  negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
+  negocioID: ID! @index(name: "byNegocio")
   invoiceNumber: String!
   invoiceDate: AWSDateTime!
   invoiceTotal: Float!
@@ -117,7 +116,7 @@ type Order
   @auth(rules: [{ allow: groups, groups: ["admin"], operations: [create, read, update, delete] }, { allow: groups, groups: ["vendedor"], operations: [read, create] }]){
   id: ID!
   sellerID: String! # sub de cognito de vendedor
-  negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
+  negocioID: ID! @index(name: "byNegocio")
   orderNumber: String!
   orderDate: AWSDateTime!
   orderTotal: Float!
@@ -176,7 +175,7 @@ type Caja
   @model
   @auth(rules: [{ allow: groups, groups: ["admin"], operations: [create, read, update, delete] }, { allow: groups, groups: ["vendedor"], operations: [read] }]) {
   id: ID!
-  negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
+  negocioID: ID! @index(name: "byNegocio")
   isDeleted: Boolean! @default(value: "false")
   saldoInicial: Float!
   isActive: Boolean!
@@ -196,7 +195,7 @@ type CajaMoneda
 {
   id: ID!
   cajaID: ID! @index(name: "byCaja")
-  negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
+  negocioID: ID! @index(name: "byNegocio")
   moneda: String! # Ej: USD
   denominacion: Float! # Ej: 0.10
   monto: Float! # 10 centavos de dolar
@@ -217,7 +216,7 @@ type CajaMovimiento
   cajaID: ID! @index(name: "byCaja")
   tipo: String! # "INGRESO" o "EGRESO"
   monto: Float!
-  negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
+  negocioID: ID! @index(name: "byNegocio")
   descripcion: String
   isDeleted: Boolean! @default(value: "false")
   createdAt: AWSDateTime
@@ -229,7 +228,7 @@ type CierreCaja
   @auth(rules: [{ allow: groups, groups: ["admin"], operations: [create, read, update, delete] }]) {
   id: ID!
   cajaID: ID! @index(name: "byCaja")
-  negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
+  negocioID: ID! @index(name: "byNegocio")
   saldoFinal: Float!
   diferencia: Float!
   observaciones: String
@@ -245,7 +244,7 @@ type CierreCajaHistorial
   cierreCajaID: ID! @index(name: "byCierreCaja")
   fechaCierre: AWSDateTime!
   usuarioID: String!
-  negocioID: ID! @index(name: "byNegocio", sortKeyFields: ["nombre"])
+  negocioID: ID! @index(name: "byNegocio")
   isDeleted: Boolean! @default(value: "false")
 
   createdAt: AWSDateTime

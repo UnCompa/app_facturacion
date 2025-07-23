@@ -1,4 +1,6 @@
+import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:app_facturacion/models/Negocio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -41,44 +43,19 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
     });
 
     try {
-      const graphQLDocument = '''
-        mutation CreateNegocio(\$input: CreateNegocioInput!){
-          createNegocio(input: \$input){
-            id
-            nombre
-            ruc
-            telefono
-            duration
-            movilAccess
-            pcAccess
-            direccion
-            createdAt
-            updatedAt
-          }
-        }
-      ''';
-
-      final variables = <String, dynamic>{
-        'input': {
-          'nombre': _nombreController.text.trim(),
-          'ruc': _rucController.text.trim(),
-          if (_telefonoController.text.isNotEmpty)
-            'telefono': _telefonoController.text.trim(),
-          if (_durationController.text.isNotEmpty)
-            'duration': int.tryParse(_durationController.text),
-          if (_movilAccessController.text.isNotEmpty)
-            'movilAccess': int.tryParse(_movilAccessController.text),
-          if (_pcAccessController.text.isNotEmpty)
-            'pcAccess': int.tryParse(_pcAccessController.text),
-          if (_direccionController.text.isNotEmpty)
-            'direccion': _direccionController.text.trim(),
-        },
-      };
-
-      final request = GraphQLRequest<String>(
-        document: graphQLDocument,
-        variables: variables,
+      final negocio = Negocio(
+        nombre: _nombreController.text,
+        ruc: _rucController.text,
+        telefono: _telefonoController.text,
+        duration: int.parse(_durationController.text),
+        movilAccess: int.parse(_movilAccessController.text),
+        pcAccess: int.parse(_pcAccessController.text),
+        direccion: _direccionController.text,
+        createdAt: TemporalDateTime(DateTime.now()),
+        updatedAt: TemporalDateTime(DateTime.now()),
+        isDeleted: false,
       );
+      final request = ModelMutations.create(negocio);
 
       final response = await Amplify.API.mutate(request: request).response;
 
@@ -95,9 +72,8 @@ class _CrearNegocioScreenState extends State<CrearNegocioScreen> {
           ),
         );
 
-        // Limpiar formulario o navegar hacia atrás
         _limpiarFormulario();
-        Navigator.of(context).pop(true); // Indica que se creó exitosamente
+        Navigator.of(context).pop(true);
       }
     } catch (e){
       safePrint('Error creating business: $e');

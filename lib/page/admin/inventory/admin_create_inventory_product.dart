@@ -220,7 +220,8 @@ class _AdminCreateInventoryProductState
         barCode: _barCodeController.text.trim().isEmpty
             ? null
             : _barCodeController.text
-                  .trim(), // Agregar el código de barras si existe
+                  .trim(),
+        isDeleted: false,
       );
       print(producto.toString());
       // Crear la mutación

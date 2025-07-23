@@ -2,6 +2,7 @@ import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/models/Categoria.dart';
 import 'package:app_facturacion/models/Producto.dart';
+import 'package:app_facturacion/models/ProductoPrecios.dart';
 import 'package:app_facturacion/utils/get_image_for_bucker.dart';
 import 'package:flutter/material.dart';
 
@@ -26,14 +27,16 @@ class _AdminViewInventoryDetailsScreenState
   final _nombreController = TextEditingController();
   final _barCodeController = TextEditingController();
   final _descripcionController = TextEditingController();
-  final _precioController = TextEditingController();
   final _stockController = TextEditingController();
+  List<Map<String, TextEditingController>> _preciosControllers = [];
   List<String> _signedImageUrls = [];
   List<Categoria> _categories = [];
+  List<ProductoPrecios> _productoPrecios = [];
   String? _selectedCategoryId;
   String? _selectedEstado;
   bool _isEditing = false;
   bool _isLoading = false;
+  bool _isLoadingImages = true;
 
   @override
   void initState() {
@@ -45,7 +48,6 @@ class _AdminViewInventoryDetailsScreenState
   void _loadProductData() {
     _nombreController.text = widget.product.nombre;
     _descripcionController.text = widget.product.descripcion ?? '';
-    _precioController.text = widget.product.precio.toString();
     _stockController.text = widget.product.stock.toString();
     _selectedEstado = widget.product.estado ?? 'activo';
     _barCodeController.text = widget.product.barCode ?? '';
@@ -54,16 +56,14 @@ class _AdminViewInventoryDetailsScreenState
 
   Future<void> _initializeData() async {
     await _getCategorias();
+    await _getProductoPrecios();
     if (widget.product.productoImages != null &&
         widget.product.productoImages!.isNotEmpty) {
       final urls = await GetImageFromBucket.getSignedImageUrls(
         s3Keys: widget.product.productoImages!,
-        expiresIn: Duration(
-          minutes: 30,
-        ), // Opcional: ajusta el tiempo de expiración
+        expiresIn: Duration(minutes: 30),
       );
       if (urls.isEmpty) {
-        // Manejar el error en el contexto de la UI
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('No se pudieron cargar las imágenes'),
@@ -73,6 +73,7 @@ class _AdminViewInventoryDetailsScreenState
       }
       setState(() {
         _signedImageUrls = urls;
+        _isLoadingImages = false;
       });
     }
   }
@@ -84,7 +85,6 @@ class _AdminViewInventoryDetailsScreenState
 
       if (response.data != null) {
         final categories = response.data!.items.whereType<Categoria>().toList();
-
         setState(() {
           _categories = categories;
         });
@@ -94,15 +94,62 @@ class _AdminViewInventoryDetailsScreenState
     }
   }
 
-  String _getCategoryName(String? categoryId) {
-    if (categoryId == null) return 'Sin categoría';
+  Future<void> _getProductoPrecios() async {
+    try {
+      final request = ModelQueries.list(
+        ProductoPrecios.classType,
+        where: ProductoPrecios.PRODUCTOID
+            .eq(widget.product.id)
+            .and(ProductoPrecios.ISDELETED.eq(false)),
+      );
+      final response = await Amplify.API.query(request: request).response;
 
-    final category = _categories.firstWhere(
-      (cat) => cat.id == categoryId,
-      orElse: () => Categoria(nombre: 'Sin categoría', id: '', negocioID: '', isDeleted: false),
-    );
+      if (response.data != null) {
+        final precios = response.data!.items
+            .whereType<ProductoPrecios>()
+            .toList();
+        setState(() {
+          _productoPrecios = precios;
+          _preciosControllers = precios.map((precio) {
+            return {
+              'id': TextEditingController(text: precio.id),
+              'nombre': TextEditingController(text: precio.nombre),
+              'precio': TextEditingController(text: precio.precio.toString()),
+            };
+          }).toList();
+          if (_preciosControllers.isEmpty) {
+            _agregarPrecio();
+          }
+        });
+      }
+    } catch (e) {
+      print('Error fetching product prices: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al cargar los precios'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
-    return category.nombre;
+  void _agregarPrecio() {
+    setState(() {
+      _preciosControllers.add({
+        'id': TextEditingController(),
+        'nombre': TextEditingController(),
+        'precio': TextEditingController(),
+      });
+    });
+  }
+
+  void _eliminarPrecio(int index) {
+    setState(() {
+      _preciosControllers[index]['id']!.dispose();
+      _preciosControllers[index]['nombre']!.dispose();
+      _preciosControllers[index]['precio']!.dispose();
+      _preciosControllers.removeAt(index);
+    });
   }
 
   Color _getStockColor(int stock) {
@@ -119,39 +166,106 @@ class _AdminViewInventoryDetailsScreenState
     });
 
     try {
+      // Actualizar el producto
       final updatedProduct = widget.product.copyWith(
         nombre: _nombreController.text.trim(),
-        descripcion: _descripcionController.text.trim(),
-        precio: double.parse(_precioController.text),
+        descripcion: _descripcionController.text.trim().isEmpty
+            ? null
+            : _descripcionController.text.trim(),
         stock: int.parse(_stockController.text),
         estado: _selectedEstado,
+        categoriaID: _selectedCategoryId,
+        barCode: _barCodeController.text.trim().isEmpty
+            ? null
+            : _barCodeController.text.trim(),
         createdAt: widget.product.createdAt,
         updatedAt: TemporalDateTime(DateTime.now()),
       );
 
-      final request = ModelMutations.update(updatedProduct);
-      final response = await Amplify.API.mutate(request: request).response;
+      final productRequest = ModelMutations.update(updatedProduct);
+      final productResponse = await Amplify.API
+          .mutate(request: productRequest)
+          .response;
 
-      if (response.data != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Producto actualizado exitosamente'),
-            backgroundColor: Colors.green,
-          ),
+      if (productResponse.data == null) {
+        throw Exception(
+          'Error al actualizar el producto: ${productResponse.errors}',
+        );
+      }
+
+      // Validar precios
+      for (var precio in _preciosControllers) {
+        if (precio['nombre']!.text.trim().isEmpty ||
+            precio['precio']!.text.trim().isEmpty) {
+          throw Exception('Todos los campos de precios deben estar completos');
+        }
+        final valorPrecio = double.tryParse(precio['precio']!.text);
+        if (valorPrecio == null || valorPrecio <= 0) {
+          throw Exception('Todos los precios deben ser válidos y mayores a 0');
+        }
+      }
+
+      // Actualizar o crear precios
+      for (var precio in _preciosControllers) {
+        final precioId = precio['id']!.text;
+        final productoPrecio = ProductoPrecios(
+          id: precioId.isNotEmpty ? precioId : null,
+          nombre: precio['nombre']!.text.trim(),
+          precio: double.parse(precio['precio']!.text),
+          negocioID: widget.negocioID,
+          productoID: widget.product.id,
+          isDeleted: false,
         );
 
-        setState(() {
-          _isEditing = false;
-        });
+        final precioRequest = precioId.isNotEmpty
+            ? ModelMutations.update(productoPrecio)
+            : ModelMutations.create(productoPrecio);
+        final precioResponse = await Amplify.API
+            .mutate(request: precioRequest)
+            .response;
 
-        Navigator.of(context).pop(true);
-      } else {
-        throw Exception('Error al actualizar el producto');
+        if (precioResponse.data == null) {
+          throw Exception(
+            'Error al guardar el precio: ${precioResponse.errors}',
+          );
+        }
       }
+
+      // Eliminar precios que ya no están en la lista
+      for (var precioExistente in _productoPrecios) {
+        if (!_preciosControllers.any(
+          (p) => p['id']!.text == precioExistente.id,
+        )) {
+          final deleteRequest = ModelMutations.delete(
+            precioExistente.copyWith(isDeleted: true),
+          );
+          final deleteResponse = await Amplify.API
+              .mutate(request: deleteRequest)
+              .response;
+          if (deleteResponse.data == null) {
+            throw Exception(
+              'Error al eliminar el precio: ${deleteResponse.errors}',
+            );
+          }
+        }
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Producto y precios actualizados exitosamente'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      setState(() {
+        _isEditing = false;
+      });
+
+      Navigator.of(context).pop(true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al actualizar el producto: $e'),
+          content: Text('Error al actualizar: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -250,6 +364,7 @@ class _AdminViewInventoryDetailsScreenState
                 setState(() {
                   _isEditing = false;
                   _loadProductData();
+                  _getProductoPrecios();
                 });
               },
               icon: Icon(Icons.close),
@@ -283,7 +398,6 @@ class _AdminViewInventoryDetailsScreenState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Título de la sección
                             Text(
                               'Información General',
                               style: TextStyle(
@@ -294,7 +408,9 @@ class _AdminViewInventoryDetailsScreenState
                             ),
                             SizedBox(height: 16),
                             // Carrusel de imágenes
-                            if (_signedImageUrls.isNotEmpty) ...[
+                            if (_isLoadingImages)
+                              Center(child: CircularProgressIndicator())
+                            else if (_signedImageUrls.isNotEmpty && !_isLoadingImages) ...[
                               SizedBox(
                                 height: 200,
                                 child: ListView.builder(
@@ -362,7 +478,6 @@ class _AdminViewInventoryDetailsScreenState
                               ),
                               SizedBox(height: 16),
                             ] else ...[
-                              // Placeholder si no hay imágenes
                               Container(
                                 width: double.infinity,
                                 height: 180,
@@ -475,7 +590,7 @@ class _AdminViewInventoryDetailsScreenState
                               maxLines: 3,
                             ),
                             SizedBox(height: 16),
-                            // Campo nombre
+                            // Campo código de barras
                             TextFormField(
                               controller: _barCodeController,
                               decoration: InputDecoration(
@@ -499,19 +614,13 @@ class _AdminViewInventoryDetailsScreenState
                                 enabled: _isEditing,
                                 prefixIcon: Icon(Icons.barcode_reader),
                               ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'El nombre es requerido';
-                                }
-                                return null;
-                              },
                             ),
                           ],
                         ),
                       ),
                     ),
                     SizedBox(height: 16),
-                    // Card de precio y stock
+                    // Card de precios y stock
                     Card(
                       elevation: 4,
                       shape: RoundedRectangleBorder(
@@ -523,7 +632,7 @@ class _AdminViewInventoryDetailsScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Precio y Stock',
+                              'Precios y Stock',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -531,93 +640,222 @@ class _AdminViewInventoryDetailsScreenState
                               ),
                             ),
                             SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _precioController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Precio (\$)',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                            // Lista de precios
+                            if (_isEditing)
+                              Column(
+                                children: [
+                                  ..._preciosControllers.asMap().entries.map((
+                                    entry,
+                                  ) {
+                                    int index = entry.key;
+                                    var controllers = entry.value;
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12.0,
                                       ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Colors.grey[300]!,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 2,
+                                            child: TextFormField(
+                                              controller: controllers['nombre'],
+                                              decoration: InputDecoration(
+                                                labelText: 'Nombre del Precio',
+                                                hintText: 'Ej: Público',
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            Colors.grey[300]!,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Colors.blue,
+                                                        width: 2,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                prefixIcon: Icon(Icons.label),
+                                              ),
+                                              validator: (value) {
+                                                if (value == null ||
+                                                    value.trim().isEmpty) {
+                                                  return 'El nombre es obligatorio';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          Expanded(
+                                            flex: 2,
+                                            child: TextFormField(
+                                              controller: controllers['precio'],
+                                              decoration: InputDecoration(
+                                                labelText: 'Precio',
+                                                hintText: 'Ej: 999.99',
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            Colors.grey[300]!,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Colors.blue,
+                                                        width: 2,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                prefixIcon: Icon(
+                                                  Icons.attach_money,
+                                                ),
+                                                suffixText: 'USD',
+                                              ),
+                                              keyboardType:
+                                                  TextInputType.numberWithOptions(
+                                                    decimal: true,
+                                                  ),
+                                              validator: (value) {
+                                                if (value == null ||
+                                                    value.trim().isEmpty) {
+                                                  return 'El precio es obligatorio';
+                                                }
+                                                final precio = double.tryParse(
+                                                  value,
+                                                );
+                                                if (precio == null) {
+                                                  return 'Ingresa un precio válido';
+                                                }
+                                                if (precio <= 0) {
+                                                  return 'El precio debe ser mayor a 0';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ),
+                                          IconButton(
+                                            onPressed:
+                                                _preciosControllers.length > 1
+                                                ? () => _eliminarPrecio(index)
+                                                : null,
+                                            icon: Icon(Icons.delete),
+                                            color: Colors.red,
+                                          ),
+                                        ],
                                       ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Colors.blue,
-                                          width: 2,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      prefixIcon: Icon(Icons.attach_money),
-                                      enabled: _isEditing,
+                                    );
+                                  }),
+                                  ElevatedButton.icon(
+                                    onPressed: _agregarPrecio,
+                                    icon: Icon(Icons.add),
+                                    label: Text('Agregar otro precio'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue,
+                                      foregroundColor: Colors.white,
                                     ),
-                                    keyboardType:
-                                        TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    validator: (value) {
-                                      if (value == null ||
-                                          value.trim().isEmpty) {
-                                        return 'El precio es requerido';
-                                      }
-                                      if (double.tryParse(value) == null) {
-                                        return 'Ingrese un precio válido';
-                                      }
-                                      if (double.parse(value) < 0) {
-                                        return 'El precio no puede ser negativo';
-                                      }
-                                      return null;
-                                    },
                                   ),
+                                ],
+                              )
+                            else
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: _productoPrecios.isNotEmpty
+                                    ? _productoPrecios.map((precio) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 8.0,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                precio.nombre,
+                                                style: TextStyle(fontSize: 16),
+                                              ),
+                                              Text(
+                                                '\$${precio.precio.toStringAsFixed(2)}',
+                                                style: TextStyle(fontSize: 16),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList()
+                                    : [
+                                        Text(
+                                          'Sin precios disponibles',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
+                              ),
+                            SizedBox(height: 16),
+                            // Campo stock
+                            TextFormField(
+                              controller: _stockController,
+                              decoration: InputDecoration(
+                                labelText: 'Stock',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                SizedBox(width: 16),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _stockController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Stock',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Colors.grey[300]!,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Colors.blue,
-                                          width: 2,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      prefixIcon: Icon(Icons.inventory),
-                                      enabled: _isEditing,
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) {
-                                      if (value == null ||
-                                          value.trim().isEmpty) {
-                                        return 'El stock es requerido';
-                                      }
-                                      if (int.tryParse(value) == null) {
-                                        return 'Ingrese un stock válido';
-                                      }
-                                      if (int.parse(value) < 0) {
-                                        return 'El stock no puede ser negativo';
-                                      }
-                                      return null;
-                                    },
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
                                   ),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                              ],
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.blue,
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                prefixIcon: Icon(Icons.inventory),
+                                enabled: _isEditing,
+                              ),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'El stock es requerido';
+                                }
+                                if (int.tryParse(value) == null) {
+                                  return 'Ingresa un stock válido';
+                                }
+                                if (int.parse(value) < 0) {
+                                  return 'El stock no puede ser negativo';
+                                }
+                                return null;
+                              },
                             ),
                           ],
                         ),
@@ -777,8 +1015,13 @@ class _AdminViewInventoryDetailsScreenState
   void dispose() {
     _nombreController.dispose();
     _descripcionController.dispose();
-    _precioController.dispose();
     _stockController.dispose();
+    _barCodeController.dispose();
+    for (var precio in _preciosControllers) {
+      precio['id']!.dispose();
+      precio['nombre']!.dispose();
+      precio['precio']!.dispose();
+    }
     super.dispose();
   }
 }

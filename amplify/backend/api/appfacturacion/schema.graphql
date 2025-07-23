@@ -94,7 +94,6 @@ type Invoice
   cajaID: ID @index(name: "byCaja")
   cajaMovimientoID: ID @index(name: "byCajaMovimiento")
   cierreCajaID: ID @index(name: "byCierreCaja")
-  imagenFactura: String
 }
 
 type InvoiceItem
@@ -113,7 +112,7 @@ type InvoiceItem
 
 type Order
   @model
-  @auth(rules: [{ allow: groups, groups: ["admin"], operations: [create, read, update, delete] }, { allow: groups, groups: ["vendedor"], operations: [read, create] }]){
+  @auth(rules: [{ allow: groups, groups: ["admin"], operations: [create, read, update, delete] }, { allow: groups, groups: ["vendedor"], operations: [read, create] }]) {
   id: ID!
   sellerID: String! # sub de cognito de vendedor
   negocioID: ID! @index(name: "byNegocio")
@@ -126,6 +125,9 @@ type Order
   isDeleted: Boolean! @default(value: "false")
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+  cajaID: ID @index(name: "byCaja")
+  cajaMovimientoID: ID @index(name: "byCajaMovimiento")
+  cierreCajaID: ID @index(name: "byCierreCaja")
 }
 
 type OrderItem
@@ -192,7 +194,7 @@ type CajaMoneda
     { allow: groups, groups: ["vendedor"], operations: [read] }
   ]
 ) 
-{
+{ 
   id: ID!
   cajaID: ID! @index(name: "byCaja")
   negocioID: ID! @index(name: "byNegocio")
@@ -215,6 +217,7 @@ type CajaMovimiento
   id: ID!
   cajaID: ID! @index(name: "byCaja")
   tipo: String! # "INGRESO" o "EGRESO"
+  origen: String! # "Factura" o "Orden"
   monto: Float!
   negocioID: ID! @index(name: "byNegocio")
   descripcion: String

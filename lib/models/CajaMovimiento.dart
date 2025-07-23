@@ -29,6 +29,7 @@ class CajaMovimiento extends amplify_core.Model {
   final String id;
   final String? _cajaID;
   final String? _tipo;
+  final String? _origen;
   final double? _monto;
   final String? _negocioID;
   final String? _descripcion;
@@ -65,6 +66,19 @@ class CajaMovimiento extends amplify_core.Model {
   String get tipo {
     try {
       return _tipo!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
+  }
+  
+  String get origen {
+    try {
+      return _origen!;
     } catch(e) {
       throw amplify_core.AmplifyCodeGenModelException(
           amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
@@ -126,13 +140,14 @@ class CajaMovimiento extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const CajaMovimiento._internal({required this.id, required cajaID, required tipo, required monto, required negocioID, descripcion, required isDeleted, createdAt, updatedAt}): _cajaID = cajaID, _tipo = tipo, _monto = monto, _negocioID = negocioID, _descripcion = descripcion, _isDeleted = isDeleted, _createdAt = createdAt, _updatedAt = updatedAt;
+  const CajaMovimiento._internal({required this.id, required cajaID, required tipo, required origen, required monto, required negocioID, descripcion, required isDeleted, createdAt, updatedAt}): _cajaID = cajaID, _tipo = tipo, _origen = origen, _monto = monto, _negocioID = negocioID, _descripcion = descripcion, _isDeleted = isDeleted, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory CajaMovimiento({String? id, required String cajaID, required String tipo, required double monto, required String negocioID, String? descripcion, required bool isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+  factory CajaMovimiento({String? id, required String cajaID, required String tipo, required String origen, required double monto, required String negocioID, String? descripcion, required bool isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return CajaMovimiento._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       cajaID: cajaID,
       tipo: tipo,
+      origen: origen,
       monto: monto,
       negocioID: negocioID,
       descripcion: descripcion,
@@ -152,6 +167,7 @@ class CajaMovimiento extends amplify_core.Model {
       id == other.id &&
       _cajaID == other._cajaID &&
       _tipo == other._tipo &&
+      _origen == other._origen &&
       _monto == other._monto &&
       _negocioID == other._negocioID &&
       _descripcion == other._descripcion &&
@@ -171,6 +187,7 @@ class CajaMovimiento extends amplify_core.Model {
     buffer.write("id=" + "$id" + ", ");
     buffer.write("cajaID=" + "$_cajaID" + ", ");
     buffer.write("tipo=" + "$_tipo" + ", ");
+    buffer.write("origen=" + "$_origen" + ", ");
     buffer.write("monto=" + (_monto != null ? _monto!.toString() : "null") + ", ");
     buffer.write("negocioID=" + "$_negocioID" + ", ");
     buffer.write("descripcion=" + "$_descripcion" + ", ");
@@ -182,11 +199,12 @@ class CajaMovimiento extends amplify_core.Model {
     return buffer.toString();
   }
   
-  CajaMovimiento copyWith({String? cajaID, String? tipo, double? monto, String? negocioID, String? descripcion, bool? isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
+  CajaMovimiento copyWith({String? cajaID, String? tipo, String? origen, double? monto, String? negocioID, String? descripcion, bool? isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt}) {
     return CajaMovimiento._internal(
       id: id,
       cajaID: cajaID ?? this.cajaID,
       tipo: tipo ?? this.tipo,
+      origen: origen ?? this.origen,
       monto: monto ?? this.monto,
       negocioID: negocioID ?? this.negocioID,
       descripcion: descripcion ?? this.descripcion,
@@ -198,6 +216,7 @@ class CajaMovimiento extends amplify_core.Model {
   CajaMovimiento copyWithModelFieldValues({
     ModelFieldValue<String>? cajaID,
     ModelFieldValue<String>? tipo,
+    ModelFieldValue<String>? origen,
     ModelFieldValue<double>? monto,
     ModelFieldValue<String>? negocioID,
     ModelFieldValue<String?>? descripcion,
@@ -209,6 +228,7 @@ class CajaMovimiento extends amplify_core.Model {
       id: id,
       cajaID: cajaID == null ? this.cajaID : cajaID.value,
       tipo: tipo == null ? this.tipo : tipo.value,
+      origen: origen == null ? this.origen : origen.value,
       monto: monto == null ? this.monto : monto.value,
       negocioID: negocioID == null ? this.negocioID : negocioID.value,
       descripcion: descripcion == null ? this.descripcion : descripcion.value,
@@ -222,6 +242,7 @@ class CajaMovimiento extends amplify_core.Model {
     : id = json['id'],
       _cajaID = json['cajaID'],
       _tipo = json['tipo'],
+      _origen = json['origen'],
       _monto = (json['monto'] as num?)?.toDouble(),
       _negocioID = json['negocioID'],
       _descripcion = json['descripcion'],
@@ -230,13 +251,14 @@ class CajaMovimiento extends amplify_core.Model {
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'cajaID': _cajaID, 'tipo': _tipo, 'monto': _monto, 'negocioID': _negocioID, 'descripcion': _descripcion, 'isDeleted': _isDeleted, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'cajaID': _cajaID, 'tipo': _tipo, 'origen': _origen, 'monto': _monto, 'negocioID': _negocioID, 'descripcion': _descripcion, 'isDeleted': _isDeleted, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
   
   Map<String, Object?> toMap() => {
     'id': id,
     'cajaID': _cajaID,
     'tipo': _tipo,
+    'origen': _origen,
     'monto': _monto,
     'negocioID': _negocioID,
     'descripcion': _descripcion,
@@ -249,6 +271,7 @@ class CajaMovimiento extends amplify_core.Model {
   static final ID = amplify_core.QueryField(fieldName: "id");
   static final CAJAID = amplify_core.QueryField(fieldName: "cajaID");
   static final TIPO = amplify_core.QueryField(fieldName: "tipo");
+  static final ORIGEN = amplify_core.QueryField(fieldName: "origen");
   static final MONTO = amplify_core.QueryField(fieldName: "monto");
   static final NEGOCIOID = amplify_core.QueryField(fieldName: "negocioID");
   static final DESCRIPCION = amplify_core.QueryField(fieldName: "descripcion");
@@ -296,6 +319,12 @@ class CajaMovimiento extends amplify_core.Model {
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
       key: CajaMovimiento.TIPO,
+      isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: CajaMovimiento.ORIGEN,
       isRequired: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));

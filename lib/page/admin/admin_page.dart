@@ -4,6 +4,7 @@ import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/mixin/session_control_mixin.dart';
 import 'package:app_facturacion/models/ModelProvider.dart';
+import 'package:app_facturacion/page/vendedor/user/edit_seller_user_page.dart';
 import 'package:app_facturacion/routes/routes.dart';
 import 'package:app_facturacion/services/device_session_service.dart';
 import 'package:app_facturacion/views/logout_button.dart';
@@ -231,6 +232,16 @@ class _AdminPageState extends State<AdminPage>
                       child: ListView(
                         children: [
                           _buildOptionTile(
+                            icon: Icons.attach_money,
+                            title: 'Gestion de Caja',
+                            subtitle: 'Gestionar caja',
+                            onTap: () {
+                              Navigator.of(
+                                context,
+                              ).pushNamed(Routes.adminViewCaja);
+                            },
+                          ),
+                          _buildOptionTile(
                             icon: Icons.add_box,
                             title: 'Gestionar inventario',
                             subtitle: 'Categorías y productos',
@@ -250,38 +261,38 @@ class _AdminPageState extends State<AdminPage>
                               ).pushNamed(Routes.adminViewUsers);
                             },
                           ),
-                          /* _buildOptionTile(
-                            icon: Icons.inventory_outlined,
-                            title: 'Facturación',
-                            subtitle: 'Generar y gestionar facturas',
-                            onTap: (){
-                              // Navegar a facturación
+                          _buildOptionTile(
+                            icon: Icons.person,
+                            title: 'Gestionar usuario',
+                            subtitle: 'Datos personales',
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => EditSellerUserPage(),
+                                ),
+                              );
                             },
                           ),
                           _buildOptionTile(
-                            icon: Icons.devices,
-                            title: 'Gestión de Dispositivos',
-                            subtitle: 'Ver y gestionar sesiones activas',
-                            onTap: (){
-                              _showDevicesDialog();
+                            icon: Icons.document_scanner,
+                            title: 'Venta por Factura',
+                            subtitle: 'Seguimiento de ventas por factura',
+                            onTap: () {
+                              Navigator.of(
+                                context,
+                              ).pushNamed(Routes.vendedorHomeFactura);
                             },
                           ),
                           _buildOptionTile(
-                            icon: Icons.settings,
-                            title: 'Configuraciones',
-                            subtitle: 'Ajustes del negocio',
-                            onTap: (){
-                              // Navegar a configuraciones
+                            icon: Icons.fast_forward,
+                            title: 'Venta Rapida',
+                            subtitle: 'Selecciona los productos, y listo!',
+                            onTap: () {
+                              /*  Navigator.of(
+                                context,
+                              ).pushNamed(Routes.adminViewUsers); */
                             },
                           ),
-                          _buildOptionTile(
-                            icon: Icons.analytics,
-                            title: 'Ver Reportes',
-                            subtitle: 'Análisis y estadísticas',
-                            onTap: (){
-                              // Navegar a reportes
-                            },
-                          ), */
                         ],
                       ),
                     ),

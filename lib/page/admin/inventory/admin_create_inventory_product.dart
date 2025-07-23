@@ -4,9 +4,11 @@ import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/models/Categoria.dart';
 import 'package:app_facturacion/models/Producto.dart';
+import 'package:app_facturacion/models/ProductoPrecios.dart';
 import 'package:app_facturacion/services/negocio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'package:uuid/uuid.dart';
 
 class AdminCreateInventoryProduct extends StatefulWidget {
@@ -24,7 +26,6 @@ class _AdminCreateInventoryProductState
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _descripcionController = TextEditingController();
-  final _precioController = TextEditingController();
   final _stockController = TextEditingController();
   final _barCodeController = TextEditingController();
 
@@ -39,38 +40,44 @@ class _AdminCreateInventoryProductState
 
   // Variables para imágenes
   List<File> _imagenesSeleccionadas = [];
-  final List<String> _imagenesUploadedKeys = [];
   final ImagePicker _picker = ImagePicker();
 
   // Estado del producto
   String _estadoSeleccionado = 'activo';
   final List<String> _estadosDisponibles = ['activo', 'inactivo', 'agotado'];
 
+  // Variables para precios múltiples
+  final List<Map<String, TextEditingController>> _preciosControllers = [];
+
   @override
   void initState() {
     super.initState();
     _cargarCategorias();
+    // Inicializar con un precio por defecto
+    _agregarPrecio();
   }
 
   @override
   void dispose() {
     _nombreController.dispose();
     _descripcionController.dispose();
-    _precioController.dispose();
     _stockController.dispose();
+    _barCodeController.dispose();
+    for (var precio in _preciosControllers) {
+      precio['nombre']!.dispose();
+      precio['precio']!.dispose();
+    }
     super.dispose();
   }
 
   Future<void> _cargarCategorias() async {
     try {
-      // Cargar categorías principales (sin categoría padre)
       final negocioInfo = await NegocioService.getCurrentUserInfo();
       final request = ModelQueries.list(
         Categoria.classType,
         where: Categoria.NEGOCIOID.eq(negocioInfo.negocioId),
       );
       final response = await Amplify.API.query(request: request).response;
-      print(response.data?.items);
       if (response.data?.items != null) {
         setState(() {
           _categorias = response.data!.items.whereType<Categoria>().toList();
@@ -96,9 +103,7 @@ class _AdminCreateInventoryProductState
       );
 
       if (images.isNotEmpty) {
-        // Limitar a máximo 5 imágenes
         final imagenesAUsar = images.take(5).toList();
-
         setState(() {
           _imagenesSeleccionadas = imagenesAUsar
               .map((xfile) => File(xfile.path))
@@ -181,6 +186,23 @@ class _AdminCreateInventoryProductState
     return uploadedKeys;
   }
 
+  void _agregarPrecio() {
+    setState(() {
+      _preciosControllers.add({
+        'nombre': TextEditingController(),
+        'precio': TextEditingController(),
+      });
+    });
+  }
+
+  void _eliminarPrecio(int index) {
+    setState(() {
+      _preciosControllers[index]['nombre']!.dispose();
+      _preciosControllers[index]['precio']!.dispose();
+      _preciosControllers.removeAt(index);
+    });
+  }
+
   Future<void> _crearProducto() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -191,27 +213,41 @@ class _AdminCreateInventoryProductState
       return;
     }
 
+    // Validar precios
+    for (var precio in _preciosControllers) {
+      if (precio['nombre']!.text.trim().isEmpty ||
+          precio['precio']!.text.trim().isEmpty) {
+        _mostrarError('Todos los campos de precios deben estar completos');
+        return;
+      }
+      final valorPrecio = double.tryParse(precio['precio']!.text);
+      if (valorPrecio == null || valorPrecio <= 0) {
+        _mostrarError('Todos los precios deben ser válidos y mayores a 0');
+        return;
+      }
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Primero subir las imágenes
+      // Subir imágenes
       List<String> imageKeys = [];
       if (_imagenesSeleccionadas.isNotEmpty) {
         imageKeys = await _subirImagenes();
         if (imageKeys.isEmpty && _imagenesSeleccionadas.isNotEmpty) {
-          // Si falló la subida de imágenes, no continuar
           return;
         }
       }
 
+      // Crear el producto
       final producto = Producto(
         nombre: _nombreController.text.trim(),
+        precio: double.parse(_preciosControllers.first['precio']!.text),
         descripcion: _descripcionController.text.trim().isEmpty
             ? null
             : _descripcionController.text.trim(),
-        precio: double.parse(_precioController.text),
         stock: int.parse(_stockController.text),
         negocioID: widget.negocioID,
         categoriaID: _categoriaSeleccionada!.id,
@@ -219,30 +255,47 @@ class _AdminCreateInventoryProductState
         productoImages: imageKeys.isEmpty ? null : imageKeys,
         barCode: _barCodeController.text.trim().isEmpty
             ? null
-            : _barCodeController.text
-                  .trim(),
+            : _barCodeController.text.trim(),
         isDeleted: false,
       );
-      print(producto.toString());
-      // Crear la mutación
-      final request = ModelMutations.create(producto);
-      final response = await Amplify.API.mutate(request: request).response;
 
-      final createdProducto = response.data;
+      final productoRequest = ModelMutations.create(producto);
+      final productoResponse = await Amplify.API
+          .mutate(request: productoRequest)
+          .response;
+
+      final createdProducto = productoResponse.data;
 
       if (createdProducto == null) {
-        safePrint('Errores al crear producto: ${response.errors}');
+        safePrint('Errores al crear producto: ${productoResponse.errors}');
         _mostrarError('Error al crear el producto. Intenta de nuevo.');
         return;
       }
 
-      safePrint('Producto creado exitosamente: ${createdProducto.nombre}');
+      // Crear los precios asociados
+      for (var precio in _preciosControllers) {
+        final productoPrecio = ProductoPrecios(
+          nombre: precio['nombre']!.text.trim(),
+          precio: double.parse(precio['precio']!.text),
+          negocioID: widget.negocioID,
+          productoID: createdProducto.id,
+          isDeleted: false,
+        );
 
-      // Mostrar mensaje de éxito y regresar
-      _mostrarExito('Producto creado exitosamente');
+        final precioRequest = ModelMutations.create(productoPrecio);
+        final precioResponse = await Amplify.API
+            .mutate(request: precioRequest)
+            .response;
 
-      // Esperar un momento para mostrar el mensaje y luego regresar
-      await Future.delayed(const Duration(seconds: 1));
+        if (precioResponse.data == null) {
+          safePrint('Errores al crear precio: ${precioResponse.errors}');
+          _mostrarError('Error al crear un precio. Intenta de nuevo.');
+          return;
+        }
+      }
+
+      _mostrarExito('Producto y precios creados exitosamente');
+
       if (mounted) {
         Navigator.of(context).pop(createdProducto);
       }
@@ -260,6 +313,28 @@ class _AdminCreateInventoryProductState
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _scanBarcode(BuildContext context) async {
+    try {
+      final result = await SimpleBarcodeScanner.scanBarcode(
+        context,
+        barcodeAppBar: const BarcodeAppBar(
+          appBarTitle: 'Escanear Código de Barras',
+          centerTitle: false,
+          enableBackButton: true,
+          backButtonIcon: Icon(Icons.arrow_back_ios),
+        ),
+        isShowFlashIcon: true,
+        delayMillis: 1000,
+        cameraFace: CameraFace.back,
+      );
+      if (result != null && result != '-1') {
+        _barCodeController.text = result;
+      }
+    } catch (e) {
+      safePrint('Error al escanear: $e');
     }
   }
 
@@ -373,52 +448,133 @@ class _AdminCreateInventoryProductState
 
               const SizedBox(height: 16),
 
-              // Campo Precio
-              TextFormField(
-                controller: _precioController,
-                decoration: const InputDecoration(
-                  labelText: 'Precio *',
-                  hintText: 'Ej: 999.99',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.attach_money),
-                  suffixText: 'USD',
+              // Sección de Precios
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Precios del Producto *',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ..._preciosControllers.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        var controllers = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: TextFormField(
+                                  controller: controllers['nombre'],
+                                  decoration: const InputDecoration(
+                                    labelText: 'Nombre del Precio',
+                                    hintText: 'Ej: Público',
+                                    border: OutlineInputBorder(),
+                                    prefixIcon: Icon(Icons.label),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return 'El nombre es obligatorio';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                flex: 2,
+                                child: TextFormField(
+                                  controller: controllers['precio'],
+                                  decoration: const InputDecoration(
+                                    labelText: 'Precio',
+                                    hintText: 'Ej: 999.99',
+                                    border: OutlineInputBorder(),
+                                    prefixIcon: Icon(Icons.attach_money),
+                                    suffixText: 'USD',
+                                  ),
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                      ),
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return 'El precio es obligatorio';
+                                    }
+                                    final precio = double.tryParse(value);
+                                    if (precio == null) {
+                                      return 'Ingresa un precio válido';
+                                    }
+                                    if (precio <= 0) {
+                                      return 'El precio debe ser mayor a 0';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _preciosControllers.length > 1
+                                    ? () => _eliminarPrecio(index)
+                                    : null,
+                                icon: const Icon(Icons.delete),
+                                color: Colors.red,
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      ElevatedButton.icon(
+                        onPressed: _agregarPrecio,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Agregar otro precio'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'El precio es obligatorio';
-                  }
-                  final precio = double.tryParse(value);
-                  if (precio == null) {
-                    return 'Ingresa un precio válido';
-                  }
-                  if (precio <= 0) {
-                    return 'El precio debe ser mayor a 0';
-                  }
-                  return null;
-                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // Campo Código de Barras
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _barCodeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Código de Barras (Opcional)',
+                        hintText: 'Ej: 2500000004957',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.barcode_reader),
+                        suffixText: 'código',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      await _scanBarcode(context);
+                    },
+                    icon: const Icon(Icons.qr_code_scanner),
+                    tooltip: 'Escanear código de barras',
+                  ),
+                ],
               ),
 
               const SizedBox(height: 16),
 
               // Campo Stock
-              TextFormField(
-                controller: _barCodeController,
-                decoration: const InputDecoration(
-                  labelText: 'Codigo de Barras (Opcional)',
-                  hintText: 'Ej: 2500000004957',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.barcode_reader),
-                  suffixText: 'codigo',
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
               TextFormField(
                 controller: _stockController,
                 decoration: const InputDecoration(

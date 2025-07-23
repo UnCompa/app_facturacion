@@ -15,6 +15,7 @@ class Routes {
   static const adminViewCategoriasCrear = "/admin/categories/crear";
   static const adminViewUsers = "/admin/users";
   static const adminViewUsersCrear = "/admin/users/crear";
+  static const adminViewCaja = "/admin/caja";
   static const vendedorHome = "/vendedor";
   static const vendedorHomeFactura = "/vendedor/facturas";
 }

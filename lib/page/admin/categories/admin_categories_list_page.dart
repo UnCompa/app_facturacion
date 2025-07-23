@@ -11,7 +11,7 @@ class AdminCategoriesListPage extends StatefulWidget {
   const AdminCategoriesListPage({super.key});
 
   @override
-  State<AdminCategoriesListPage> createState()=>
+  State<AdminCategoriesListPage> createState() =>
       _AdminCategoriesListPageState();
 }
 
@@ -21,13 +21,13 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
   String searchQuery = '';
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _loadCategorias();
   }
 
-  Future<void> _loadCategorias()async {
-    setState((){
+  Future<void> _loadCategorias() async {
+    setState(() {
       isLoading = true;
     });
 
@@ -35,43 +35,43 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
       final negocio = await NegocioService.getCurrentUserInfo();
       final request = ModelQueries.list(
         Categoria.classType,
-        where: Categoria.NEGOCIOID.eq(negocio.negocioId),
+        where: Categoria.NEGOCIOID.eq(negocio.negocioId) & Categoria.ISDELETED.eq(false),
       );
       final response = await Amplify.API.query(request: request).response;
       final categories = response.data?.items;
-      if (categories == null){
+      if (categories == null) {
         safePrint('errors: ${response.errors}');
       }
-      setState((){
+      setState(() {
         categorias =
             response.data?.items
-                    .where((item)=> item != null)
+                    .where((item) => item != null)
                     .cast<Categoria>()
                     .toList()
                 as List<Categoria>;
       });
-    } catch (e){
+    } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error al cargar categorías: $e')));
     } finally {
-      setState((){
+      setState(() {
         isLoading = false;
       });
     }
   }
 
   List<Categoria> get filteredCategorias {
-    if (searchQuery.isEmpty)return categorias;
+    if (searchQuery.isEmpty) return categorias;
     return categorias
         .where(
-          (cat)=> cat.nombre.toLowerCase().contains(searchQuery.toLowerCase()),
-)
+          (cat) => cat.nombre.toLowerCase().contains(searchQuery.toLowerCase()),
+        )
         .toList();
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -101,8 +101,8 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
-              onChanged: (value){
-                setState((){
+              onChanged: (value) {
+                setState(() {
                   searchQuery = value;
                 });
               },
@@ -119,12 +119,12 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
                       'No hay categorías disponibles',
                       style: TextStyle(fontSize: 16),
                     ),
-)
+                  )
                 : RefreshIndicator(
                     onRefresh: _loadCategorias,
                     child: ListView.builder(
                       itemCount: filteredCategorias.length,
-                      itemBuilder: (context, index){
+                      itemBuilder: (context, index) {
                         return _buildCategoriaItem(filteredCategorias[index]);
                       },
                     ),
@@ -133,7 +133,7 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: ()=> _navigateToForm(),
+        onPressed: () => _navigateToForm(),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),
@@ -141,7 +141,7 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
     );
   }
 
-  Widget _buildCategoriaItem(Categoria categoria){
+  Widget _buildCategoriaItem(Categoria categoria) {
     // Obtener subcategorías si tu modelo las maneja de manera diferente
     final subCategorias = _getSubcategorias(categoria);
 
@@ -161,33 +161,33 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
           children: [
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: ()=> _navigateToForm(categoria: categoria),
+              onPressed: () => _navigateToForm(categoria: categoria),
             ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: ()=> _showDeleteDialog(categoria),
+              onPressed: () => _showDeleteDialog(categoria),
             ),
           ],
         ),
         children: subCategorias
-            .map((subCat)=> _buildSubCategoriaItem(subCat))
+            .map((subCat) => _buildSubCategoriaItem(subCat))
             .toList(),
       ),
     );
   }
 
-  List<Categoria> _getSubcategorias(Categoria categoria){
+  List<Categoria> _getSubcategorias(Categoria categoria) {
     // Ajusta esta lógica según cómo tu modelo maneja las subcategorías
     // Si tienes una propiedad subCategorias en tu modelo:
     // return categoria.subCategorias ?? [];
 
     // Si necesitas buscar en la lista principal por parentCategoriaID:
     return categorias
-        .where((cat)=> cat.parentCategoriaID == categoria.id)
+        .where((cat) => cat.parentCategoriaID == categoria.id)
         .toList();
   }
 
-  Widget _buildSubCategoriaItem(Categoria subCategoria){
+  Widget _buildSubCategoriaItem(Categoria subCategoria) {
     return ListTile(
       leading: const SizedBox(width: 20),
       title: Row(
@@ -202,48 +202,48 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
         children: [
           IconButton(
             icon: const Icon(Icons.edit, size: 20, color: Colors.blue),
-            onPressed: ()=> _navigateToForm(categoria: subCategoria),
+            onPressed: () => _navigateToForm(categoria: subCategoria),
           ),
           IconButton(
             icon: const Icon(Icons.delete, size: 20, color: Colors.red),
-            onPressed: ()=> _showDeleteDialog(subCategoria),
+            onPressed: () => _showDeleteDialog(subCategoria),
           ),
         ],
       ),
     );
   }
 
-  void _navigateToForm({Categoria? categoria}){
+  void _navigateToForm({Categoria? categoria}) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context)=> AdminCategoriesFormPage(
+        builder: (context) => AdminCategoriesFormPage(
           categoria: categoria,
           categoriasDisponibles: categorias,
         ),
       ),
-    ).then((result){
-      if (result == true){
+    ).then((result) {
+      if (result == true) {
         _loadCategorias(); // Recargar la lista si hubo cambios
       }
     });
   }
 
-  void _showDeleteDialog(Categoria categoria){
+  void _showDeleteDialog(Categoria categoria) {
     showDialog(
       context: context,
-      builder: (context)=> AlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Confirmar eliminación'),
         content: Text(
           '¿Estás seguro de que deseas eliminar "${categoria.nombre}"?',
         ),
         actions: [
           TextButton(
-            onPressed: ()=> Navigator.pop(context),
+            onPressed: () => Navigator.pop(context),
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: (){
+            onPressed: () {
               Navigator.pop(context);
               _deleteCategoria(categoria);
             },
@@ -255,17 +255,19 @@ class _AdminCategoriesListPageState extends State<AdminCategoriesListPage> {
     );
   }
 
-  Future<void> _deleteCategoria(Categoria categoria)async {
+  Future<void> _deleteCategoria(Categoria categoria) async {
     try {
       // Aquí harías la llamada a GraphQL para eliminar
-      await Future.delayed(const Duration(milliseconds: 500));
+      final categoriaDelete = categoria.copyWith(isDeleted: true);
+      final request = ModelMutations.update(categoriaDelete);
+      await Amplify.API.mutate(request: request).response;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Categoría eliminada correctamente')),
       );
 
       _loadCategorias();
-    } catch (e){
+    } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error al eliminar: $e')));

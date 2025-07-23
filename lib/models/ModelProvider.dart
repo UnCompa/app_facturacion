@@ -52,7 +52,7 @@ export 'SesionDispositivo.dart';
 
 class ModelProvider implements amplify_core.ModelProviderInterface {
   @override
-  String version = "e68099ec39e71e5b3fb1f793832b86e8";
+  String version = "f2e962d7cd7bc2d860407605fdb05013";
   @override
   List<amplify_core.ModelSchema> modelSchemas = [Caja.schema, CajaMoneda.schema, CajaMovimiento.schema, Categoria.schema, CierreCaja.schema, CierreCajaHistorial.schema, Invoice.schema, InvoiceItem.schema, Negocio.schema, Order.schema, OrderItem.schema, Producto.schema, ProductoPrecios.schema, SesionDispositivo.schema];
   @override

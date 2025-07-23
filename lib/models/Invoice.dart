@@ -42,7 +42,6 @@ class Invoice extends amplify_core.Model {
   final String? _cajaID;
   final String? _cajaMovimientoID;
   final String? _cierreCajaID;
-  final String? _imagenFactura;
 
   @override
   getInstanceType() => classType;
@@ -167,13 +166,9 @@ class Invoice extends amplify_core.Model {
     return _cierreCajaID;
   }
   
-  String? get imagenFactura {
-    return _imagenFactura;
-  }
+  const Invoice._internal({required this.id, required sellerID, required negocioID, required invoiceNumber, required invoiceDate, required invoiceTotal, invoiceStatus, invoiceItems, invoiceImages, required isDeleted, createdAt, updatedAt, cajaID, cajaMovimientoID, cierreCajaID}): _sellerID = sellerID, _negocioID = negocioID, _invoiceNumber = invoiceNumber, _invoiceDate = invoiceDate, _invoiceTotal = invoiceTotal, _invoiceStatus = invoiceStatus, _invoiceItems = invoiceItems, _invoiceImages = invoiceImages, _isDeleted = isDeleted, _createdAt = createdAt, _updatedAt = updatedAt, _cajaID = cajaID, _cajaMovimientoID = cajaMovimientoID, _cierreCajaID = cierreCajaID;
   
-  const Invoice._internal({required this.id, required sellerID, required negocioID, required invoiceNumber, required invoiceDate, required invoiceTotal, invoiceStatus, invoiceItems, invoiceImages, required isDeleted, createdAt, updatedAt, cajaID, cajaMovimientoID, cierreCajaID, imagenFactura}): _sellerID = sellerID, _negocioID = negocioID, _invoiceNumber = invoiceNumber, _invoiceDate = invoiceDate, _invoiceTotal = invoiceTotal, _invoiceStatus = invoiceStatus, _invoiceItems = invoiceItems, _invoiceImages = invoiceImages, _isDeleted = isDeleted, _createdAt = createdAt, _updatedAt = updatedAt, _cajaID = cajaID, _cajaMovimientoID = cajaMovimientoID, _cierreCajaID = cierreCajaID, _imagenFactura = imagenFactura;
-  
-  factory Invoice({String? id, required String sellerID, required String negocioID, required String invoiceNumber, required amplify_core.TemporalDateTime invoiceDate, required double invoiceTotal, String? invoiceStatus, List<InvoiceItem>? invoiceItems, List<String>? invoiceImages, required bool isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt, String? cajaID, String? cajaMovimientoID, String? cierreCajaID, String? imagenFactura}) {
+  factory Invoice({String? id, required String sellerID, required String negocioID, required String invoiceNumber, required amplify_core.TemporalDateTime invoiceDate, required double invoiceTotal, String? invoiceStatus, List<InvoiceItem>? invoiceItems, List<String>? invoiceImages, required bool isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt, String? cajaID, String? cajaMovimientoID, String? cierreCajaID}) {
     return Invoice._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       sellerID: sellerID,
@@ -189,8 +184,7 @@ class Invoice extends amplify_core.Model {
       updatedAt: updatedAt,
       cajaID: cajaID,
       cajaMovimientoID: cajaMovimientoID,
-      cierreCajaID: cierreCajaID,
-      imagenFactura: imagenFactura);
+      cierreCajaID: cierreCajaID);
   }
   
   bool equals(Object other) {
@@ -215,8 +209,7 @@ class Invoice extends amplify_core.Model {
       _updatedAt == other._updatedAt &&
       _cajaID == other._cajaID &&
       _cajaMovimientoID == other._cajaMovimientoID &&
-      _cierreCajaID == other._cierreCajaID &&
-      _imagenFactura == other._imagenFactura;
+      _cierreCajaID == other._cierreCajaID;
   }
   
   @override
@@ -240,14 +233,13 @@ class Invoice extends amplify_core.Model {
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null") + ", ");
     buffer.write("cajaID=" + "$_cajaID" + ", ");
     buffer.write("cajaMovimientoID=" + "$_cajaMovimientoID" + ", ");
-    buffer.write("cierreCajaID=" + "$_cierreCajaID" + ", ");
-    buffer.write("imagenFactura=" + "$_imagenFactura");
+    buffer.write("cierreCajaID=" + "$_cierreCajaID");
     buffer.write("}");
     
     return buffer.toString();
   }
   
-  Invoice copyWith({String? sellerID, String? negocioID, String? invoiceNumber, amplify_core.TemporalDateTime? invoiceDate, double? invoiceTotal, String? invoiceStatus, List<InvoiceItem>? invoiceItems, List<String>? invoiceImages, bool? isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt, String? cajaID, String? cajaMovimientoID, String? cierreCajaID, String? imagenFactura}) {
+  Invoice copyWith({String? sellerID, String? negocioID, String? invoiceNumber, amplify_core.TemporalDateTime? invoiceDate, double? invoiceTotal, String? invoiceStatus, List<InvoiceItem>? invoiceItems, List<String>? invoiceImages, bool? isDeleted, amplify_core.TemporalDateTime? createdAt, amplify_core.TemporalDateTime? updatedAt, String? cajaID, String? cajaMovimientoID, String? cierreCajaID}) {
     return Invoice._internal(
       id: id,
       sellerID: sellerID ?? this.sellerID,
@@ -263,8 +255,7 @@ class Invoice extends amplify_core.Model {
       updatedAt: updatedAt ?? this.updatedAt,
       cajaID: cajaID ?? this.cajaID,
       cajaMovimientoID: cajaMovimientoID ?? this.cajaMovimientoID,
-      cierreCajaID: cierreCajaID ?? this.cierreCajaID,
-      imagenFactura: imagenFactura ?? this.imagenFactura);
+      cierreCajaID: cierreCajaID ?? this.cierreCajaID);
   }
   
   Invoice copyWithModelFieldValues({
@@ -281,8 +272,7 @@ class Invoice extends amplify_core.Model {
     ModelFieldValue<amplify_core.TemporalDateTime?>? updatedAt,
     ModelFieldValue<String?>? cajaID,
     ModelFieldValue<String?>? cajaMovimientoID,
-    ModelFieldValue<String?>? cierreCajaID,
-    ModelFieldValue<String?>? imagenFactura
+    ModelFieldValue<String?>? cierreCajaID
   }) {
     return Invoice._internal(
       id: id,
@@ -299,8 +289,7 @@ class Invoice extends amplify_core.Model {
       updatedAt: updatedAt == null ? this.updatedAt : updatedAt.value,
       cajaID: cajaID == null ? this.cajaID : cajaID.value,
       cajaMovimientoID: cajaMovimientoID == null ? this.cajaMovimientoID : cajaMovimientoID.value,
-      cierreCajaID: cierreCajaID == null ? this.cierreCajaID : cierreCajaID.value,
-      imagenFactura: imagenFactura == null ? this.imagenFactura : imagenFactura.value
+      cierreCajaID: cierreCajaID == null ? this.cierreCajaID : cierreCajaID.value
     );
   }
   
@@ -331,11 +320,10 @@ class Invoice extends amplify_core.Model {
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null,
       _cajaID = json['cajaID'],
       _cajaMovimientoID = json['cajaMovimientoID'],
-      _cierreCajaID = json['cierreCajaID'],
-      _imagenFactura = json['imagenFactura'];
+      _cierreCajaID = json['cierreCajaID'];
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'sellerID': _sellerID, 'negocioID': _negocioID, 'invoiceNumber': _invoiceNumber, 'invoiceDate': _invoiceDate?.format(), 'invoiceTotal': _invoiceTotal, 'invoiceStatus': _invoiceStatus, 'invoiceItems': _invoiceItems?.map((InvoiceItem? e) => e?.toJson()).toList(), 'invoiceImages': _invoiceImages, 'isDeleted': _isDeleted, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format(), 'cajaID': _cajaID, 'cajaMovimientoID': _cajaMovimientoID, 'cierreCajaID': _cierreCajaID, 'imagenFactura': _imagenFactura
+    'id': id, 'sellerID': _sellerID, 'negocioID': _negocioID, 'invoiceNumber': _invoiceNumber, 'invoiceDate': _invoiceDate?.format(), 'invoiceTotal': _invoiceTotal, 'invoiceStatus': _invoiceStatus, 'invoiceItems': _invoiceItems?.map((InvoiceItem? e) => e?.toJson()).toList(), 'invoiceImages': _invoiceImages, 'isDeleted': _isDeleted, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format(), 'cajaID': _cajaID, 'cajaMovimientoID': _cajaMovimientoID, 'cierreCajaID': _cierreCajaID
   };
   
   Map<String, Object?> toMap() => {
@@ -353,8 +341,7 @@ class Invoice extends amplify_core.Model {
     'updatedAt': _updatedAt,
     'cajaID': _cajaID,
     'cajaMovimientoID': _cajaMovimientoID,
-    'cierreCajaID': _cierreCajaID,
-    'imagenFactura': _imagenFactura
+    'cierreCajaID': _cierreCajaID
   };
 
   static final amplify_core.QueryModelIdentifier<InvoiceModelIdentifier> MODEL_IDENTIFIER = amplify_core.QueryModelIdentifier<InvoiceModelIdentifier>();
@@ -375,7 +362,6 @@ class Invoice extends amplify_core.Model {
   static final CAJAID = amplify_core.QueryField(fieldName: "cajaID");
   static final CAJAMOVIMIENTOID = amplify_core.QueryField(fieldName: "cajaMovimientoID");
   static final CIERRECAJAID = amplify_core.QueryField(fieldName: "cierreCajaID");
-  static final IMAGENFACTURA = amplify_core.QueryField(fieldName: "imagenFactura");
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "Invoice";
     modelSchemaDefinition.pluralName = "Invoices";
@@ -494,12 +480,6 @@ class Invoice extends amplify_core.Model {
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
       key: Invoice.CIERRECAJAID,
-      isRequired: false,
-      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
-    ));
-    
-    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
-      key: Invoice.IMAGENFACTURA,
       isRequired: false,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
     ));

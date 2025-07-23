@@ -101,9 +101,8 @@ class _EditBussinesSuperadminPageState
           ),
         );
 
-        // Limpiar formulario o navegar hacia atrás
         _limpiarFormulario();
-        Navigator.of(context).pop(true); // Indica que se creó exitosamente
+        Navigator.of(context).pop(true);
       }
     } catch (e){
       safePrint('Error creating business: $e');

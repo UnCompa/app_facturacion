@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:app_facturacion/models/ModelProvider.dart';
+import 'package:app_facturacion/services/caja_service.dart';
 import 'package:app_facturacion/services/negocio_service.dart';
+import 'package:app_facturacion/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
@@ -20,11 +25,13 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   final _scrollController = ScrollController();
 
   DateTime _selectedDate = DateTime.now();
-  String _selectedStatus = 'Pendiente';
+  String _selectedStatus = 'Pagada';
   List<Producto> _productos = [];
+  Map<String, List<ProductoPrecios>> _productoPrecios = {};
   final List<InvoiceItemData> _invoiceItems = [];
   bool _isLoading = false;
   bool _isLoadingProducts = false;
+  final List<File> _invoiceImagesFiles = [];
 
   final List<String> _statusOptions = [
     'Pendiente',
@@ -59,15 +66,38 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     });
 
     try {
-      final request = ModelQueries.list(Producto.classType);
+      final userData = await NegocioService.getCurrentUserInfo();
+      final request = ModelQueries.list(
+        Producto.classType,
+        where: Producto.NEGOCIOID
+            .eq(userData.negocioId)
+            .and(Producto.STOCK.gt(0)),
+      );
       final response = await Amplify.API.query(request: request).response;
 
       if (response.data != null) {
+        final productos = response.data!.items.whereType<Producto>().toList();
+        final preciosMap = <String, List<ProductoPrecios>>{};
+        for (var producto in productos) {
+          final precioRequest = ModelQueries.list(
+            ProductoPrecios.classType,
+            where: ProductoPrecios.PRODUCTOID
+                .eq(producto.id)
+                .and(ProductoPrecios.ISDELETED.eq(false)),
+          );
+          final precioResponse = await Amplify.API
+              .query(request: precioRequest)
+              .response;
+          preciosMap[producto.id] =
+              precioResponse.data?.items
+                  .whereType<ProductoPrecios>()
+                  .toList() ??
+              [];
+        }
+
         setState(() {
-          _productos = response.data!.items
-              .whereType<Producto>()
-              .where((p) => p.stock > 0)
-              .toList();
+          _productos = productos;
+          _productoPrecios = preciosMap;
         });
       }
     } catch (e) {
@@ -93,9 +123,18 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       return;
     }
 
+    final producto = _productos.first;
+    final precios = _productoPrecios[producto.id] ?? [];
+    final precioSeleccionado = precios.isNotEmpty ? precios.first : null;
+
     setState(() {
       _invoiceItems.add(
-        InvoiceItemData(producto: _productos.first, quantity: 1, tax: 0),
+        InvoiceItemData(
+          producto: producto,
+          precio: precioSeleccionado,
+          quantity: 1,
+          tax: 0,
+        ),
       );
     });
   }
@@ -122,7 +161,6 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Future<void> _saveInvoice() async {
-    
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -134,12 +172,45 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       return;
     }
 
+    for (var item in _invoiceItems) {
+      if (item.precio == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Todos los productos deben tener un precio seleccionado',
+            ),
+          ),
+        );
+        return;
+      }
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
+      // Obtener información del usuario y caja activa
       final userData = await NegocioService.getCurrentUserInfo();
+      final caja = await CajaService.getCurrentCaja();
+
+      // Validar que la caja esté activa
+      if (!caja.isActive) {
+        throw Exception('La caja no está activa');
+      }
+
+      // Subir imágenes a S3 (asumiendo que tienes una lista de archivos _invoiceImagesFiles)
+      List<String> invoiceImages = [];
+      if (_invoiceImagesFiles.isNotEmpty) {
+        for (var imageFile in _invoiceImagesFiles) {
+          final imageUrl = await StorageService.uploadFile(
+            imageFile,
+            'invoices/${userData.negocioId}/${caja.id}/${DateTime.now().toIso8601String()}',
+          );
+          invoiceImages.add(imageUrl);
+        }
+      }
+
       // Crear la factura
       final invoice = Invoice(
         invoiceNumber: _invoiceNumberController.text,
@@ -148,18 +219,19 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         invoiceStatus: _selectedStatus,
         sellerID: userData.userId,
         negocioID: userData.negocioId,
+        cajaID: caja.id,
+        invoiceImages: invoiceImages,
         isDeleted: false,
       );
 
+      // Guardar la factura
       final createInvoiceRequest = ModelMutations.create(invoice);
       final invoiceResponse = await Amplify.API
           .mutate(request: createInvoiceRequest)
           .response;
-
       if (invoiceResponse.data == null) {
-        throw Exception('Error al crear la factura');
+        throw Exception('Error al crear la factura: ${invoiceResponse.errors}');
       }
-
       final createdInvoice = invoiceResponse.data!;
 
       // Crear los items de la factura
@@ -174,16 +246,79 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         );
 
         final createItemRequest = ModelMutations.create(invoiceItem);
-        await Amplify.API.mutate(request: createItemRequest).response;
+        final itemResponse = await Amplify.API
+            .mutate(request: createItemRequest)
+            .response;
+        if (itemResponse.data == null) {
+          throw Exception(
+            'Error al crear item de factura: ${itemResponse.errors}',
+          );
+        }
 
         // Actualizar el stock del producto
         final updatedProduct = itemData.producto.copyWith(
           stock: itemData.producto.stock - itemData.quantity,
         );
-
         final updateProductRequest = ModelMutations.update(updatedProduct);
-        await Amplify.API.mutate(request: updateProductRequest).response;
+        final productResponse = await Amplify.API
+            .mutate(request: updateProductRequest)
+            .response;
+        if (productResponse.data == null) {
+          throw Exception(
+            'Error al actualizar stock del producto: ${productResponse.errors}',
+          );
+        }
       }
+
+      // Generar movimiento de caja
+      final movement = CajaMovimiento(
+        cajaID: caja.id,
+        tipo: 'INGRESO',
+        origen: 'FACTURA', // Usar el campo propuesto
+        monto: _calculateTotal(),
+        negocioID: userData.negocioId,
+        descripcion: 'Ingreso por factura ID: ${createdInvoice.id}',
+        isDeleted: false,
+      );
+      final createMovementRequest = ModelMutations.create(movement);
+      final movementResponse = await Amplify.API
+          .mutate(request: createMovementRequest)
+          .response;
+      if (movementResponse.data == null) {
+        throw Exception(
+          'Error al crear movimiento de caja: ${movementResponse.errors}',
+        );
+      }
+      final createdMovement = movementResponse.data!;
+
+      // Actualizar la factura con el ID del movimiento
+      final updatedInvoice = createdInvoice.copyWith(
+        cajaMovimientoID: createdMovement.id,
+      );
+      final updateInvoiceRequest = ModelMutations.update(updatedInvoice);
+      final updateInvoiceResponse = await Amplify.API
+          .mutate(request: updateInvoiceRequest)
+          .response;
+      if (updateInvoiceResponse.data == null) {
+        throw Exception(
+          'Error al actualizar factura con movimiento: ${updateInvoiceResponse.errors}',
+        );
+      }
+
+      // TODO: Recalcular monedas (CajaMoneda)
+      // Ejemplo (depende de tu lógica de negocio):
+      // for (var moneda in _selectedMonedas) {
+      //   final cajaMoneda = CajaMoneda(
+      //     cajaID: caja.id,
+      //     negocioID: userData.negocioId,
+      //     moneda: 'USD',
+      //     denominacion: moneda.denominacion,
+      //     cantidad: moneda.cantidad,
+      //     isDeleted: false,
+      //   );
+      //   final createMonedaRequest = ModelMutations.create(cajaMoneda);
+      //   await Amplify.API.mutate(request: createMonedaRequest).response;
+      // }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Factura creada exitosamente')),
@@ -216,10 +351,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         cameraFace: CameraFace.front,
       );
       if (result != null && result != '-1') {
-        print('Código de barras escaneado: $result');
-        await _getProductByBarCode(result); // Buscar producto
-      } else {
-        print('No se pudo escanear el código de barras');
+        await _getProductByBarCode(result);
       }
     } catch (e) {
       print('Error al escanear: $e');
@@ -257,12 +389,16 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           return;
         }
 
+        final precios = _productoPrecios[producto.id] ?? [];
+        final precioSeleccionado = precios.isNotEmpty ? precios.first : null;
+
         setState(() {
           _invoiceItems.add(
             InvoiceItemData(
               producto: producto,
+              precio: precioSeleccionado,
               quantity: 1,
-              tax: 0, // Puedes cambiarlo si deseas aplicar IVA automáticamente
+              tax: 0,
             ),
           );
         });
@@ -327,16 +463,19 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       buildItemsSection(),
                       const SizedBox(height: 24),
                       buildTotalSection(),
-                      const SizedBox(height: 100), // Espacio extra para el FAB
+                      const SizedBox(height: 100),
                     ],
                   ),
                 ),
               ),
             ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: _addInvoiceItem,
         tooltip: 'Agregar producto',
-        child: const Icon(Icons.add),
+        label: const Text('Agregar producto'),
+        icon: const Icon(Icons.add),
+        backgroundColor: Colors.blueGrey,
+        foregroundColor: Colors.white,
       ),
     );
   }
@@ -411,13 +550,6 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                  onPressed: () async {
-                    await _scanBarcode(context);
-                  },
-                  icon: const Icon(Icons.qr_code_scanner),
-                  tooltip: 'Escanear código de barras',
-                ),
                 Expanded(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -432,6 +564,17 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       ),
                     ],
                   ),
+                ),
+                IconButton(
+                  onPressed: () async {
+                    await _scanBarcode(context);
+                  },
+                  icon: const Icon(Icons.qr_code_scanner),
+                  tooltip: 'Escanear código de barras',
+                ),
+                Text(
+                  'Código de barras',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
@@ -483,6 +626,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
   Widget buildInvoiceItemCard(int index) {
     final item = _invoiceItems[index];
+    final precios = _productoPrecios[item.producto.id] ?? [];
 
     return Container(
       decoration: BoxDecoration(
@@ -503,7 +647,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: 12,
-                        vertical: 8,
+                        vertical: 24,
                       ),
                     ),
                     items: _productos.map((producto) {
@@ -519,7 +663,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                               ),
                             ),
                             Text(
-                              '\$${producto.precio.toStringAsFixed(2)} - Stock: ${producto.stock}',
+                              'Stock: ${producto.stock}',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey[600],
@@ -530,9 +674,15 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       );
                     }).toList(),
                     onChanged: (producto) {
+                      final nuevosPrecios =
+                          _productoPrecios[producto!.id] ?? [];
+                      final precioSeleccionado = nuevosPrecios.isNotEmpty
+                          ? nuevosPrecios.first
+                          : null;
                       setState(() {
                         _invoiceItems[index] = item.copyWith(
-                          produto: producto!,
+                          producto: producto,
+                          precio: precioSeleccionado,
                         );
                       });
                     },
@@ -544,6 +694,38 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                   icon: const Icon(Icons.delete, color: Colors.red),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<ProductoPrecios>(
+              value: item.precio,
+              decoration: const InputDecoration(
+                labelText: 'Precio',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
+              items: precios.map((precio) {
+                return DropdownMenuItem(
+                  value: precio,
+                  child: Text(
+                    '${precio.nombre}: \$${precio.precio.toStringAsFixed(2)}',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                );
+              }).toList(),
+              onChanged: (precio) {
+                setState(() {
+                  _invoiceItems[index] = item.copyWith(precio: precio);
+                });
+              },
+              validator: (value) {
+                if (value == null) {
+                  return 'Seleccione un precio';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 12),
             Row(
@@ -580,6 +762,19 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         );
                       });
                     },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Ingrese la cantidad';
+                      }
+                      final quantity = int.tryParse(value);
+                      if (quantity == null || quantity <= 0) {
+                        return 'La cantidad debe ser mayor a 0';
+                      }
+                      if (quantity > item.producto.stock) {
+                        return 'Stock insuficiente';
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -596,11 +791,22 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       ),
                     ),
                     keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     onChanged: (value) {
                       final tax = int.tryParse(value) ?? 0;
                       setState(() {
                         _invoiceItems[index] = item.copyWith(tax: tax);
                       });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Ingrese el IVA';
+                      }
+                      final tax = int.tryParse(value);
+                      if (tax == null || tax < 0) {
+                        return 'El IVA debe ser un número no negativo';
+                      }
+                      return null;
                     },
                   ),
                 ),
@@ -673,21 +879,29 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
 class InvoiceItemData {
   final Producto producto;
+  final ProductoPrecios? precio;
   final int quantity;
   final int tax;
 
   InvoiceItemData({
     required this.producto,
+    this.precio,
     required this.quantity,
     required this.tax,
   });
 
-  double get subtotal => producto.precio * quantity;
+  double get subtotal => precio != null ? precio!.precio * quantity : 0.0;
   double get total => subtotal + (subtotal * tax / 100);
 
-  InvoiceItemData copyWith({Producto? produto, int? quantity, int? tax}) {
+  InvoiceItemData copyWith({
+    Producto? producto,
+    ProductoPrecios? precio,
+    int? quantity,
+    int? tax,
+  }) {
     return InvoiceItemData(
-      producto: produto ?? producto,
+      producto: producto ?? this.producto,
+      precio: precio ?? this.precio,
       quantity: quantity ?? this.quantity,
       tax: tax ?? this.tax,
     );

@@ -3,6 +3,7 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:app_facturacion/page/admin/admin_page.dart';
+import 'package:app_facturacion/page/admin/caja/admin_caja_list_page.dart';
 import 'package:app_facturacion/page/admin/categories/admin_categories_list_page.dart';
 import 'package:app_facturacion/page/admin/inventory/admin_view_inventory_screen.dart';
 import 'package:app_facturacion/page/admin/sellers/create_user_admin_page.dart';
@@ -90,6 +91,7 @@ class _MyAppState extends State<MyApp> {
         Routes.adminViewUsersCrear: (context)=> const CreateUserAdminPage(),
         Routes.vendedorHome: (context)=> const SellerPage(),
         Routes.vendedorHomeFactura: (context)=> const InvoiceListScreen(),
+        Routes.adminViewCaja: (context)=> const AdminCajaListPage(),
       },
     );
   }

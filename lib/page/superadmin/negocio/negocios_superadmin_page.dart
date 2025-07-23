@@ -228,18 +228,7 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
                         onSelected: (value) {
                           switch (value) {
                             case 'editar':
-                              () async {
-                                final result = await Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => EditBussinesSuperadminPage(
-                                      negocio: negocio,
-                                    ),
-                                  ),
-                                );
-                                if (result == true) {
-                                  refreshNegocios();
-                                }
-                              };
+                              _editNegocio(negocio);
                               break;
                             case 'eliminar':
                               _showDeleteDialog(negocio);
@@ -442,6 +431,19 @@ class NegociosSuperadminPageState extends State<NegociosSuperadminPage> {
         ),
       ],
     );
+  }
+
+  void _editNegocio(Negocio negocio) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => EditBussinesSuperadminPage(
+          negocio: negocio,
+        ),
+      ),
+    );
+    if (result == true) {
+      refreshNegocios();
+    }
   }
 
   void _showDeleteDialog(Negocio negocio) {

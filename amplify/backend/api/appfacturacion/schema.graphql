@@ -88,7 +88,7 @@ type Invoice
   invoiceStatus: String
   invoiceItems: [InvoiceItem] @hasMany(indexName: "byInvoice", fields: ["id"])
   invoiceImages: [String]
-  isDeleted: Boolean! @default(value: "false")
+  isDeleted: Boolean @default(value: "false")
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   cajaID: ID @index(name: "byCaja")
@@ -106,6 +106,7 @@ type InvoiceItem
   tax: Int
   subtotal: Float!
   total: Float!
+  isDeleted: Boolean @default(value: "false")
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -140,6 +141,7 @@ type OrderItem
   tax: Int
   subtotal: Float!
   total: Float!
+  isDeleted: Boolean @default(value: "false")
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }

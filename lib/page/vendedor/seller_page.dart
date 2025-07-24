@@ -236,9 +236,9 @@ class _SellerPageState extends State<SellerPage>
                             title: 'Venta Rapida',
                             subtitle: 'Selecciona los productos, y listo!',
                             onTap: () {
-                              /*  Navigator.of(
+                               Navigator.of(
                                 context,
-                              ).pushNamed(Routes.adminViewUsers); */
+                              ).pushNamed(Routes.vendedorHomeOrder);
                             },
                           ),
                           /* _buildOptionTile(

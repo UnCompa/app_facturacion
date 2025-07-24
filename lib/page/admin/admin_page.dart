@@ -288,9 +288,9 @@ class _AdminPageState extends State<AdminPage>
                             title: 'Venta Rapida',
                             subtitle: 'Selecciona los productos, y listo!',
                             onTap: () {
-                              /*  Navigator.of(
+                              Navigator.of(
                                 context,
-                              ).pushNamed(Routes.adminViewUsers); */
+                              ).pushNamed(Routes.vendedorHomeOrder);
                             },
                           ),
                         ],

@@ -18,6 +18,7 @@ import 'package:app_facturacion/page/superadmin/user/create_user_superadmin_page
 import 'package:app_facturacion/page/superadmin/user/user_list_superadmin_page.dart';
 import 'package:app_facturacion/page/superadmin/user/user_superadmin_confirm_page.dart';
 import 'package:app_facturacion/page/vendedor/invoice/invoice_list_page.dart';
+import 'package:app_facturacion/page/vendedor/order/order_list_page.dart';
 import 'package:app_facturacion/page/vendedor/seller_page.dart';
 import 'package:flutter/material.dart';
 
@@ -92,6 +93,7 @@ class _MyAppState extends State<MyApp> {
         Routes.vendedorHome: (context)=> const SellerPage(),
         Routes.vendedorHomeFactura: (context)=> const InvoiceListScreen(),
         Routes.adminViewCaja: (context)=> const AdminCajaListPage(),
+        Routes.vendedorHomeOrder: (context)=> const OrderListScreen(),
       },
     );
   }

@@ -14,6 +14,31 @@
       "permissions": {
         "setting": "open"
       }
+    },
+    "/generate-invoice-pdf": {
+      "name": "/generate-invoice-pdf",
+      "lambdaFunction": "generatepdf",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read"
+        ],
+        "groups": {
+          "superadmin": [
+            "create",
+            "read"
+          ],
+          "admin": [
+            "create",
+            "read"
+          ],
+          "vendedor": [
+            "create",
+            "read"
+          ]
+        }
+      }
     }
   }
 }

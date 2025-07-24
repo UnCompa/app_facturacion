@@ -26,6 +26,7 @@ dependencies:
   universal_platform: ^1.1.0
   uuid: ^4.5.0
   connectivity_plus: ^6.0.0
+  url_launcher: ^6.2.2
 
 dev_dependencies:
   flutter_test:
@@ -44,7 +45,7 @@ flutter_native_splash:
   # Ruta de la imagen para el splash screen
   image: assets/splash.png
   # Color de fondo del splash screen (hexadecimal)
-  color: "#51ABD2"
+  color: "#009DFF"
   # Habilitar para Android
   android: true
   # Habilitar para iOS

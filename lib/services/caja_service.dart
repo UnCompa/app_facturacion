@@ -9,7 +9,7 @@ class CajaService {
       final negocioInfo = await NegocioService.getCurrentUserInfo();
       final request = ModelQueries.list(
         Caja.classType,
-        where: Caja.NEGOCIOID.eq(negocioInfo.negocioId),
+        where: Caja.NEGOCIOID.eq(negocioInfo.negocioId) & Caja.ISDELETED.eq(false),
         limit: 1,
       );
       final response = await Amplify.API.query(request: request).response;

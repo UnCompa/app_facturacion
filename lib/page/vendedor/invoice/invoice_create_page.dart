@@ -1,14 +1,16 @@
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:app_facturacion/entities/invoice_item_data.dart';
+import 'package:app_facturacion/entities/pago_moneda.dart';
 import 'package:app_facturacion/models/ModelProvider.dart';
 import 'package:app_facturacion/services/caja_service.dart';
 import 'package:app_facturacion/services/negocio_service.dart';
-import 'package:app_facturacion/services/storage_service.dart';
+import 'package:app_facturacion/utils/get_token.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
@@ -31,8 +33,10 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   final List<InvoiceItemData> _invoiceItems = [];
   bool _isLoading = false;
   bool _isLoadingProducts = false;
-  final List<File> _invoiceImagesFiles = [];
-
+  bool _isLoadingCaja = false;
+  Caja? _caja;
+  List<CajaMoneda> _cajaMonedas = [];
+  final List<PagoMoneda> _pagoMonedas = [];
   final List<String> _statusOptions = [
     'Pendiente',
     'Pagada',
@@ -45,6 +49,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     super.initState();
     _generateInvoiceNumber();
     _loadProducts();
+    _loadCajaData();
   }
 
   @override
@@ -54,6 +59,59 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     super.dispose();
   }
 
+  Future<void> _loadCajaData() async {
+    setState(() => _isLoadingCaja = true);
+    try {
+      final caja = await CajaService.getCurrentCaja();
+      final request = ModelQueries.list(
+        CajaMoneda.classType,
+        where: CajaMoneda.CAJAID
+            .eq(caja.id)
+            .and(CajaMoneda.ISDELETED.eq(false)),
+      );
+      final response = await Amplify.API.query(request: request).response;
+
+      if (response.data != null) {
+        setState(() {
+          _caja = caja;
+          _cajaMonedas = response.data!.items.whereType<CajaMoneda>().toList();
+          _pagoMonedas.clear();
+          for (var moneda in _cajaMonedas) {
+            _pagoMonedas.add(PagoMoneda(moneda: moneda, cantidad: 0));
+          }
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar datos de caja: $e')),
+      );
+    } finally {
+      setState(() => _isLoadingCaja = false);
+    }
+  }
+
+  Future<void> _updateMonedaPago(int index, int change) async {
+    final pagoMoneda = _pagoMonedas[index];
+    final maxMonedas =
+        (pagoMoneda.moneda.monto / pagoMoneda.moneda.denominacion).floor();
+    final newCantidad = pagoMoneda.cantidad + change;
+
+    if (newCantidad < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La cantidad no puede ser negativa')),
+      );
+      return;
+    }
+
+    setState(() {
+      _pagoMonedas[index] = PagoMoneda(
+        moneda: pagoMoneda.moneda,
+        cantidad: newCantidad,
+      );
+    });
+    _validatePagoVsFactura();
+  }
+
   void _generateInvoiceNumber() {
     final now = DateTime.now();
     final timestamp = DateFormat('yyyyMMddHHmm').format(now);
@@ -61,10 +119,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Future<void> _loadProducts() async {
-    setState(() {
-      _isLoadingProducts = true;
-    });
-
+    setState(() => _isLoadingProducts = true);
     try {
       final userData = await NegocioService.getCurrentUserInfo();
       final request = ModelQueries.list(
@@ -105,14 +160,29 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Error al cargar productos: $e')));
     } finally {
-      setState(() {
-        _isLoadingProducts = false;
-      });
+      setState(() => _isLoadingProducts = false);
     }
   }
 
   double _calculateTotal() {
     return _invoiceItems.fold(0.0, (sum, item) => sum + item.total);
+  }
+
+  double _calculateTotalCaja() {
+    return _cajaMonedas.fold(0.0, (sum, moneda) => sum + moneda.monto);
+  }
+
+  double _calculateTotalPago() {
+    return _pagoMonedas.fold(
+      0.0,
+      (sum, pago) => sum + (pago.cantidad * pago.moneda.denominacion),
+    );
+  }
+
+  bool _validatePagoVsFactura() {
+    final totalFactura = _calculateTotal();
+    final totalPago = _calculateTotalPago();
+    return totalPago.toStringAsFixed(2) == totalFactura.toStringAsFixed(2);
   }
 
   void _addInvoiceItem() {
@@ -137,12 +207,14 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         ),
       );
     });
+    _validatePagoVsFactura();
   }
 
   void _removeInvoiceItem(int index) {
     setState(() {
       _invoiceItems.removeAt(index);
     });
+    _validatePagoVsFactura();
   }
 
   Future<void> _selectDate() async {
@@ -154,22 +226,18 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     );
 
     if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
+      setState(() => _selectedDate = picked);
     }
   }
 
-  Future<void> _saveInvoice() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+  Future<String?> _saveInvoice() async {
+    if (!_formKey.currentState!.validate()) return null;
 
     if (_invoiceItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Debe agregar al menos un producto')),
       );
-      return;
+      return null;
     }
 
     for (var item in _invoiceItems) {
@@ -181,50 +249,43 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             ),
           ),
         );
-        return;
+        return null;
       }
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    final totalFactura = _calculateTotal();
+    final totalPago = _calculateTotalPago();
 
+    if (totalPago.toStringAsFixed(2) != totalFactura.toStringAsFixed(2)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'El pago (\$${totalPago.toStringAsFixed(2)}) debe coincidir con la factura (\$${totalFactura.toStringAsFixed(2)})',
+          ),
+        ),
+      );
+      return null;
+    }
+
+    setState(() => _isLoading = true);
     try {
-      // Obtener información del usuario y caja activa
       final userData = await NegocioService.getCurrentUserInfo();
       final caja = await CajaService.getCurrentCaja();
+      final negocio = await NegocioService.getNegocioById(userData.negocioId);
 
-      // Validar que la caja esté activa
-      if (!caja.isActive) {
-        throw Exception('La caja no está activa');
-      }
+      if (!caja.isActive) throw Exception('La caja no está activa');
 
-      // Subir imágenes a S3 (asumiendo que tienes una lista de archivos _invoiceImagesFiles)
-      List<String> invoiceImages = [];
-      if (_invoiceImagesFiles.isNotEmpty) {
-        for (var imageFile in _invoiceImagesFiles) {
-          final imageUrl = await StorageService.uploadFile(
-            imageFile,
-            'invoices/${userData.negocioId}/${caja.id}/${DateTime.now().toIso8601String()}',
-          );
-          invoiceImages.add(imageUrl);
-        }
-      }
-
-      // Crear la factura
       final invoice = Invoice(
         invoiceNumber: _invoiceNumberController.text,
         invoiceDate: TemporalDateTime(_selectedDate),
-        invoiceTotal: _calculateTotal(),
+        invoiceTotal: totalFactura,
         invoiceStatus: _selectedStatus,
         sellerID: userData.userId,
         negocioID: userData.negocioId,
         cajaID: caja.id,
-        invoiceImages: invoiceImages,
         isDeleted: false,
       );
 
-      // Guardar la factura
       final createInvoiceRequest = ModelMutations.create(invoice);
       final invoiceResponse = await Amplify.API
           .mutate(request: createInvoiceRequest)
@@ -234,7 +295,6 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       }
       final createdInvoice = invoiceResponse.data!;
 
-      // Crear los items de la factura
       for (final itemData in _invoiceItems) {
         final invoiceItem = InvoiceItem(
           invoiceID: createdInvoice.id,
@@ -242,7 +302,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           quantity: itemData.quantity,
           tax: itemData.tax,
           subtotal: itemData.subtotal,
-          total: itemData.total,
+          total: double.parse(itemData.total.toStringAsFixed(2)),
         );
 
         final createItemRequest = ModelMutations.create(invoiceItem);
@@ -255,7 +315,6 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           );
         }
 
-        // Actualizar el stock del producto
         final updatedProduct = itemData.producto.copyWith(
           stock: itemData.producto.stock - itemData.quantity,
         );
@@ -265,17 +324,48 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             .response;
         if (productResponse.data == null) {
           throw Exception(
-            'Error al actualizar stock del producto: ${productResponse.errors}',
+            'Error al actualizar stock: ${productResponse.errors}',
           );
         }
       }
 
-      // Generar movimiento de caja
+      // Sumar el dinero recibido a las monedas en la caja
+      for (final pago in _pagoMonedas) {
+        if (pago.cantidad > 0) {
+          final moneda = pago.moneda;
+          final montoRecibido = pago.cantidad * moneda.denominacion;
+          final updatedMoneda = moneda.copyWith(
+            monto:
+                moneda.monto + double.parse(montoRecibido.toStringAsFixed(2)),
+          );
+          final updateMonedaRequest = ModelMutations.update(updatedMoneda);
+          final monedaResponse = await Amplify.API
+              .mutate(request: updateMonedaRequest)
+              .response;
+          if (monedaResponse.data == null) {
+            throw Exception(
+              'Error al actualizar moneda: ${monedaResponse.errors}',
+            );
+          }
+        }
+      }
+
+      final cajaActualizada = caja.copyWith(
+        saldoInicial: caja.saldoInicial + totalFactura,
+      );
+      final updateCajaRequest = ModelMutations.update(cajaActualizada);
+      final cajaResponse = await Amplify.API
+          .mutate(request: updateCajaRequest)
+          .response;
+      if (cajaResponse.data == null) {
+        throw Exception('Error al actualizar caja: ${cajaResponse.errors}');
+      }
+
       final movement = CajaMovimiento(
         cajaID: caja.id,
         tipo: 'INGRESO',
-        origen: 'FACTURA', // Usar el campo propuesto
-        monto: _calculateTotal(),
+        origen: 'FACTURA',
+        monto: totalFactura,
         negocioID: userData.negocioId,
         descripcion: 'Ingreso por factura ID: ${createdInvoice.id}',
         isDeleted: false,
@@ -291,7 +381,6 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       }
       final createdMovement = movementResponse.data!;
 
-      // Actualizar la factura con el ID del movimiento
       final updatedInvoice = createdInvoice.copyWith(
         cajaMovimientoID: createdMovement.id,
       );
@@ -301,42 +390,83 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           .response;
       if (updateInvoiceResponse.data == null) {
         throw Exception(
-          'Error al actualizar factura con movimiento: ${updateInvoiceResponse.errors}',
+          'Error al actualizar factura: ${updateInvoiceResponse.errors}',
         );
       }
 
-      // TODO: Recalcular monedas (CajaMoneda)
-      // Ejemplo (depende de tu lógica de negocio):
-      // for (var moneda in _selectedMonedas) {
-      //   final cajaMoneda = CajaMoneda(
-      //     cajaID: caja.id,
-      //     negocioID: userData.negocioId,
-      //     moneda: 'USD',
-      //     denominacion: moneda.denominacion,
-      //     cantidad: moneda.cantidad,
-      //     isDeleted: false,
-      //   );
-      //   final createMonedaRequest = ModelMutations.create(cajaMoneda);
-      //   await Amplify.API.mutate(request: createMonedaRequest).response;
-      // }
-
+      setState(() {
+        _pagoMonedas.clear();
+        for (var moneda in _cajaMonedas) {
+          _pagoMonedas.add(PagoMoneda(moneda: moneda, cantidad: 0));
+        }
+      });
+      await _generatePDF(invoice, negocio!);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Factura creada exitosamente')),
+        const SnackBar(content: Text('Factura creada y PDF generado')),
       );
-
       Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error al crear la factura: $e')));
+      return null;
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
+    }
+    return null;
+  }
+
+  Future<String?> _generatePDF(Invoice invoice, Negocio negocio) async {
+    try {
+      final invoiceItemsData = _invoiceItems
+          .map(
+            (item) => ({
+              'productoNombre': item.producto.nombre,
+              'quantity': item.quantity,
+              'subtotal': item.subtotal,
+              'total': item.total,
+            }),
+          )
+          .toList();
+
+      final lambdaInput = {
+        'invoice': {
+          'id': invoice.id,
+          'invoiceNumber': invoice.invoiceNumber,
+          'invoiceDate': invoice.invoiceDate.toString(),
+          'invoiceTotal': invoice.invoiceTotal,
+        },
+        'invoiceItems': invoiceItemsData,
+        'negocio': {
+          'nombre': negocio.nombre,
+          'ruc': negocio.ruc,
+          'telefono': negocio.telefono,
+          'direccion': negocio.direccion,
+        },
+      };
+      final token = await GetToken.getIdTokenSimple();
+      if (token == null) {
+        print('No se pudo obtener el token');
+        return null;
+      }
+      final lambdaResponse = await http.post(
+        Uri.parse(
+          'https://hwmfv41ks4.execute-api.us-east-1.amazonaws.com/dev/generate-invoice-pdf',
+        ),
+        body: Uint8List.fromList(jsonEncode(lambdaInput).codeUnits),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token.raw,
+        },
+      );
+      return jsonDecode(lambdaResponse.body)['pdfUrl'];
+    } catch (e) {
+      print('Error al generar PDF: $e');
+      return null;
     }
   }
 
-  Future<void> _scanBarcode(BuildContext context) async {
+  Future<void> _scanBarcode() async {
     try {
       final result = await SimpleBarcodeScanner.scanBarcode(
         context,
@@ -365,26 +495,19 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         where: Producto.BARCODE.eq(barCode),
       );
       final response = await Amplify.API.query(request: request).response;
-
       final productos = response.data?.items.whereType<Producto>().toList();
 
       if (productos != null && productos.isNotEmpty) {
         final producto = productos.first;
-
-        // Verifica si ya fue agregado
-        final yaAgregado = _invoiceItems.any(
-          (item) => item.producto.id == producto.id,
-        );
-        if (yaAgregado) {
+        if (_invoiceItems.any((item) => item.producto.id == producto.id)) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Este producto ya fue agregado')),
+            SnackBar(content: Text('Producto ${producto.nombre} ya agregado')),
           );
           return;
         }
-
         if (producto.stock <= 0) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Este producto no tiene stock disponible')),
+            SnackBar(content: Text('Producto ${producto.nombre} sin stock')),
           );
           return;
         }
@@ -402,24 +525,19 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             ),
           );
         });
-
+        _validatePagoVsFactura();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Producto agregado: ${producto.nombre}')),
+          SnackBar(content: Text('Producto ${producto.nombre} agregado')),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'No se encontró ningún producto con ese código de barras',
-            ),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Producto no encontrado')));
       }
     } catch (e) {
-      print('Error al obtener el producto: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al obtener el producto: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al obtener producto: $e')));
     }
   }
 
@@ -428,110 +546,141 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Crear Factura'),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Colors.blue[800],
         foregroundColor: Colors.white,
         actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _saveInvoice,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
+          _isLoading
+              ? const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
-                  )
-                : const Text('Guardar', style: TextStyle(color: Colors.white)),
-          ),
+                  ),
+                )
+              : ElevatedButton.icon(
+                  onPressed: _validatePagoVsFactura() ? _saveInvoice : null,
+                  icon: const Icon(Icons.save, size: 18),
+                  label: const Text('Guardar'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[600],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
         ],
       ),
-      body: _isLoadingProducts
+      body: _isLoadingProducts || _isLoadingCaja
           ? const Center(child: CircularProgressIndicator())
           : Form(
               key: _formKey,
-              child: Scrollbar(
+              child: SingleChildScrollView(
                 controller: _scrollController,
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      buildBasicInfoSection(),
-                      const SizedBox(height: 24),
-                      buildItemsSection(),
-                      const SizedBox(height: 24),
-                      buildTotalSection(),
-                      const SizedBox(height: 100),
-                    ],
-                  ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildBasicInfoSection(),
+                    const SizedBox(height: 16),
+                    buildItemsSection(),
+                    const SizedBox(height: 16),
+                    buildTotalAndPagoSection(),
+                    const SizedBox(height: 80),
+                  ],
                 ),
               ),
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addInvoiceItem,
-        tooltip: 'Agregar producto',
-        label: const Text('Agregar producto'),
-        icon: const Icon(Icons.add),
-        backgroundColor: Colors.blueGrey,
-        foregroundColor: Colors.white,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: _scanBarcode,
+            backgroundColor: Colors.blue[600],
+            foregroundColor: Colors.white,
+            tooltip: 'Escanear código',
+            child: const Icon(Icons.qr_code_scanner),
+          ),
+          const SizedBox(height: 8),
+          FloatingActionButton.extended(
+            onPressed: _addInvoiceItem,
+            backgroundColor: Colors.blue[600],
+            foregroundColor: Colors.white,
+            label: const Text('Agregar Producto'),
+            icon: const Icon(Icons.add),
+            tooltip: 'Agregar producto',
+          ),
+        ],
       ),
     );
   }
 
   Widget buildBasicInfoSection() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Información básica',
+              'Información Básica',
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _invoiceNumberController,
-              decoration: const InputDecoration(
-                labelText: 'Número de factura',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: 'Número de Factura',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: Colors.grey[100],
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingrese el número de factura';
-                }
-                return null;
-              },
+              validator: (value) => value == null || value.isEmpty
+                  ? 'Ingrese número de factura'
+                  : null,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             InkWell(
               onTap: _selectDate,
               child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Fecha de factura',
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.calendar_today),
+                decoration: InputDecoration(
+                  labelText: 'Fecha',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  suffixIcon: const Icon(Icons.calendar_today),
+                  filled: true,
+                  fillColor: Colors.grey[100],
                 ),
                 child: Text(DateFormat('dd/MM/yyyy').format(_selectedDate)),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: _selectedStatus,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Estado',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: Colors.grey[100],
               ),
-              items: _statusOptions.map((status) {
-                return DropdownMenuItem(value: status, child: Text(status));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedStatus = value!;
-                });
-              },
+              items: _statusOptions
+                  .map(
+                    (status) =>
+                        DropdownMenuItem(value: status, child: Text(status)),
+                  )
+                  .toList(),
+              onChanged: (value) => setState(() => _selectedStatus = value!),
             ),
           ],
         ),
@@ -541,83 +690,65 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
   Widget buildItemsSection() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Productos',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      Text(
-                        '${_invoiceItems.length} items',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: () async {
-                    await _scanBarcode(context);
-                  },
-                  icon: const Icon(Icons.qr_code_scanner),
-                  tooltip: 'Escanear código de barras',
+                Text(
+                  'Productos',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 Text(
-                  'Código de barras',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  '${_invoiceItems.length} ítems',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            if (_invoiceItems.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(32),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.shopping_cart_outlined,
-                      size: 48,
-                      color: Colors.grey[400],
+            const SizedBox(height: 12),
+            _invoiceItems.isEmpty
+                ? Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No hay productos agregados',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.shopping_cart_outlined,
+                          size: 40,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No hay productos',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                        Text(
+                          'Agrega productos con el botón +',
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Presiona el botón + para agregar productos',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
-                    ),
-                  ],
-                ),
-              )
-            else
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _invoiceItems.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  return buildInvoiceItemCard(index);
-                },
-              ),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _invoiceItems.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
+                    itemBuilder: (context, index) =>
+                        buildInvoiceItemCard(index),
+                  ),
           ],
         ),
       ),
@@ -629,281 +760,420 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     final precios = _productoPrecios[item.producto.id] ?? [];
 
     return Container(
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey[300]!),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Row(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 3,
+            child: Column(
               children: [
-                Expanded(
-                  child: DropdownButtonFormField<Producto>(
-                    value: item.producto,
-                    decoration: const InputDecoration(
-                      labelText: 'Producto',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 24,
-                      ),
+                DropdownButtonFormField<Producto>(
+                  value: item.producto,
+                  decoration: InputDecoration(
+                    labelText: 'Producto',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    items: _productos.map((producto) {
-                      return DropdownMenuItem(
-                        value: producto,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              producto.nombre,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                              ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  items: _productos.map((producto) {
+                    return DropdownMenuItem(
+                      value: producto,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            producto.nombre,
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          Text(
+                            'Stock: ${producto.stock}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
                             ),
-                            Text(
-                              'Stock: ${producto.stock}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (producto) {
+                    final nuevosPrecios = _productoPrecios[producto!.id] ?? [];
+                    final precioSeleccionado = nuevosPrecios.isNotEmpty
+                        ? nuevosPrecios.first
+                        : null;
+                    setState(() {
+                      _invoiceItems[index] = item.copyWith(
+                        producto: producto,
+                        precio: precioSeleccionado,
+                      );
+                      _validatePagoVsFactura();
+                    });
+                  },
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<ProductoPrecios>(
+                  value: item.precio,
+                  decoration: InputDecoration(
+                    labelText: 'Precio',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  items: precios
+                      .map(
+                        (precio) => DropdownMenuItem(
+                          value: precio,
+                          child: Text(
+                            '${precio.nombre}: \$${precio.precio.toStringAsFixed(2)}',
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (precio) {
+                    setState(() {
+                      _invoiceItems[index] = item.copyWith(precio: precio);
+                      _validatePagoVsFactura();
+                    });
+                  },
+                  validator: (value) =>
+                      value == null ? 'Seleccione un precio' : null,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 2,
+            child: Column(
+              children: [
+                TextFormField(
+                  initialValue: item.quantity.toString(),
+                  decoration: InputDecoration(
+                    labelText: 'Cant.',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (value) {
+                    final quantity = int.tryParse(value) ?? 1;
+                    if (quantity > item.producto.stock) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Stock insuficiente: ${item.producto.stock}',
+                          ),
                         ),
                       );
-                    }).toList(),
-                    onChanged: (producto) {
-                      final nuevosPrecios =
-                          _productoPrecios[producto!.id] ?? [];
-                      final precioSeleccionado = nuevosPrecios.isNotEmpty
-                          ? nuevosPrecios.first
-                          : null;
-                      setState(() {
-                        _invoiceItems[index] = item.copyWith(
-                          producto: producto,
-                          precio: precioSeleccionado,
-                        );
-                      });
-                    },
+                      return;
+                    }
+                    setState(() {
+                      _invoiceItems[index] = item.copyWith(quantity: quantity);
+                      _validatePagoVsFactura();
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Ingrese cantidad';
+                    }
+                    final quantity = int.tryParse(value);
+                    if (quantity == null || quantity <= 0) {
+                      return 'Cantidad debe ser mayor a 0';
+                    }
+                    if (quantity > item.producto.stock) {
+                      return 'Stock insuficiente';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  initialValue: item.tax.toString(),
+                  decoration: InputDecoration(
+                    labelText: 'IVA (%)',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (value) {
+                    final tax = int.tryParse(value) ?? 0;
+                    setState(() {
+                      _invoiceItems[index] = item.copyWith(tax: tax);
+                      _validatePagoVsFactura();
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Ingrese IVA';
+                    final tax = int.tryParse(value);
+                    if (tax == null || tax < 0) return 'IVA no válido';
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 2,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Total',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                      Text(
+                        '\$${item.total.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(height: 8),
                 IconButton(
                   onPressed: () => _removeInvoiceItem(index),
                   icon: const Icon(Icons.delete, color: Colors.red),
+                  tooltip: 'Eliminar',
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<ProductoPrecios>(
-              value: item.precio,
-              decoration: const InputDecoration(
-                labelText: 'Precio',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-              ),
-              items: precios.map((precio) {
-                return DropdownMenuItem(
-                  value: precio,
-                  child: Text(
-                    '${precio.nombre}: \$${precio.precio.toStringAsFixed(2)}',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                );
-              }).toList(),
-              onChanged: (precio) {
-                setState(() {
-                  _invoiceItems[index] = item.copyWith(precio: precio);
-                });
-              },
-              validator: (value) {
-                if (value == null) {
-                  return 'Seleccione un precio';
-                }
-                return null;
-              },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildTotalAndPagoSection() {
+    final total = _calculateTotal();
+    print(total);
+    final totalPago = _calculateTotalPago();
+    print(totalPago);
+    final totalCaja = _calculateTotalCaja();
+    print(totalCaja);
+    final isValid = totalPago.toStringAsFixed(2) == total.toStringAsFixed(2);
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Resumen y Pago',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 12),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  flex: 2,
-                  child: TextFormField(
-                    initialValue: item.quantity.toString(),
-                    decoration: const InputDecoration(
-                      labelText: 'Cantidad',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    onChanged: (value) {
-                      final quantity = int.tryParse(value) ?? 1;
-                      if (quantity > item.producto.stock) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Stock insuficiente. Disponible: ${item.producto.stock}',
+                const Text(
+                  'Saldo Inicial:',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  '\$${_caja?.saldoInicial.toStringAsFixed(2) ?? '0.00'}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Total Monedas:',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  '\$${totalCaja.toStringAsFixed(2)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Total Factura:',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  '\$${total.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isValid ? Colors.green[700] : Colors.red[700],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Total Pagado:',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  '\$${totalPago.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isValid ? Colors.green[700] : Colors.red[700],
+                  ),
+                ),
+              ],
+            ),
+            if (!isValid)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'El pago debe coincidir con la factura',
+                  style: TextStyle(color: Colors.red[700], fontSize: 12),
+                ),
+              ),
+            const SizedBox(height: 12),
+            ExpansionTile(
+              title: const Text(
+                'Seleccionar Monedas',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              children: [
+                _isLoadingCaja
+                    ? const Center(child: CircularProgressIndicator())
+                    : _pagoMonedas.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text('No hay monedas disponibles'),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _pagoMonedas.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final pago = _pagoMonedas[index];
+                          final maxMonedas =
+                              (pago.moneda.monto / pago.moneda.denominacion)
+                                  .floor();
+                          return Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          ),
-                        );
-                        return;
-                      }
-                      setState(() {
-                        _invoiceItems[index] = item.copyWith(
-                          quantity: quantity,
-                        );
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Ingrese la cantidad';
-                      }
-                      final quantity = int.tryParse(value);
-                      if (quantity == null || quantity <= 0) {
-                        return 'La cantidad debe ser mayor a 0';
-                      }
-                      if (quantity > item.producto.stock) {
-                        return 'Stock insuficiente';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: TextFormField(
-                    initialValue: item.tax.toString(),
-                    decoration: const InputDecoration(
-                      labelText: 'IVA (%)',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${pago.moneda.moneda} - ${pago.moneda.denominacion.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Disponible: $maxMonedas',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Seleccionado: ${pago.cantidad}',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Total: ${(pago.cantidad * pago.moneda.denominacion).toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () =>
+                                          _updateMonedaPago(index, -1),
+                                      icon: const Icon(
+                                        Icons.remove_circle,
+                                        color: Colors.red,
+                                      ),
+                                      tooltip: 'Restar',
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _updateMonedaPago(index, 1),
+                                      icon: const Icon(
+                                        Icons.add_circle,
+                                        color: Colors.green,
+                                      ),
+                                      tooltip: 'Sumar',
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    onChanged: (value) {
-                      final tax = int.tryParse(value) ?? 0;
-                      setState(() {
-                        _invoiceItems[index] = item.copyWith(tax: tax);
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Ingrese el IVA';
-                      }
-                      final tax = int.tryParse(value);
-                      if (tax == null || tax < 0) {
-                        return 'El IVA debe ser un número no negativo';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Total',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        Text(
-                          '\$${item.total.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ],
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget buildTotalSection() {
-    final total = _calculateTotal();
-
-    return Card(
-      color: Colors.green[50],
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Total de la factura:',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            Text(
-              '\$${total.toStringAsFixed(2)}',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.green[700],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class InvoiceItemData {
-  final Producto producto;
-  final ProductoPrecios? precio;
-  final int quantity;
-  final int tax;
-
-  InvoiceItemData({
-    required this.producto,
-    this.precio,
-    required this.quantity,
-    required this.tax,
-  });
-
-  double get subtotal => precio != null ? precio!.precio * quantity : 0.0;
-  double get total => subtotal + (subtotal * tax / 100);
-
-  InvoiceItemData copyWith({
-    Producto? producto,
-    ProductoPrecios? precio,
-    int? quantity,
-    int? tax,
-  }) {
-    return InvoiceItemData(
-      producto: producto ?? this.producto,
-      precio: precio ?? this.precio,
-      quantity: quantity ?? this.quantity,
-      tax: tax ?? this.tax,
     );
   }
 }

@@ -230,16 +230,16 @@ class Producto extends amplify_core.Model {
     buffer.write("id=" + "$id" + ", ");
     buffer.write("nombre=" + "$_nombre" + ", ");
     buffer.write("descripcion=" + "$_descripcion" + ", ");
-    buffer.write("precio=" + (_precio != null ? _precio!.toString() : "null") + ", ");
-    buffer.write("stock=" + (_stock != null ? _stock!.toString() : "null") + ", ");
+    buffer.write("precio=" + (_precio != null ? _precio.toString() : "null") + ", ");
+    buffer.write("stock=" + (_stock != null ? _stock.toString() : "null") + ", ");
     buffer.write("barCode=" + "$_barCode" + ", ");
-    buffer.write("productoImages=" + (_productoImages != null ? _productoImages!.toString() : "null") + ", ");
+    buffer.write("productoImages=" + (_productoImages != null ? _productoImages.toString() : "null") + ", ");
     buffer.write("negocioID=" + "$_negocioID" + ", ");
     buffer.write("categoriaID=" + "$_categoriaID" + ", ");
     buffer.write("estado=" + "$_estado" + ", ");
-    buffer.write("isDeleted=" + (_isDeleted != null ? _isDeleted!.toString() : "null") + ", ");
-    buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
-    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
+    buffer.write("isDeleted=" + (_isDeleted != null ? _isDeleted.toString() : "null") + ", ");
+    buffer.write("createdAt=" + (_createdAt != null ? _createdAt.format() : "null") + ", ");
+    buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt.format() : "null"));
     buffer.write("}");
     
     return buffer.toString();

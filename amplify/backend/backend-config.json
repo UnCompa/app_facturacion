@@ -17,6 +17,42 @@
           ],
           "category": "function",
           "resourceName": "getuserapp"
+        },
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "generatepdf"
+        },
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "appfacturacion92014350"
+        },
+        {
+          "attributes": [
+            "superadminGroupRole"
+          ],
+          "category": "auth",
+          "resourceName": "userPoolGroups"
+        },
+        {
+          "attributes": [
+            "adminGroupRole"
+          ],
+          "category": "auth",
+          "resourceName": "userPoolGroups"
+        },
+        {
+          "attributes": [
+            "vendedorGroupRole"
+          ],
+          "category": "auth",
+          "resourceName": "userPoolGroups"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -98,6 +134,12 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "generatepdf": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "getuserapp": {
       "build": true,
       "providerPlugin": "awscloudformation",
@@ -142,6 +184,30 @@
         {
           "category": "function",
           "resourceName": "appfacturacion4a4aefb5"
+        }
+      ]
+    },
+    "AMPLIFY_function_generatepdf_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "generatepdf"
+        }
+      ]
+    },
+    "AMPLIFY_function_generatepdf_s3Bucket": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "generatepdf"
+        }
+      ]
+    },
+    "AMPLIFY_function_generatepdf_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "generatepdf"
         }
       ]
     },

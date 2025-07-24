@@ -18,4 +18,5 @@ class Routes {
   static const adminViewCaja = "/admin/caja";
   static const vendedorHome = "/vendedor";
   static const vendedorHomeFactura = "/vendedor/facturas";
+  static const vendedorHomeOrder = "/vendedor/orders";
 }

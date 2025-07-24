@@ -44,11 +44,11 @@ class _AdminCajaListPageState extends State<AdminCajaListPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _cajas.length > 1 ? FloatingActionButton(
         onPressed: _createCaja,
         backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
-      ),
+      ) : null,
     );
   }
 
@@ -288,9 +288,10 @@ class _AdminCajaListPageState extends State<AdminCajaListPage> {
       _isLoading = true;
     });
 
+    final negocioData = await NegocioService.getCurrentUserInfo();
     final request = ModelQueries.list(
       Caja.classType,
-      where: Caja.ISDELETED.eq(false),
+      where: Caja.ISDELETED.eq(false) & Caja.NEGOCIOID.eq(negocioData.negocioId),
     );
     final result = await Amplify.API.query(request: request).response;
     final cajas = result.data?.items;

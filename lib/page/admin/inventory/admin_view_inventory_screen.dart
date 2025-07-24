@@ -449,8 +449,9 @@ class _AdminViewInventoryScreenState extends State<AdminViewInventoryScreen> {
                                   },
                                   loadingBuilder:
                                       (context, child, loadingProgress) {
-                                        if (loadingProgress == null)
+                                        if (loadingProgress == null) {
                                           return child;
+                                        }
                                         return Container(
                                           width: 60,
                                           height: 60,

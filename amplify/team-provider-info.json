@@ -28,6 +28,11 @@
         "getuserapp": {
           "deploymentBucketName": "amplify-appfacturacion-dev-92e69-deployment",
           "s3Key": "amplify-builds/getuserapp-6576566279516e334444-build.zip"
+        },
+        "generatepdf": {
+          "s3Bucket": "appfacturacione396eedbe6784e6184ba1050ec18e31592e69-dev",
+          "deploymentBucketName": "amplify-appfacturacion-dev-92e69-deployment",
+          "s3Key": "amplify-builds/generatepdf-65593646417233367064-build.zip"
         }
       },
       "api": {
